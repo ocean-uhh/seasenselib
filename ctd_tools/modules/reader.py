@@ -9,7 +9,7 @@ import csv
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import datetime, timedelta
-import modules.ctd_parameters as ctdparams
+import ctd_tools.ctd_parameters as ctdparams
 
 
 class AbstractReader(ABC):

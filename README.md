@@ -35,8 +35,18 @@ Now you're ready to use the program.
 ## CLI Usage
 
 You can use the tool for reading, converting, and plotting CTD data based on Seabird CNV files.
-This chapter describes how to run the program from CLI. The following tables gives a short overview
-of the available commands.
+This chapter describes how to run the program from CLI. 
+
+Since the program is implemented as a Python package, you always have to start it by using the module 
+option `-m` from the root directory of the project: 
+
+```bash
+$ python -m ctd_tools
+```
+
+The various features of the tool can be executed using different commands. To invoke a command, simply append 
+it as an argument to the program call via CLI (see following example section for some examples). The 
+following table gives a short overview of the available commands.
 
 | Command | Description |
 |---|---|
@@ -46,16 +56,17 @@ of the available commands.
 | `plot-profile` | Plots a vertical CTD profile based on data from a netCDF, CSV, or CNV file. Via argument you can plot on screen or into a file. |
 | `plot-series` | Plots a time series based on a given parameter from a netCDF, CSV, or CNV file. Via argument you can plot on screen or into a file. |
 
-Every command uses different parameters. To get more information about how to use the program, just run it with the `--help` (or `-h`) argument:
+Every command uses different parameters. To get more information about how to use the 
+program and each command, just run it with the `--help` (or `-h`) argument:
 
 ```bash
-$ python src/main.py --help
+$ python -m ctd_tools --help
 ```
 
 To get help for a single command, add `--help` (or `-h`) argument after typing the command name:
 
 ```bash
-$ python src/main.py convert --help
+$ python -m ctd_tools convert --help
 ```
 
 ## Example data
@@ -72,7 +83,7 @@ The following examples will guide you through all available commands using the f
 Use the following command to convert a CNV file to a netCDF file:
 
 ```bash
-$ python src/main.py convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
+$ python -m ctd_tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
 ```
 
 As you can see, format detection works for this command via file extension (`.nc` for netCDF or `.csv` for CSV), but you can also specify it via argument `--format` (or `-f`).
@@ -81,7 +92,7 @@ Important note: Our example files work out of the box. But in some cases your Se
 are not known of our program or the `pycnv` library which we're using. If you get an error due to missing parameters while converting or if you miss parameters during further data processing, e.g. something essential like the temperature, then a parameter mapping might be necessary. A parameter mapping is performed with the argument `--mapping` (or `-m`), which is followed by a list of mapping pairs separated with spaces. A mapping pair consists of a standard parameter name that we use within the program and the corresponding name of the column or channel from the Seabird CNV file. Example for a mapping which works for the example above:
 
 ```bash
-$ python src/main.py convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
+$ python -m ctd_tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
 ```
 
 ### Showing the summary of a netCDF
@@ -89,7 +100,7 @@ $ python src/main.py convert -i examples/sea-practical-2023.cnv -o output/sea-pr
 For the created netCDF file:
 
 ```bash
-$ python src/main.py show -i output/sea-practical-2023.nc
+$ python -m ctd_tools show -i output/sea-practical-2023.nc
 ```
 
 Again, format detection works also for this command via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
@@ -99,19 +110,19 @@ Again, format detection works also for this command via file extension (`.nc` fo
 Plot a T-S diagram:
 
 ```bash
-$ python src/main.py plot-ts -i output/sea-practical-2023.nc
+$ python -m ctd_tools plot-ts -i output/sea-practical-2023.nc
 ```
 
 Plot a vertical CTD profile:
 
 ```bash
-$ python src/main.py plot-profile -i output/sea-practical-2023.nc
+$ python -m ctd_tools plot-profile -i output/sea-practical-2023.nc
 ```
 
 Plot a time series for 'temperature' parameter:
 
 ```bash
-$ python src/main.py plot-series -i output/sea-practical-2023.nc -p temperature
+$ python -m ctd_tools plot-series -i output/sea-practical-2023.nc -p temperature
 ```
 
 Also for this command, format detection works via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).

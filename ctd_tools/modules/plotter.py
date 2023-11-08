@@ -1,7 +1,7 @@
 import xarray
 import pandas as pd
 import matplotlib.pyplot as plt
-import modules.ctd_parameters as ctdparams
+import ctd_tools.ctd_parameters as ctdparams
 import numpy as np
 import gsw
 

@@ -1,11 +1,10 @@
 import argparse
-import re
 import os
-import modules.ctd_parameters as ctdparams
+import ctd_tools.ctd_parameters as ctdparams
 
-from modules.reader import NetCdfReader, CsvReader, CnvReader
-from modules.writer import NetCdfWriter, CsvWriter
-from modules.plotter import CtdPlotter
+from .modules.reader import NetCdfReader, CsvReader, CnvReader
+from .modules.writer import NetCdfWriter, CsvWriter
+from .modules.plotter import CtdPlotter
 
 class CommandController:
     """ Controller logic for CLI commands """
@@ -28,7 +27,7 @@ class CommandController:
         elif self.args.command == 'show':
             self.handle_show_command()
         else:
-            self.argparser.print_help()
+            self.argsparser.print_help()
 
     def __read_data(self, input_file):
         """ Helper for readling CTD data from input file of different types. 

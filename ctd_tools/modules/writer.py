@@ -1,5 +1,5 @@
 import xarray as xr
-import modules.ctd_parameters as ctdparams
+import ctd_tools.ctd_parameters as ctdparams
 
 class NetCdfWriter:
     """ Writes CTD data from a xarray Dataset to a netCDF file. """

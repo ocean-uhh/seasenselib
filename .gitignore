@@ -38,3 +38,8 @@ target/
 
 # Mac/OSX
 .DS_Store
+
+# Package builder
+dist/
+build/
+ctd_tools.egg-info/
