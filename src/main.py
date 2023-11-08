@@ -102,6 +102,20 @@ class CommandController:
     def handle_convert_command(self):
         """ Handles the CLI 'convert' command. """
 
+        # Determine output format
+        format = None
+        if self.args.format:
+            format = self.args.format
+        else:
+            if self.args.output.endswith('.nc'):
+                format = 'netcdf'
+            elif self.args.output.endswith('.csv'):
+                format = 'csv'
+            else:
+                raise argparse.ArgumentTypeError(
+                    "Output file must be a netCDF (.nc) " \
+                    "or CSV (.csv) file.")
+
         # Map column names to standard parameter names
         parameter_mapping = {}
         allowed_parameters = ctdparams.allowed_parameters()
@@ -121,10 +135,10 @@ class CommandController:
         reader = CnvReader(self.args.input, parameter_mapping)
 
         # Write data to netCDF or CSV
-        if self.args.format == 'netcdf':
+        if format == 'netcdf':
             writer = NetCdfWriter(reader.get_data())
             writer.write(self.args.output)
-        elif self.args.format == 'csv':
+        elif format == 'csv':
             writer = CsvWriter(reader.get_data())
             writer.write(self.args.output)
         else:
@@ -164,7 +178,7 @@ class CliInterface:
         convert_parser = subparsers.add_parser('convert', help='Convert a CNV file to netCDF or CSV')
         convert_parser.add_argument('-i', '--input', type=str, required=True, help='Path of CNV input file')
         convert_parser.add_argument('-o', '--output', type=str, required=True, help='Path of output file')
-        convert_parser.add_argument('-f', '--format', type=str, choices=['netcdf', 'csv'], required=True, help=format_help)
+        convert_parser.add_argument('-f', '--format', type=str, choices=['netcdf', 'csv'], help=format_help)
         convert_parser.add_argument('-m', '--mapping', nargs='+', help=mapping_help)
 
         # Sub parser for "show" command
