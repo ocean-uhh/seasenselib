@@ -80,7 +80,7 @@ class AbstractReader(ABC):
 class CnvReader(AbstractReader):
     """ Reads CTD data from a CNV file into a xarray Dataset. """
 
-    def __init__(self, input_file, mapping):
+    def __init__(self, input_file, mapping = {}):
         super().__init__(input_file, mapping)
         self.__read()
 
