@@ -6,7 +6,9 @@ import numpy as np
 import gsw
 
 class CtdPlotter:
-    """ Plots different diagrams for CTD data from a xarray Dataset. """
+    """ 
+    Plots different diagrams for CTD data from a xarray Dataset. 
+    """
 
     def __init__(self, data: xarray.Dataset):
         self.data = data            
@@ -65,7 +67,8 @@ class CtdPlotter:
         
 
     def plot_ts_diagram(self, output_file=None, title='T-S Diagram', dot_size=70, use_colormap=True, 
-                        show_density_isolines=True, colormap='jet', show_lines_between_dots=True):
+                        show_density_isolines=True, colormap='jet', show_lines_between_dots=True,
+                        show_grid=True):
         ''' Plots a T-S diagram. '''
 
         # Check for necessary data keys
@@ -94,13 +97,15 @@ class CtdPlotter:
         else:
             plt.scatter(salinity, temperature, c='black', marker='o', s=dot_size)
 
+        # Add grid lines to the plot for better readability
+        if show_grid:
+            plt.grid(color='gray', linestyle='--', linewidth=0.5)
+
         # Set plot labels and title
+        plt.title(title)
         plt.xlabel('Salinity [PSU]')
         plt.ylabel(self.data[ctdparams.TEMPERATURE].attrs['long_name']+ \
                    " ["+self.data[ctdparams.TEMPERATURE].attrs['units']+"]")
-
-        # Set plot title
-        plt.title(title)
 
         # Integrate density isolines if wanted
         if show_density_isolines:
@@ -117,7 +122,8 @@ class CtdPlotter:
         elif output_file:
             plt.savefig(output_file)
 
-    def plot_profile(self, output_file=None):
+    def plot_profile(self, output_file=None, title='Salinity and Temperature Profiles', show_grid=True,
+                     dot_size=3, show_lines_between_dots=True):
         ''' Plots a vertical CTD profile for temperature and salinity. '''
 
         # Check for necessary data keys
@@ -136,44 +142,46 @@ class CtdPlotter:
         # Create a scatter plot of salinity and temperature with depth as the y-axis
         fig, ax1 = plt.subplots(figsize=(8, 6))
 
-        # Plot salinity on the primary y-axis
-        color = 'blue'
-        salinity_min = salinity.min()
-        salinity_max = salinity.max()
-        salinity_padding = ((salinity_max - salinity_min) * 0.1)
-        salinity_range = ((salinity_min - salinity_padding), (salinity_max + salinity_padding))        
-        ax1.set_xlim(salinity_range)
-        ax1.set_xlabel('Salinity', color=color)
-        ax1.set_ylabel('Depth')
-        ax1.scatter(salinity, depth, c=color, label='Salinity', s=3)
-        ax1.tick_params(axis='x', labelcolor=color)
+        # Calculate the range for salinity with some padding for aesthetics
+        salinity_padding = ((salinity.max() - salinity.min()) * 0.1)
+        salinity_range = ((salinity.min() - salinity_padding), 
+                (salinity.max() + salinity_padding))    
 
-        # Create a twin axis for temperature
-        ax2 = ax1.twiny()
+        # Plot salinity on the primary y-axis
+        salinity_color = 'blue'    
+        ax1.set_xlim(salinity_range)
+        ax1.scatter(salinity, depth, c=salinity_color, label='Salinity', s=dot_size)
+        ax1.tick_params(axis='x', labelcolor=salinity_color)
+
+        # Calculate the range for temperature with some padding for aesthetics
+        temperature_color = 'red'
+        temperature_padding = ((temperature.max() - temperature.min()) * 0.1)
+        temperature_range = ((temperature.min() - temperature_padding), 
+                (temperature.max() + temperature_padding))  
 
         # Plot temperature on the secondary x-axis
-        color = 'red'
-        temperature_min = temperature.min()
-        temperature_max = temperature.max()
-        temperature_padding = ((temperature_max - temperature_min) * 0.1)
-        temperature_range = ((temperature_min - temperature_padding), (temperature_max + temperature_padding))
+        ax2 = ax1.twiny() # Create a twin axis for temperature
         ax2.set_xlim(temperature_range)
-        ax2.set_xlabel('Temperature', color=color)
-        ax2.scatter(temperature, depth, c=color, label='Temperature', s=3)
-        ax2.tick_params(axis='x', labelcolor=color)
+        ax2.scatter(temperature, depth, c=temperature_color, label='Temperature', s=dot_size)
+        ax2.tick_params(axis='x', labelcolor=temperature_color)
 
         # Plot lines between the dots
-        ax1.plot(salinity, depth, color='blue', linestyle='-', linewidth=0.5)
-        ax2.plot(temperature, depth, color='red', linestyle='-', linewidth=0.5)
+        if show_lines_between_dots:
+            ax1.plot(salinity, depth, color=salinity_color, linestyle='-', linewidth=0.5)
+            ax2.plot(temperature, depth, color=temperature_color, linestyle='-', linewidth=0.5)
+
+        # Add grid lines to the plot for better readability
+        if show_grid:
+            ax1.grid(color='gray', linestyle='--', linewidth=0.5)
 
         # Set axis labels and title
-        ax1.set_title('Salinity and Temperature Profiles')
+        ax1.set_title(title)
+        ax1.set_xlabel('Salinity', color=salinity_color)
+        ax1.set_ylabel('Depth', color='black')
+        ax2.set_xlabel('Temperature', color=temperature_color)
 
         # Add a legend
         ax1.legend()
-
-        # Add grid lines
-        ax1.grid(color='gray', linestyle='--', linewidth=0.5)
 
         # Adjust layout
         fig.tight_layout()

@@ -74,7 +74,13 @@ class CommandController:
 
         # Create plotter
         plotter = CtdPlotter(data)
-        plotter.plot_profile(output_file=self.args.output)
+        plotter.plot_profile(
+            output_file=self.args.output, 
+            title=self.args.title,
+            dot_size=self.args.dot_size,
+            show_lines_between_dots=(not self.args.no_lines_between_dots),
+            show_grid=(not self.args.no_grid)
+        )
 
     def handle_plot_ts_command(self):
         """ Handles the CLI 'plot-ts' command. """
@@ -92,10 +98,14 @@ class CommandController:
         # Create plotter
         plotter = CtdPlotter(data)
         plotter.plot_ts_diagram(
-            output_file=self.args.output, title=self.args.title, 
-            dot_size=self.args.dot_size, use_colormap=(not self.args.no_colormap), 
+            output_file=self.args.output, 
+            title=self.args.title, 
+            dot_size=self.args.dot_size, 
+            use_colormap=(not self.args.no_colormap), 
             show_density_isolines=(not self.args.no_isolines),
-            colormap=self.args.colormap, show_lines_between_dots=(not self.args.no_lines_between_dots)
+            colormap=self.args.colormap, 
+            show_lines_between_dots=(not self.args.no_lines_between_dots),
+            show_grid=(not self.args.no_grid)
         )
 
     def handle_convert_command(self):
@@ -197,12 +207,17 @@ class CliInterface:
         plot_ts_parser.add_argument('--no-lines-between-dots', default=False, action='store_true', help='Disable the connecting lines between dots.')
         plot_ts_parser.add_argument('--no-colormap', action='store_true', default=False, help='Disable the colormap in the plot')
         plot_ts_parser.add_argument('--no-isolines', default=False, action='store_true', help='Disable the density isolines in the plot')
+        plot_ts_parser.add_argument('--no-grid', default=False, action='store_true', help='Disable the grid.')
 
         # Sub parser for "plot-profile" command
         # -------------------------------------------------------------------------------
         plot_profile_parser = subparsers.add_parser('plot-profile', help='Plot a vertical CTD profile from a netCDF file')
         plot_profile_parser.add_argument('-i', '--input', type=str, required=True, help='Path of netCDF input file')
         plot_profile_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
+        plot_profile_parser.add_argument('--title', default='Salinity and Temperature Profiles', type=str, help='Title of the plot.')
+        plot_profile_parser.add_argument('--dot-size', default=3, type=int, help='Dot size for scatter plot (1-200)')
+        plot_profile_parser.add_argument('--no-lines-between-dots', default=False, action='store_true', help='Disable the connecting lines between dots.')
+        plot_profile_parser.add_argument('--no-grid', default=False, action='store_true', help='Disable the grid.')
 
         # Sub parser for "plot-series" command
         # -------------------------------------------------------------------------------
