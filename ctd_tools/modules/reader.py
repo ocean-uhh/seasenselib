@@ -25,6 +25,11 @@ class AbstractReader(ABC):
         seconds = (julian_days - full_days) * 24 * 60 * 60
         return start_date + timedelta(days=full_days, seconds=seconds)
 
+    def _elapsed_seconds_since_jan_2000_to_datetime(self, elapsed_seconds):
+        base_date = datetime(2000, 1, 1)
+        time_delta = timedelta(seconds=elapsed_seconds)
+        return base_date + time_delta
+
     def _validate_necessary_parameters(self, data, longitude, latitude, entity: str):
         if not ctdparams.TIME and not ctdparams.TIME_J in data:
             raise ValueError(f"Parameter '{ctdparams.TIME}' is missing in {entity}.")
@@ -126,6 +131,8 @@ class CnvReader(AbstractReader):
         if ctdparams.TIME_J in xarray_data:
             year_startdate = datetime(year=offset_datetime.year, month=1, day=1)
             time_coords = np.array([self._julian_to_gregorian(jday, year_startdate) for jday in xarray_data[ctdparams.TIME_J]])
+        elif ctdparams.TIME_Q in xarray_data:
+            time_coords = np.array([self._elapsed_seconds_since_jan_2000_to_datetime(elapsed_seconds) for elapsed_seconds in xarray_data[ctdparams.TIME_Q]])
         else:
             timedelta = self.__get_scan_interval_in_seconds(cnv.header)
             if timedelta:
@@ -134,6 +141,12 @@ class CnvReader(AbstractReader):
         # Calculate depth from pressure and latitude
         depth = None
         if ctdparams.PRESSURE in xarray_data:
+            lat = cnv.lat
+            lon = cnv.lon
+            if lat == None and ctdparams.LATITUDE in xarray_data:
+                lat = xarray_data[ctdparams.LATITUDE][0]
+            if lon == None and ctdparams.LONGITUDE in xarray_data:
+                lon = xarray_data[ctdparams.LONGITUDE][0]
             depth = gsw.conversions.z_from_p(xarray_data[ctdparams.PRESSURE], cnv.lat)
 
         # Create xarray Dataset
