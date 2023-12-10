@@ -20,7 +20,7 @@ setup(
         'netcdf4',
     ],
     # Additional metadata about your package.
-    description='Read, convert, and plot Seabird CNV files.',
+    description='Read, convert, and plot CTD data of Seabird CNV files.',
     long_description=open('README.md').read(),
     author='The CTD Tools team',
     license='MIT',

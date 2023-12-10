@@ -1,6 +1,6 @@
 # CTD Tools
 
-A collection of tools for reading, converting, and plotting of CTD data.
+A library for reading, converting, and plotting of CTD data based on Seabird CNV files.
 
 ## Installation
 
