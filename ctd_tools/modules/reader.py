@@ -25,18 +25,23 @@ class AbstractReader(ABC):
         seconds = (julian_days - full_days) * 24 * 60 * 60
         return start_date + timedelta(days=full_days, seconds=seconds)
 
+    def _elapsed_seconds_since_jan_1970_to_datetime(self, elapsed_seconds):
+            base_date = datetime(1970, 1, 1)
+            time_delta = timedelta(seconds=elapsed_seconds)
+            return base_date + time_delta
+
     def _elapsed_seconds_since_jan_2000_to_datetime(self, elapsed_seconds):
         base_date = datetime(2000, 1, 1)
         time_delta = timedelta(seconds=elapsed_seconds)
         return base_date + time_delta
 
     def _validate_necessary_parameters(self, data, longitude, latitude, entity: str):
-        if not ctdparams.TIME and not ctdparams.TIME_J in data:
+        if not ctdparams.TIME and not ctdparams.TIME_J and not ctdparams.TIME_Q  and not ctdparams.TIME_N in data:
             raise ValueError(f"Parameter '{ctdparams.TIME}' is missing in {entity}.")
         if not ctdparams.PRESSURE in data and not ctdparams.DEPTH:
             raise ValueError(f"Parameter '{ctdparams.PRESSURE}' is missing in {entity}.")
-        if not ctdparams.DEPTH in data and not ctdparams.PRESSURE in data:
-            raise ValueError(f"Parameter '{ctdparams.DEPTH}' is missing in {entity}.")
+        #if not ctdparams.DEPTH in data and not ctdparams.PRESSURE in data:
+        #    raise ValueError(f"Parameter '{ctdparams.DEPTH}' is missing in {entity}.")
         if not ctdparams.LATITUDE in data and not latitude:
             raise ValueError(f"Parameter '{ctdparams.LATITUDE}' is missing in {entity}.")
         if not ctdparams.LONGITUDE in data and not longitude:
@@ -133,8 +138,10 @@ class CnvReader(AbstractReader):
             time_coords = np.array([self._julian_to_gregorian(jday, year_startdate) for jday in xarray_data[ctdparams.TIME_J]])
         elif ctdparams.TIME_Q in xarray_data:
             time_coords = np.array([self._elapsed_seconds_since_jan_2000_to_datetime(elapsed_seconds) for elapsed_seconds in xarray_data[ctdparams.TIME_Q]])
+        elif ctdparams.TIME_N in xarray_data:
+            time_coords = np.array([self._elapsed_seconds_since_jan_1970_to_datetime(elapsed_seconds) for elapsed_seconds in xarray_data[ctdparams.TIME_Q]])
         else:
-            timedelta = self.__get_scan_interval_in_seconds(cnv.header)
+            timedelta = self.__get_scan_interval_in_seconds(cnv.raw_header())
             if timedelta:
                 time_coords = [offset_datetime + pd.Timedelta(seconds=i*timedelta) for i in range(maxCount)][:]
 

@@ -14,6 +14,7 @@ DENSITY = 'density'
 POTENTIAL_TEMPERATURE = 'potential_temperature'
 TIME_J = 'julian_days_offset'
 TIME_Q = 'seconds_since_jan_1_2000'
+TIME_N = 'timeN'
 
 metadata = {
     TEMPERATURE: {
@@ -96,16 +97,16 @@ metadata = {
 
 default_mappings = {
     TEMPERATURE: [
-        't090C', 't068', 'tv290C', 't190C'
+        't090C', 't068', 'tv290C', 't190C', 'TEMP'
     ],
     SALINITY: [
-        'sal00', 'sal11'
+        'sal00', 'sal11', 'PSAL2'
     ],
     CONDUCTIVITY: [
         'c0mS/cm', 'c0', 'c1mS/cm', 'c1', 'cond0mS/cm'
     ],
     PRESSURE: [
-        'prdM', 'prDM', 'pr'
+        'prdM', 'prDM', 'pr', 'PRES'
     ],
     TURBIDITY: [
         'turbWETntu0'
@@ -119,14 +120,17 @@ default_mappings = {
     TIME_Q: [
         'timeQ', 'timeK'
     ],
+    TIME_N: [
+        'timeN'
+    ],
     OXYGEN: [
         'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1'
     ],
     LATITUDE: [
-        'latitude'
+        'latitude', 'LONGITUDE'
     ], 
     LONGITUDE: [
-        'longitude'
+        'longitude', 'LATITUDE'
     ]
 }
 
