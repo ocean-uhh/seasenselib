@@ -35,6 +35,11 @@ class AbstractReader(ABC):
         time_delta = timedelta(seconds=elapsed_seconds)
         return base_date + time_delta
 
+    def _elapsed_seconds_since_offset_to_datetime(self, elapsed_seconds, offset_datetime):
+            base_date = offset_datetime
+            time_delta = timedelta(seconds=elapsed_seconds)
+            return base_date + time_delta
+
     def _validate_necessary_parameters(self, data, longitude, latitude, entity: str):
         if not ctdparams.TIME and not ctdparams.TIME_J and not ctdparams.TIME_Q  and not ctdparams.TIME_N in data:
             raise ValueError(f"Parameter '{ctdparams.TIME}' is missing in {entity}.")
@@ -101,6 +106,14 @@ class CnvReader(AbstractReader):
             seconds = float(match.group(1))
             return seconds
         return None
+    
+    def __get_bad_flag(self, string):
+        pattern = r'^# bad_flag = (.+)$'
+        match = re.search(pattern, string, re.MULTILINE)
+        if match:
+            bad_flag = match.group(1)
+            return bad_flag
+        return None
 
     def __read(self):
         """ Reads a CNV file """
@@ -140,8 +153,10 @@ class CnvReader(AbstractReader):
             time_coords = np.array([self._elapsed_seconds_since_jan_2000_to_datetime(elapsed_seconds) for elapsed_seconds in xarray_data[ctdparams.TIME_Q]])
         elif ctdparams.TIME_N in xarray_data:
             time_coords = np.array([self._elapsed_seconds_since_jan_1970_to_datetime(elapsed_seconds) for elapsed_seconds in xarray_data[ctdparams.TIME_Q]])
+        elif ctdparams.TIME_S in xarray_data:
+           time_coords = np.array([self._elapsed_seconds_since_offset_to_datetime(elapsed_seconds, offset_datetime) for elapsed_seconds in xarray_data[ctdparams.TIME_S]])
         else:
-            timedelta = self.__get_scan_interval_in_seconds(cnv.raw_header())
+            timedelta = self.__get_scan_interval_in_seconds(cnv.header)
             if timedelta:
                 time_coords = [offset_datetime + pd.Timedelta(seconds=i*timedelta) for i in range(maxCount)][:]
 
@@ -182,6 +197,12 @@ class CnvReader(AbstractReader):
         # Assign meta information for all attributes of the xarray Dataset
         for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
             super()._assign_metadata_for_key_to_xarray_dataset( ds, key)
+
+        # Check for bad flag
+        bad_flag = self.__get_bad_flag(cnv.header)
+        if bad_flag is not None:
+            for var in ds:
+                ds[var] = ds[var].where(ds[var] != bad_flag, np.nan)
 
         # Store processed data
         self.data = ds
