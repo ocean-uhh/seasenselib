@@ -15,6 +15,7 @@ POTENTIAL_TEMPERATURE = 'potential_temperature'
 TIME_J = 'julian_days_offset'
 TIME_Q = 'seconds_since_jan_1_2000'
 TIME_N = 'timeN'
+TIME_S = 'timeS'
 
 metadata = {
     TEMPERATURE: {
@@ -122,6 +123,9 @@ default_mappings = {
     ],
     TIME_N: [
         'timeN'
+    ],
+    TIME_S: [
+        'timeS'
     ],
     OXYGEN: [
         'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1'
