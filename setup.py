@@ -30,6 +30,9 @@ setup(
         'Intended Audience :: Developers',
         'Natural Language :: English'
     ],
+    project_urls = {
+        'Source Code': 'https://gitlab.rrz.uni-hamburg.de/ifmeo-sea-practical/ctd-tools',
+    },
     # Additional metadata about your package.
     description='Read, convert, and plot CTD data of Seabird CNV files.',
     long_description=open('README.md').read(),
@@ -37,4 +40,5 @@ setup(
     author='Yves Sorge',
     license='MIT',
     url='https://gitlab.rrz.uni-hamburg.de/ifmeo-sea-practical/ctd-tools',
+    download_url='https://pypi.org/project/ctd-tools/',
 )
