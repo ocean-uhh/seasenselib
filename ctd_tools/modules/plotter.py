@@ -13,10 +13,12 @@ class CtdPlotter:
     def __init__(self, data: xarray.Dataset):
         self.data = data            
 
-    def __plot_density_isolines(self, plt):
-        """ Plots density isolines into a given T-S diagram plot """
+    def __get_dataset_without_nan(self):
+        ds = self.data
+        return ds.dropna(dim=ctdparams.TIME)
 
-        ds = self.data 
+    def __plot_density_isolines(self, ds, plt):
+        """ Plots density isolines into a given T-S diagram plot """
 
         # Define the min / max values for plotting isopycnals
         t_min = ds[ctdparams.TEMPERATURE].values.min()
@@ -79,9 +81,16 @@ class CtdPlotter:
         if ctdparams.DEPTH not in self.data:
             raise ValueError('Depth data is missing. This is necessary for plotting a T-S diagram.')
         
-        temperature = self.data[ctdparams.TEMPERATURE]
-        salinity = self.data[ctdparams.SALINITY]
-        depth = self.data[ctdparams.DEPTH]
+        # Get dataset without NaN values
+        ds = self.__get_dataset_without_nan()
+
+        temperature = ds[ctdparams.TEMPERATURE]
+        salinity = ds[ctdparams.SALINITY]
+        depth = ds[ctdparams.DEPTH]
+
+        # Check for potential temperature
+        if ctdparams.POTENTIAL_TEMPERATURE in ds:
+            temperature = ds[ctdparams.POTENTIAL_TEMPERATURE]
 
         # Create figure
         fig = plt.figure(figsize=(15, 8))
@@ -104,12 +113,17 @@ class CtdPlotter:
         # Set plot labels and title
         plt.title(title)
         plt.xlabel('Salinity [PSU]')
-        plt.ylabel(self.data[ctdparams.TEMPERATURE].attrs['long_name']+ \
-                   " ["+self.data[ctdparams.TEMPERATURE].attrs['units']+"]")
+        plt.ylabel(ds[ctdparams.TEMPERATURE].attrs['long_name']+ \
+                   " ["+ds[ctdparams.TEMPERATURE].attrs['units']+"]")
+        
+        # Check for potential temperature
+        if ctdparams.POTENTIAL_TEMPERATURE in ds:
+            plt.ylabel(ds[ctdparams.POTENTIAL_TEMPERATURE].attrs['long_name']+ \
+                   " ["+ds[ctdparams.POTENTIAL_TEMPERATURE].attrs['units']+"]")
 
         # Integrate density isolines if wanted
         if show_density_isolines:
-            self.__plot_density_isolines(plt)
+            self.__plot_density_isolines(ds, plt)
 
         # Enable tight layout
         plt.tight_layout()
@@ -134,13 +148,25 @@ class CtdPlotter:
         if ctdparams.DEPTH not in self.data:
             raise ValueError('Depth data is missing. This is necessary for plotting a T-S diagram.')
         
+        # Get dataset without NaN values
+        ds = self.__get_dataset_without_nan()
+
         # Extract temperature, salinity, and depth variables from the dataset
-        temperature = self.data[ctdparams.TEMPERATURE]
-        salinity = self.data[ctdparams.SALINITY]
-        depth = self.data[ctdparams.DEPTH]
+        temperature = ds[ctdparams.TEMPERATURE]
+        salinity = ds[ctdparams.SALINITY]
+        depth = ds[ctdparams.DEPTH]
+
+        # Figure out if depth contains only positive or negative values
+        depth_min = (depth.min())
+        depth_max = (depth.max())
+        if (depth_min <= 0 and depth_max <= 0):
+            depth = depth * (-1)
 
         # Create a scatter plot of salinity and temperature with depth as the y-axis
         fig, ax1 = plt.subplots(figsize=(8, 6))
+
+        # Invert y-axis for depth
+        plt.gca().invert_yaxis()
 
         # Calculate the range for salinity with some padding for aesthetics
         salinity_padding = ((salinity.max() - salinity.min()) * 0.1)
