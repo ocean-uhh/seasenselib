@@ -47,10 +47,10 @@ class AbstractReader(ABC):
             raise ValueError(f"Parameter '{ctdparams.PRESSURE}' is missing in {entity}.")
         #if not ctdparams.DEPTH in data and not ctdparams.PRESSURE in data:
         #    raise ValueError(f"Parameter '{ctdparams.DEPTH}' is missing in {entity}.")
-        if not ctdparams.LATITUDE in data and not latitude:
-            raise ValueError(f"Parameter '{ctdparams.LATITUDE}' is missing in {entity}.")
-        if not ctdparams.LONGITUDE in data and not longitude:
-            raise ValueError(f"Parameter '{ctdparams.LONGITUDE}' is missing in {entity}.")
+        #if not ctdparams.LATITUDE in data and not latitude:
+        #    raise ValueError(f"Parameter '{ctdparams.LATITUDE}' is missing in {entity}.")
+        #if not ctdparams.LONGITUDE in data and not longitude:
+        #    raise ValueError(f"Parameter '{ctdparams.LONGITUDE}' is missing in {entity}.")
 
     def _get_xarray_dataset_template(self, time_array, depth_array, 
                 latitude, longitude):
@@ -207,6 +207,79 @@ class CnvReader(AbstractReader):
         # Store processed data
         self.data = ds
 
+class TobReader(AbstractReader):
+    """ Reads CTD data from a TOB ASCII file (Sea & Sun) into a xarray Dataset. """
+
+    def __init__(self, input_file, mapping = {}, encoding = 'latin-1'):
+        super().__init__(input_file, mapping)
+        self.encoding = encoding
+        self.__read()
+
+    def __read(self):
+        ''' Reads a TOB file from Sea & Sun CTD into a xarray dataset. '''
+
+        # Read the file
+        with open(self.input_file, 'r', encoding=self.encoding) as file:
+            lines = file.readlines()
+
+        # Find the line with column names
+        header_line_index = next((i for i, line in enumerate(lines) if line.startswith('; Datasets')), None)
+
+        if header_line_index is None:
+            raise ValueError("Line with column names not found in the file.")
+
+        # Extract column names
+        column_names = lines[header_line_index].strip().split()[1:]
+
+        # Extract column units
+        units = [None] + lines[header_line_index + 1].replace('[','').replace(']','').strip().split()[1:]
+
+        # Load data into pandas DataFrame
+        data_start_index = header_line_index + 3
+        data = pd.read_csv(
+            self.input_file,
+            skiprows=data_start_index,
+            delim_whitespace=True,
+            names=column_names,
+            parse_dates={ctdparams.TIME: ['IntD', 'IntT']},
+            encoding=self.encoding,
+        )
+
+        # Convert DataFrame to xarray dataset
+        ds = xr.Dataset.from_dataframe(data.set_index(ctdparams.TIME))
+
+        # Assign units to data fields
+        for index, name in enumerate(column_names):
+            if name in ds and units[index]:
+                ds[name].attrs['units'] = units[index]
+
+        # Rename fields
+        ds = ds.rename({
+            'SALIN': ctdparams.SALINITY,
+            'Temp': ctdparams.TEMPERATURE,
+            'Cond': ctdparams.CONDUCTIVITY,
+            'Press': ctdparams.PRESSURE,
+            'SOUND': ctdparams.SPEED_OF_SOUND,
+            'Vbatt': ctdparams.POWER_SUPPLY_INPUT_VOLTAGE,
+            'SIGMA': 'sigma',
+            'Datasets': 'sample',
+        })
+
+        # Convert pressure to depth
+        pressure_in_dbar = ds['pressure'].values  # Extract pressure values from the dataset
+        depth_in_meters = gsw.z_from_p(pressure_in_dbar, lat=53.8187)  # latitude is for Cuxhaven
+        ds['depth'] = (('time',), depth_in_meters)  # Assuming the pressure varies with time
+        ds['depth'].attrs['units'] = "m"
+
+        # Ensure 'time' coordinate is datetime type
+        ds[ctdparams.TIME] = pd.to_datetime(ds[ctdparams.TIME], errors='coerce')
+
+        # Assign meta information for all attributes of the xarray Dataset
+        for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
+            super()._assign_metadata_for_key_to_xarray_dataset( ds, key)
+
+        # Store processed data
+        self.data = ds
 
 class NetCdfReader(AbstractReader):
     """ Reads CTD data from a netCDF file into a xarray Dataset. """
