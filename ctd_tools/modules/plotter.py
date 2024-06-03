@@ -220,7 +220,8 @@ class CtdPlotter:
         elif output_file:
             plt.savefig(output_file)
 
-    def plot_time_series(self, parameter_name, output_file=None):
+    def plot_time_series(self, parameter_name, output_file=None, 
+                         ylim_min=None, ylim_max=10, xlim_min=None, xlim_max=None):
         ''' Plots a times series for a given parameter. '''
 
         # Create a plot
@@ -238,9 +239,16 @@ class CtdPlotter:
             dateline = f"{first_date} to {last_date}"
 
         # Customize the plot with titles and labels
-        ax.set_title(f"{self.data[parameter_name].attrs['long_name']} over time ({dateline})")
+        long_name = parameter_name
+        if 'long_name' in self.data[parameter_name].attrs:
+            long_name = self.data[parameter_name].attrs['long_name']
+
+        ax.set_title(f"{long_name} over time ({dateline})")
         ax.set_xlabel('Time')
-        ax.set_ylabel(self.data[parameter_name].attrs['long_name']+" ["+self.data[parameter_name].attrs['units']+"]")
+        ax.set_ylabel(long_name+" ["+self.data[parameter_name].attrs['units']+"]")
+
+        if ylim_min and ylim_max:
+            ax.set_ylim(ylim_min, ylim_max)
 
         # Optionally, you can format the x-axis to better display dates
         plt.gcf().autofmt_xdate()  # Auto-format date on x-axis
