@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ctd-tools"  # seasense, seasenselib, moose
+version = "0.1.1"
+description = "Read, convert, and plot oceanographic sensor data from moored instruments."
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "AGPL-3.0-only" } 
+authors = [
+  { name = "Yves Sorge", email = "yves.sorge@uni-hamburg.de" }
+]
+urls = {
+  "Homepage" = "https://github.com/ifmeo-hamburg/ctd-tools",
+  "Source Code" = "https://github.com/ifmeo-hamburg/ctd-tools",
+  "Download" = "https://pypi.org/project/ctd-tools/"
+}
+dependencies = [
+  "pycnv",
+  "pandas",
+  "xarray",
+  "numpy",
+  "scipy",
+  "pylablib",
+  "matplotlib",
+  "netcdf4",
+  "gsw",
+  "re",
+  "csv",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Oceanography",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Natural Language :: English"
+]
+keywords = [
+    "ctd", "oceanography", "cnv", "seabird", "rbr", "aquadopp", "microcat", "sensors", "moorings",
+    "data", "netcdf", "cf", "conventions", "tools", "plotting", "adcp"
+]
+
+[project.scripts]
+ctd-tools = "ctd_tools.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]

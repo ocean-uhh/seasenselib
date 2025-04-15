@@ -3,7 +3,6 @@
 # Define variables for commands to make them easily changeable
 PYTHON := $(shell command -v python3 || command -v python)
 PIP := $(shell command -v pip3 || command -v pip)
-PYTEST := pytest
 TWINE := twine
 
 # Default target executed when no arguments are given to make
@@ -30,7 +29,7 @@ install: clean
 
 # Run unit tests
 test:
-	$(PYTEST) tests/
+	$(PYTHON) -m unittest discover tests/
 
 # Build the package
 build: clean
