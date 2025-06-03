@@ -14,6 +14,8 @@ matplotlib = "*"
 netcdf4 = "*"
 
 [dev-packages]
+build = "*"
+twine = "*"
 
 [requires]
 python_version = "3.10"

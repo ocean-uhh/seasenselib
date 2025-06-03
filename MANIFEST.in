@@ -1,0 +1,4 @@
+prune venv
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__/
