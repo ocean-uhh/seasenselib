@@ -1,6 +1,17 @@
 # CTD Tools
 
-A library for reading, converting, and plotting of CTD data based on Seabird CNV files.
+A tool for reading, converting, and plotting sensor data from different oceanographic formats. 
+
+## Table of Contents
+
+- [Installation](#installation)
+- [How to import CTD Tools](#how-to-import-ctd-tools)
+- [CLI Usage](#cli-usage)
+- [Example data](#example-data)
+  - [Converting a CNV file to netCDF](#converting-a-cnv-file-to-netcdf)
+  - [Showing the summary of a netCDF](#showing-the-summary-of-a-netcdf)
+  - [Plotting a T-S diagram, vertical profile and time series](#plotting-a-t-s-diagram-vertical-profile-and-time-series)
+- [Development](#development)
 
 ## Installation
 
@@ -8,7 +19,7 @@ To install CTD Tools, we strongly recommend using a scientific Python distributi
 If you already have Python, you can install CTD Tools with:
 
 ```bash
-$ pip install ctd-tools
+pip install ctd-tools
 ```
 
 Now you're ready to use the library.
@@ -45,7 +56,7 @@ This chapter describes how to run the program from CLI.
 After installing as a Python package, you can run it via CLI by just using the package name: 
 
 ```bash
-$ ctd-tools
+ctd-tools
 ```
 The various features of the tool can be executed by using different commands. To invoke a command, simply append 
 it as an argument to the program call via CLI (see following example section for some examples). The 
@@ -63,13 +74,13 @@ Every command uses different parameters. To get more information about how to us
 program and each command, just run it with the `--help` (or `-h`) argument:
 
 ```bash
-$ ctd-tools --help
+ctd-tools --help
 ```
 
 To get help for a single command, add `--help` (or `-h`) argument after typing the command name:
 
 ```bash
-$ ctd-tools convert --help
+ctd-tools convert --help
 ```
 
 ## Example data
@@ -86,7 +97,7 @@ The following examples will guide you through all available commands using the f
 Use the following command to convert a CNV file to a netCDF file:
 
 ```bash
-$ ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
+ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
 ```
 
 As you can see, format detection works for this command via file extension (`.nc` for netCDF or `.csv` for CSV), but you can also specify it via argument `--format` (or `-f`).
@@ -95,7 +106,7 @@ Important note: Our example files work out of the box. But in some cases your Se
 are not known of our program or the `pycnv` library which we're using. If you get an error due to missing parameters while converting or if you miss parameters during further data processing, e.g. something essential like the temperature, then a parameter mapping might be necessary. A parameter mapping is performed with the argument `--mapping` (or `-m`), which is followed by a list of mapping pairs separated with spaces. A mapping pair consists of a standard parameter name that we use within the program and the corresponding name of the column or channel from the Seabird CNV file. Example for a mapping which works for the example above:
 
 ```bash
-$ ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
+ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
 ```
 
 ### Showing the summary of a netCDF
@@ -103,7 +114,7 @@ $ ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2
 For the created netCDF file:
 
 ```bash
-$ ctd-tools show -i output/sea-practical-2023.nc
+ctd-tools show -i output/sea-practical-2023.nc
 ```
 
 Again, format detection works also for this command via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
@@ -113,22 +124,92 @@ Again, format detection works also for this command via file extension (`.nc` fo
 Plot a T-S diagram:
 
 ```bash
-$ ctd-tools plot-ts -i output/sea-practical-2023.nc
+ctd-tools plot-ts -i output/sea-practical-2023.nc
 ```
 
 Plot a vertical CTD profile:
 
 ```bash
-$ ctd-tools plot-profile -i output/sea-practical-2023.nc
+ctd-tools plot-profile -i output/sea-practical-2023.nc
 ```
 
 Plot a time series for 'temperature' parameter:
 
 ```bash
-$ ctd-tools plot-series -i output/sea-practical-2023.nc -p temperature
+ctd-tools plot-series -i output/sea-practical-2023.nc -p temperature
 ```
 
 Also for this command, format detection works via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
 
 To save the plots into a file instead showing on screen, just add the parameter `--output` (or `-o`) followed by the path of the output file. 
 The file extension determines in which format the plot is saved. Use `.png` for PNG, `.pdf` for PDF, and `.svg` for SVG.
+
+## Development
+
+Start here to set up your local development environment: clone the repository, create and activate a Python virtual environment, install all dependencies, and run tests or build the package. These steps ensure you work in an isolated, reproducible setup so you can experiment with the code, add new features, or fix issues before submitting changes.
+
+1. **Clone the repo**  
+
+   ```bash
+   git clone https://github.com/ifmeo-hamburg/ctd-tools.git
+   cd ctd-tools
+   ```
+
+2. **Create and activate a virtual environment**
+
+   - Linux/macOS:
+
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+
+   - Windows (CMD):
+
+     ```
+     python -m venv venv
+     venv\Scripts\activate.bat
+     ```
+
+   - Windows (PowerShell):
+
+     ```
+     python -m venv venv
+     venv\Scripts\Activate.ps1
+     ```
+
+3. **Upgrade packaging tools and install dependencies**
+
+   ```bash
+   pip install --upgrade pip setuptools wheel
+   pip install -e .
+   ```
+
+The environment is now ready.
+
+Useful commands: 
+
+- **Run tests**
+
+  ```bash
+  python -m unittest discover tests/
+  ```
+
+- **Execute the application**
+
+  ```bash
+  python -m ctd_tools
+  ```
+
+- **Build distributions**
+
+  ```bash
+  python -m build
+  ```
+
+- **Deactivate/Quit the virtual environment**
+
+  ```bash
+  deactivate
+  ```
+
