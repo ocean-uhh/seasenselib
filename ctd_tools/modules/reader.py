@@ -11,7 +11,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import ctd_tools.ctd_parameters as ctdparams
 
-
 class AbstractReader(ABC):
     """ Abstract super class for reading CTD data. """
 
@@ -344,3 +343,71 @@ class CsvReader(AbstractReader):
     
             # Store processed data
             self.data = ds
+
+class RbrAsciiReader(AbstractReader):
+
+    def __init__(self, dat_file_path):
+        self.dat_file_path = dat_file_path
+        self.__read()
+
+    def __create_xarray_dataset(self, df):
+        """
+        Converts a pandas DataFrame to an xarray Dataset.
+        Assumes 'Datetime' as the index of the DataFrame, 
+        which will be used as the time dimension.
+        """
+
+        # Ensure 'Datetime' is the index; if not, set it
+        if 'time' not in df.index.names:
+            df = df.set_index('time')
+
+        # Rename columns as specified
+        df.rename(columns=ctdparams.rename_list, inplace=True)
+
+        # Convert DataFrame to xarray Dataset
+        ds = xr.Dataset.from_dataframe(df)
+
+        # Assign meta information for all attributes of the xarray Dataset
+        for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
+            super()._assign_metadata_for_key_to_xarray_dataset( ds, key)
+            
+        return ds
+
+    def __parse_data(self, file_path):
+        """
+        Reads RBR data from a .dat file. Assumes that the actual data 
+        starts after an empty line, with the first column being datetime 
+        and the subsequent columns being the data entries.
+        """
+        # Open the file and read through it line by line until the data headers are found.
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+        
+        # Find the first non-empty line after metadata, which should be the header line for data columns.
+        start_data_index = 0
+        for i, line in enumerate(lines):
+            if line.strip() == '':
+                start_data_index = i + 1
+                break
+        
+        # The line right after an empty line contains column headers. We need to handle it accordingly.
+        header_line = lines[start_data_index].strip().split()
+        header = header_line  # Assuming now 'Datetime' is handled in the next step
+        
+        # Now read the actual data, skipping rows up to and including the header line
+        data = pd.read_csv(file_path, delimiter="\s+", names=['Date', 'Time'] + header, skiprows=start_data_index + 1)
+
+        # Concatenate 'Date' and 'Time' columns to create a 'Datetime' column and convert it to datetime type
+        data['time'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y/%m/%d %H:%M:%S')
+        data.drop(['Date', 'Time'], axis=1, inplace=True)  # Remove the original 'Date' and 'Time' columns
+        data.set_index('time', inplace=True)
+
+        return data
+    
+    def __read(self):
+        data = self.__parse_data(self.dat_file_path)
+        ds = self.__create_xarray_dataset(data)
+        self.data = ds
+
+    def get_data(self):
+        return self.data
