@@ -18,6 +18,13 @@ TIME_Q = 'seconds_since_jan_1_2000'
 TIME_N = 'timeN'
 TIME_S = 'timeS'
 POWER_SUPPLY_INPUT_VOLTAGE = 'power_supply_input'
+EAST_VELOCITY = 'east_velocity'
+NORTH_VELOCITY = 'north_velocity'
+UP_VELOCITY = 'up_velocity'
+EAST_AMPLITUDE = 'east_amplitude'
+NORTH_AMPLITUDE = 'north_amplitude'
+UP_AMPLITUDE = 'up_amplitude'
+SOUNDSPEED = 'speed_of_sound'
 
 # Meta data should use standardized values from https://cfconventions.org/
 metadata = {
@@ -112,8 +119,27 @@ metadata = {
     POWER_SUPPLY_INPUT_VOLTAGE: {
         'long_name': 'Power supply input voltage',
         'units': 'V',
+    },
+    EAST_VELOCITY: {
+        'units': 'm/s',
+        'long_name': 'Eastward velocity',
+        'standard_name': 'eastward_sea_water_velocity',
+    },
+    NORTH_VELOCITY: {
+        'units': 'm/s',
+        'long_name': 'Northward velocity',
+        'standard_name': 'northward_sea_water_velocity',
+    },
+    UP_VELOCITY: {
+        'units': 'm/s',
+        'long_name': 'Upward velocity',
+        'standard_name': 'upward_sea_water_velocity',
+    },
+    SPEED_OF_SOUND: {
+        'units': 'm/s',
+        'long_name': 'Speed of sound in sea water',
+        'standard_name': 'speed_of_sound_in_sea_water',
     }
-
 }
 
 default_mappings = {
@@ -156,21 +182,47 @@ default_mappings = {
     LONGITUDE: [
         'longitude', 'LATITUDE'
     ],
-    POWER_SUPPLY_INPUT_VOLTAGE: {
+    POWER_SUPPLY_INPUT_VOLTAGE: [
         'Vbatt', 'Vcharge', 'Vmote'
-    }
+    ],
+    EAST_VELOCITY: [
+        'east_velocity', 'eastward_velocity', 'eastward_sea_water_velocity',
+        'Velocity (Beam1|X|East)'
+    ],
+    NORTH_VELOCITY: [
+        'north_velocity', 'northward_velocity', 'northward_sea_water_velocity',
+        'Velocity (Beam2|Y|North)'
+    ],
+    UP_VELOCITY: [
+        'up_velocity', 'upward_velocity', 'upward_sea_water_velocity',
+        'Velocity (Beam3|Z|Up)'
+    ],
+    EAST_AMPLITUDE: [
+        'Amplitude (Beam1)'
+    ],
+    NORTH_AMPLITUDE: [
+        'Amplitude (Beam2)'
+    ],
+    UP_AMPLITUDE: [
+        'Amplitude (Beam3)'
+    ],
+    SPEED_OF_SOUND: [
+        'Soundspeed'
+    ],
 }
 
 rename_list = {
-    'Velocity (Beam1|X|East)': 'east_velocity',
-    'Velocity (Beam2|Y|North)': 'north_velocity',
-    'Velocity (Beam3|Z|Up)': 'up_velocity',
-    'Amplitude (Beam1)': 'east_amplitude',
-    'Amplitude (Beam2)': 'north_amplitude',
-    'Amplitude (Beam3)': 'up_amplitude',
-    'Temperature': 'temperature',
-    'Temp': 'temperature',
-    'datetime': 'time',
+    'Velocity (Beam1|X|East)': EAST_VELOCITY,
+    'Velocity (Beam2|Y|North)': NORTH_VELOCITY,
+    'Velocity (Beam3|Z|Up)': UP_VELOCITY,
+    'Amplitude (Beam1)': EAST_AMPLITUDE,
+    'Amplitude (Beam2)': NORTH_AMPLITUDE,
+    'Amplitude (Beam3)': UP_AMPLITUDE,
+    'Temperature': TEMPERATURE,
+    'Pressure': PRESSURE,
+    'Temp': TEMPERATURE,
+    'datetime': TIME,
+    'Soundspeed': SPEED_OF_SOUND
 }
 
 def allowed_parameters():

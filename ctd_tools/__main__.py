@@ -4,7 +4,7 @@ import ctd_tools.ctd_parameters as ctdparams
 import re
 import pandas as pd
 
-from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader
+from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader
 from .modules.writer import NetCdfWriter, CsvWriter, ExcelWriter
 from .modules.plotter import CtdPlotter
 from .modules.calculator import CtdCalculator, CtdResampler
@@ -16,6 +16,7 @@ INPUTFORMAT_KEY_SEASUN_TOB = 'seasun-tob'
 INPUTFORMAT_KEY_CSV = 'csv'
 INPUTFORMAT_KEY_NETCDF = 'netcdf'
 INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
+INPUTFORMAT_KEY_NORTEK_ASCII = 'nortek-ascii'
 
 # Input formats for the CLI commands
 input_formats = [
@@ -23,7 +24,8 @@ input_formats = [
     INPUTFORMAT_KEY_SEASUN_TOB,   # Sea & Sun TOB
     INPUTFORMAT_KEY_CSV,          # Comma separated file
     INPUTFORMAT_KEY_NETCDF,       # netCDF
-    INPUTFORMAT_KEY_RBR_ASCII     # RBR ASCII
+    INPUTFORMAT_KEY_RBR_ASCII,    # RBR ASCII
+    INPUTFORMAT_KEY_NORTEK_ASCII  # Nortek ASCII
 ]
 
 # Output formats for the CLI commands
@@ -60,8 +62,8 @@ class CommandController:
         else:
             self.argsparser.print_help()
 
-    def __read_data(self, input_file):
-        """ Helper for readling CTD data from input file of different types. 
+    def __read_data(self, input_file, header_input_file=None):
+        """ Helper for reading data from input file of different types.
         Returns the data. """
 
         format=self.args.input_format
@@ -76,6 +78,10 @@ class CommandController:
             reader = TobReader(input_file)
         elif format == INPUTFORMAT_KEY_RBR_ASCII:
             reader = RbrAsciiReader(input_file)
+        elif format == INPUTFORMAT_KEY_NORTEK_ASCII:
+            if not header_input_file:
+                raise argparse.ArgumentTypeError("Header input file is required for Nortek ASCII files.")
+            reader = NortekAsciiReader(input_file, header_input_file)
         else:
             raise argparse.ArgumentTypeError("Input file must be a netCDF (.nc) " \
                     "CSV (.csv), CNV (.cnv), or TOB (.tob), or RBR ASCII file.")
@@ -91,7 +97,7 @@ class CommandController:
         """ Handles the CLI 'plot-series' command. """
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
         
         # Create output directory if it doesn't exist
         self.__handle_output_directory(self.args.output)
@@ -104,7 +110,7 @@ class CommandController:
         """ Handles the CLI 'plot-profile' command. """
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
         
         # Create output directory if it doesn't exist
         self.__handle_output_directory(self.args.output)
@@ -127,7 +133,7 @@ class CommandController:
                 raise argparse.ArgumentTypeError("--dot-size must be between 1 and 200")
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
 
         # Create output directory if it doesn't exist
         self.__handle_output_directory(self.args.output)
@@ -199,7 +205,7 @@ class CommandController:
         """ Handles the CLI 'show' command. """
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
 
         if data:
             schema = self.args.schema
@@ -217,7 +223,7 @@ class CommandController:
         """ Handles the CLI 'subset' command. """
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
 
         if data:
             subsetter = CtdSubsetter(data)
@@ -254,12 +260,14 @@ class CommandController:
             return calc.std()
         elif self.args.method == 'var' or self.args.method == 'variance':
             return calc.var()
-
+        else:
+            raise ValueError(f"Unknown calculation method: {self.args.method}")
+        
     def handle_calc_command(self):
         """ Handles the CLI 'calc' command. """
 
         # Read data from input file
-        data = self.__read_data(self.args.input)
+        data = self.__read_data(self.args.input, self.args.header_input)
 
         if data:
             if self.args.resample:
@@ -306,6 +314,7 @@ class CliInterface:
         convert_parser = subparsers.add_parser('convert', help='Convert a file to a specific format.')
         convert_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         convert_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        convert_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         convert_parser.add_argument('-o', '--output', type=str, required=True, help='Path of output file')
         convert_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
         convert_parser.add_argument('-m', '--mapping', nargs='+', help=mapping_help)
@@ -315,6 +324,7 @@ class CliInterface:
         show_parser = subparsers.add_parser('show', help='Show contents of a file.')
         show_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         show_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        show_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         show_parser.add_argument('-s', '--schema', type=str, choices=['summary', 'info', 'example'], default='summary', help='What to show.')
 
         # Sub parser for "plot-ts" command
@@ -322,6 +332,7 @@ class CliInterface:
         plot_ts_parser = subparsers.add_parser('plot-ts', help='Plot a T-S diagram from a netCDF, CNV, CSV, or TOB file')
         plot_ts_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         plot_ts_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        plot_ts_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         plot_ts_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
         plot_ts_parser.add_argument('-t', '--title', default='T-S Diagram', type=str, help='Title of the plot.')
         plot_ts_parser.add_argument('--dot-size', default=70, type=int, help='Dot size for scatter plot (1-200)')
@@ -336,6 +347,7 @@ class CliInterface:
         plot_profile_parser = subparsers.add_parser('plot-profile', help='Plot a vertical CTD profile from an input file')
         plot_profile_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         plot_profile_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        plot_profile_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         plot_profile_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
         plot_profile_parser.add_argument('-t', '--title', default='Salinity and Temperature Profiles', type=str, help='Title of the plot.')
         plot_profile_parser.add_argument('--dot-size', default=3, type=int, help='Dot size for scatter plot (1-200)')
@@ -347,6 +359,7 @@ class CliInterface:
         plot_series_parser = subparsers.add_parser('plot-series', help='Plot a time series for a single parameter from an input file')
         plot_series_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         plot_series_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        plot_series_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         plot_series_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
         plot_series_parser.add_argument('-p', '--parameter', type=str, required=True, help='Standard name of a parameter, e.g. "temperature" or "salinity".')
 
@@ -355,6 +368,7 @@ class CliInterface:
         calc_parser = subparsers.add_parser('subset', help='Extract a subset of a file and save the result in another')
         calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         calc_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        calc_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         calc_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
         calc_parser.add_argument('--time-min', type=str, help='Minimum datetime value. Formats are: YYYY-MM-DD HH:ii:mm.ss')
         calc_parser.add_argument('--time-max', type=str, help='Maximum datetime value. Formats are: YYYY-MM-DD HH:ii:mm.ss')
@@ -370,6 +384,7 @@ class CliInterface:
         calc_parser = subparsers.add_parser('calc', help='Run an aggregate function on a parameter of the whole dataset')
         calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
         calc_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        calc_parser.add_argument('-H', '--header-input', type=str, default=None, help='Path of header input file (for Nortek ASCII files)')
         calc_parser.add_argument('-o', '--output', type=str, help='Path of output file')
         calc_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
         calc_parser.add_argument('-M', '--method', type=str, choices=method_choices, help='Mathematical method operated on the values.')
