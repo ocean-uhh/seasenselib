@@ -161,6 +161,18 @@ default_mappings = {
     }
 }
 
+rename_list = {
+    'Velocity (Beam1|X|East)': 'east_velocity',
+    'Velocity (Beam2|Y|North)': 'north_velocity',
+    'Velocity (Beam3|Z|Up)': 'up_velocity',
+    'Amplitude (Beam1)': 'east_amplitude',
+    'Amplitude (Beam2)': 'north_amplitude',
+    'Amplitude (Beam3)': 'up_amplitude',
+    'Temperature': 'temperature',
+    'Temp': 'temperature',
+    'datetime': 'time',
+}
+
 def allowed_parameters():
     return {
         TEMPERATURE: 'Temperature in degrees Celsius',

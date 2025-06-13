@@ -4,7 +4,7 @@ import ctd_tools.ctd_parameters as ctdparams
 import re
 import pandas as pd
 
-from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader
+from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader
 from .modules.writer import NetCdfWriter, CsvWriter, ExcelWriter
 from .modules.plotter import CtdPlotter
 from .modules.calculator import CtdCalculator, CtdResampler
@@ -15,14 +15,18 @@ INPUTFORMAT_KEY_SBE_CNV = 'sbe-cnv'
 INPUTFORMAT_KEY_SEASUN_TOB = 'seasun-tob'
 INPUTFORMAT_KEY_CSV = 'csv'
 INPUTFORMAT_KEY_NETCDF = 'netcdf'
+INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
 
+# Input formats for the CLI commands
 input_formats = [
     INPUTFORMAT_KEY_SBE_CNV,      # Seabird CNV
     INPUTFORMAT_KEY_SEASUN_TOB,   # Sea & Sun TOB
     INPUTFORMAT_KEY_CSV,          # Comma separated file
-    INPUTFORMAT_KEY_NETCDF        # netCDF
+    INPUTFORMAT_KEY_NETCDF,       # netCDF
+    INPUTFORMAT_KEY_RBR_ASCII     # RBR ASCII
 ]
 
+# Output formats for the CLI commands
 output_formats = [
     'netcdf',       # netCDF
     'csv',          # Comma separated file
@@ -70,9 +74,11 @@ class CommandController:
             reader = CnvReader(input_file)
         elif input_file.lower().endswith('.tob') or format == INPUTFORMAT_KEY_SEASUN_TOB:
             reader = TobReader(input_file)
+        elif format == INPUTFORMAT_KEY_RBR_ASCII:
+            reader = RbrAsciiReader(input_file)
         else:
             raise argparse.ArgumentTypeError("Input file must be a netCDF (.nc) " \
-                    "CSV (.csv), CNV (.cnv), or TOB (.tob) file.")
+                    "CSV (.csv), CNV (.cnv), or TOB (.tob), or RBR ASCII file.")
         return reader.get_data()
     
     def __handle_output_directory(self, output_file):
