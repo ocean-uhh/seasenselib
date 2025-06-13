@@ -411,3 +411,102 @@ class RbrAsciiReader(AbstractReader):
 
     def get_data(self):
         return self.data
+    
+class NortekAsciiReader(AbstractReader):
+    """ Reads Nortek ASCII data from a .dat file into a xarray Dataset. """
+
+    def __init__(self, dat_file_path, header_file_path):
+        self.dat_file_path = dat_file_path
+        self.header_file_path = header_file_path
+        self.__read()
+
+    def __read_header(self, hdr_file_path):
+        """Reads the .hdr file to extract column names and units."""
+        headers = []
+        with open(hdr_file_path, 'r') as file:
+            capture = False
+            for line in file:
+                if line.strip() == "Data file format":
+                    capture = True
+                    continue
+                if capture:
+                    if line.strip() == '':
+                        break
+                    if line.strip() and not line.startswith('---') and not line.startswith('['):
+                        # Use regex to split the line considering whitespace count
+                        import re
+                        parts = re.split(r'\s{2,}', line.strip())  # Split based on two or more spaces
+
+                        if len(parts) >= 2:
+                            col_number = parts[0]
+                            if parts[-1].startswith('(') and parts[-1].endswith(')'):
+                                unit = parts[-1].strip('()')
+                                col_name = ' '.join(parts[1:-1])
+                            else:
+                                unit = 'unknown'
+                                col_name = ' '.join(parts[1:])
+                        else:
+                            # Fallback in case no unit is provided and the line is not correctly parsed
+                            col_number = parts[0].split()[0]
+                            col_name = ' '.join(parts[0].split()[1:])
+                            unit = 'unknown'
+
+                        headers.append((col_number, col_name, unit))
+        return headers
+
+    def __parse_data(self, dat_file_path, headers):
+        """Parses the .dat file using headers information."""
+        columns = [name for _, name, _ in headers]  # Extract just the names from headers
+
+        # Handle duplicate column names by making them unique
+        unique_columns = []
+        seen = {}
+        for col in columns:
+            if col in seen:
+                seen[col] += 1
+                col = f"{col}_{seen[col]}"
+            else:
+                seen[col] = 0
+            unique_columns.append(col)
+
+        data = pd.read_csv(dat_file_path, sep='\s+', names=unique_columns)
+        return data
+
+    def __create_xarray_dataset(self, df, headers):
+        # Convert columns to datetime
+        df['time'] = pd.to_datetime(df[['Year', 'Month', 'Day', 'Hour', 'Minute', 'Second']])
+        
+        # Set datetime as the index
+        df.set_index('time', inplace=True)
+
+        # Rename columns as specified
+        df.rename(columns=ctdparams.rename_list, inplace=True)
+
+        # Convert the DataFrame to an xarray Dataset
+        ds = xr.Dataset.from_dataframe(df)
+
+        # Renaming and CF meta data enrichment
+        for header in headers:
+            _, variable, unit = header
+
+            # Rename
+            if variable in ctdparams.rename_list.keys():
+                variable = ctdparams.rename_list[variable]
+
+            # Set unit
+            ds[variable].attrs['unit'] = unit
+
+        # Assign meta information for all attributes of the xarray Dataset
+        for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
+            super()._assign_metadata_for_key_to_xarray_dataset( ds, key)
+
+        return ds
+
+    def __read(self):
+        headers = self.__read_header(self.header_file_path)
+        data = self.__parse_data(self.dat_file_path, headers)
+        ds = self.__create_xarray_dataset(data, headers)
+        self.data = ds
+
+    def get_data(self):
+        return self.data
