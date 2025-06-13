@@ -11,6 +11,24 @@ from .modules.calculator import CtdCalculator, CtdResampler
 from .modules.subsetter import CtdSubsetter
 from datetime import datetime
 
+INPUTFORMAT_KEY_SBE_CNV = 'sbe-cnv'
+INPUTFORMAT_KEY_SEASUN_TOB = 'seasun-tob'
+INPUTFORMAT_KEY_CSV = 'csv'
+INPUTFORMAT_KEY_NETCDF = 'netcdf'
+
+input_formats = [
+    INPUTFORMAT_KEY_SBE_CNV,      # Seabird CNV
+    INPUTFORMAT_KEY_SEASUN_TOB,   # Sea & Sun TOB
+    INPUTFORMAT_KEY_CSV,          # Comma separated file
+    INPUTFORMAT_KEY_NETCDF        # netCDF
+]
+
+output_formats = [
+    'netcdf',       # netCDF
+    'csv',          # Comma separated file
+    'excel'         # Excel
+]
+
 class CommandController:
     """ Controller logic for CLI commands """
 
@@ -42,13 +60,15 @@ class CommandController:
         """ Helper for readling CTD data from input file of different types. 
         Returns the data. """
 
-        if input_file.lower().endswith('.nc'):
+        format=self.args.input_format
+
+        if input_file.lower().endswith('.nc') or format == INPUTFORMAT_KEY_NETCDF:
             reader = NetCdfReader(input_file)
-        elif input_file.lower().endswith('.csv'):
+        elif input_file.lower().endswith('.csv') or format == INPUTFORMAT_KEY_CSV:
             reader = CsvReader(input_file)
-        elif input_file.lower().endswith('.cnv'):
+        elif input_file.lower().endswith('.cnv') or format == INPUTFORMAT_KEY_SBE_CNV:
             reader = CnvReader(input_file)
-        elif input_file.lower().endswith('.tob'):
+        elif input_file.lower().endswith('.tob') or format == INPUTFORMAT_KEY_SEASUN_TOB:
             reader = TobReader(input_file)
         else:
             raise argparse.ArgumentTypeError("Input file must be a netCDF (.nc) " \
@@ -124,8 +144,8 @@ class CommandController:
 
         # Determine output format
         format = None
-        if self.args.format:
-            format = self.args.format
+        if self.args.output_format:
+            format = self.args.output_format
         else:
             if self.args.output.lower().endswith('.nc'):
                 format = 'netcdf'
@@ -176,11 +196,12 @@ class CommandController:
         data = self.__read_data(self.args.input)
 
         if data:
-            if self.args.format == 'summary':
+            schema = self.args.schema
+            if schema == 'summary':
                 print(data)
-            elif self.args.format == 'info':
+            elif schema == 'info':
                 data.info()
-            elif self.args.format == 'example':
+            elif schema == 'example':
                 df = data.to_dataframe()
                 print(df.head())
         else:
@@ -276,24 +297,27 @@ class CliInterface:
             ', \n'.join(f"{k}" for k, v in ctdparams.allowed_parameters().items())
         format_help = 'Choose the output format. Allowed formats are: ' + \
             ', '.join(['netcdf','csv','excel'])
-        convert_parser = subparsers.add_parser('convert', help='Convert a CNV, TOB, or CSV file to netCDF or CSV')
-        convert_parser.add_argument('-i', '--input', type=str, required=True, help='Path of CNV, TOB, or CSV input file')
+        convert_parser = subparsers.add_parser('convert', help='Convert a file to a specific format.')
+        convert_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        convert_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
         convert_parser.add_argument('-o', '--output', type=str, required=True, help='Path of output file')
-        convert_parser.add_argument('-f', '--format', type=str, choices=['netcdf', 'csv','excel'], help=format_help)
+        convert_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
         convert_parser.add_argument('-m', '--mapping', nargs='+', help=mapping_help)
 
         # Sub parser for "show" command
         # -------------------------------------------------------------------------------
-        show_parser = subparsers.add_parser('show', help='Show contents of a netCDF, CSV, CNV, or TOB file.')
-        show_parser.add_argument('-i', '--input', type=str, required=True, help='Path of CNV input file')
-        show_parser.add_argument('--format', type=str, choices=['summary', 'info', 'example'], default='summary', help='What to show.')
+        show_parser = subparsers.add_parser('show', help='Show contents of a file.')
+        show_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        show_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        show_parser.add_argument('-s', '--schema', type=str, choices=['summary', 'info', 'example'], default='summary', help='What to show.')
 
         # Sub parser for "plot-ts" command
         # -------------------------------------------------------------------------------
         plot_ts_parser = subparsers.add_parser('plot-ts', help='Plot a T-S diagram from a netCDF, CNV, CSV, or TOB file')
-        plot_ts_parser.add_argument('-i', '--input', type=str, required=True, help='Path of netCDF, CNV, CSV, or TOB input file')
+        plot_ts_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        plot_ts_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
         plot_ts_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
-        plot_ts_parser.add_argument('--title', default='T-S Diagram', type=str, help='Title of the plot.')
+        plot_ts_parser.add_argument('-t', '--title', default='T-S Diagram', type=str, help='Title of the plot.')
         plot_ts_parser.add_argument('--dot-size', default=70, type=int, help='Dot size for scatter plot (1-200)')
         plot_ts_parser.add_argument('--colormap', default='jet', type=str, help='Name of the colormap for the plot. Must be a valid Matplotlib colormap.')
         plot_ts_parser.add_argument('--no-lines-between-dots', default=False, action='store_true', help='Disable the connecting lines between dots.')
@@ -303,26 +327,29 @@ class CliInterface:
 
         # Sub parser for "plot-profile" command
         # -------------------------------------------------------------------------------
-        plot_profile_parser = subparsers.add_parser('plot-profile', help='Plot a vertical CTD profile from a netCDF, CNV, CSV, or TOB file')
-        plot_profile_parser.add_argument('-i', '--input', type=str, required=True, help='Path of netCDF, CNV, CSV, or TOB input file')
+        plot_profile_parser = subparsers.add_parser('plot-profile', help='Plot a vertical CTD profile from an input file')
+        plot_profile_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        plot_profile_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
         plot_profile_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
-        plot_profile_parser.add_argument('--title', default='Salinity and Temperature Profiles', type=str, help='Title of the plot.')
+        plot_profile_parser.add_argument('-t', '--title', default='Salinity and Temperature Profiles', type=str, help='Title of the plot.')
         plot_profile_parser.add_argument('--dot-size', default=3, type=int, help='Dot size for scatter plot (1-200)')
         plot_profile_parser.add_argument('--no-lines-between-dots', default=False, action='store_true', help='Disable the connecting lines between dots.')
         plot_profile_parser.add_argument('--no-grid', default=False, action='store_true', help='Disable the grid.')
 
         # Sub parser for "plot-series" command
         # -------------------------------------------------------------------------------
-        plot_series_parser = subparsers.add_parser('plot-series', help='Plot a time series for a single parameter from a netCDF, CNV, CSV, or TOB file')
-        plot_series_parser.add_argument('-i', '--input', type=str, required=True, help='Path of netCDF, CNV, CSV, or TOB input file')
+        plot_series_parser = subparsers.add_parser('plot-series', help='Plot a time series for a single parameter from an input file')
+        plot_series_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        plot_series_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
         plot_series_parser.add_argument('-o', '--output', type=str, help='Path of output file if plot shall be written')
         plot_series_parser.add_argument('-p', '--parameter', type=str, required=True, help='Standard name of a parameter, e.g. "temperature" or "salinity".')
 
         # Sub parser for "subset" command
         # -------------------------------------------------------------------------------
         calc_parser = subparsers.add_parser('subset', help='Extract a subset of a file and save the result in another')
-        calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of CNV, TOB, or CSV input file')
-        calc_parser.add_argument('-f', '--format', type=str, choices=['netcdf', 'csv','excel'], help=format_help)
+        calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        calc_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
+        calc_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
         calc_parser.add_argument('--time-min', type=str, help='Minimum datetime value. Formats are: YYYY-MM-DD HH:ii:mm.ss')
         calc_parser.add_argument('--time-max', type=str, help='Maximum datetime value. Formats are: YYYY-MM-DD HH:ii:mm.ss')
         calc_parser.add_argument('--sample-min', type=int, help='Minimum sample/index value (integer)')
@@ -335,13 +362,14 @@ class CliInterface:
         # -------------------------------------------------------------------------------
         method_choices = ['min', 'max', 'mean', 'arithmetic_mean', 'median', 'std', 'standard_deviation', 'var', 'variance', 'sum']
         calc_parser = subparsers.add_parser('calc', help='Run an aggregate function on a parameter of the whole dataset')
-        calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of CNV, TOB, or CSV input file')
+        calc_parser.add_argument('-i', '--input', type=str, required=True, help='Path of input file')
+        calc_parser.add_argument('-f', '--input-format', type=str, default=None, choices=input_formats, help='Format of input file')
         calc_parser.add_argument('-o', '--output', type=str, help='Path of output file')
-        calc_parser.add_argument('-f', '--format', type=str, choices=['netcdf', 'csv','excel'], help=format_help)
-        calc_parser.add_argument('-m', '--method', type=str, choices=method_choices, help='Mathematical method operated on the values.')
+        calc_parser.add_argument('-F', '--output-format', type=str, choices=output_formats, help=format_help)
+        calc_parser.add_argument('-M', '--method', type=str, choices=method_choices, help='Mathematical method operated on the values.')
         calc_parser.add_argument('-p', '--parameter', type=str, required=True, help='Standard name of a parameter, e.g. "temperature" or "salinity".')
         calc_parser.add_argument('-r', '--resample', default=False, action='store_true', help='Resample the time series.')
-        calc_parser.add_argument('-t', '--time-interval', type=str, help='Time interval for resampling. Examples: 1M (one month)')
+        calc_parser.add_argument('-T', '--time-interval', type=str, help='Time interval for resampling. Examples: 1M (one month)')
 
         return argparser.parse_args()
 
