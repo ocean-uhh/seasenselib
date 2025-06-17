@@ -510,3 +510,319 @@ class NortekAsciiReader(AbstractReader):
 
     def get_data(self):
         return self.data
+
+class ADCPmatReader:
+    def __init__(self, mat_file_path):
+        self.mat_file_path = mat_file_path
+        self.reader = self.__select_reader()
+        if not self.reader:
+            raise ValueError("Unsupported file format.")
+        self.data = self.reader.get_data()
+
+    def __select_reader(self):
+        mat_data = scipy.io.loadmat(self.mat_file_path)
+        
+        # Distinguishing logic based on unique keys in mat_data
+        if "dat_u" in mat_data and "dat_timesteps" in mat_data:
+            return ADCPmatReader_17(self.mat_file_path)
+        elif "SerYear" in mat_data and "RDIBin1Mid" in mat_data:
+            return ADCPmatReader_13(self.mat_file_path)
+        elif "DS_19_12_ndaysens" in mat_data and "DS_19_12_v" in mat_data:
+            return ADCPmatReader_12_2(self.mat_file_path)#
+        elif "sens" in mat_data and "wt" in mat_data:
+            return ADCPmatReader_11(self.mat_file_path)
+        # Add logic for a third or more formats
+        else:
+            return None  # Return None if no match is found
+
+    def get_data(self):
+        return self.data
+
+
+class ADCPmatReader_17:
+    def __init__(self, mat_file_path):
+        self.mat_file_path = mat_file_path
+        self.data = self.__read()
+
+    def __parse_data(self, mat_file_path):
+        # Load the MATLAB file
+        mat_data = scipy.io.loadmat(mat_file_path)
+        
+        # Extract relevant data and prepare for xarray Dataset
+        time = pd.to_datetime(mat_data['dat_timesteps'].flatten() - 719529, unit='D')
+        depth_bins = mat_data['dat_binrange'].flatten()
+        
+        data_vars = {
+            "east_velocity": (["time", "bin"], mat_data['dat_u']),
+            "north_velocity": (["time", "bin"], mat_data['dat_v']),
+            "up_velocity": (["time", "bin"], mat_data['dat_w']),
+            "temperature": (["time"], mat_data['dat_t'].flatten()),
+            "echo_intensity": (["time", "bin"], mat_data['dat_echoa']),  # Example variable
+            "correlation": (["time", "bin"], mat_data['dat_corra']),  # Example variable
+            "pitch": (["time"], mat_data['dat_pitch'].flatten()),
+            "roll": (["time"], mat_data['dat_roll'].flatten()),
+            "heading": (["time"], mat_data['dat_head'].flatten()),
+            "battery_voltage": (["time"], mat_data['dat_batt'].flatten()),
+        }
+        
+        coords = {
+            "time": time,
+            "bin": depth_bins,
+        }
+        
+        return data_vars, coords
+
+    def __create_xarray_dataset(self, data_vars, coords):
+        # Create an xarray Dataset
+        ds = xr.Dataset(data_vars, coords=coords)
+        
+        # Add metadata for CF compliance
+        ds["east_velocity"].attrs = {"units": "m/s", "long_name": "Eastward velocity", "standard_name": "eastward_sea_water_velocity"}
+        ds["north_velocity"].attrs = {"units": "m/s", "long_name": "Northward velocity", "standard_name": "northward_sea_water_velocity"}
+        ds["up_velocity"].attrs = {"units": "m/s", "long_name": "Upward velocity", "standard_name": "upward_sea_water_velocity"}
+        ds["temperature"].attrs = {"units": "°C", "long_name": "Temperature", "standard_name": "sea_water_temperature"}
+        ds["echo_intensity"].attrs = {"units": "dB", "long_name": "Echo intensity"}
+        ds["pitch"].attrs = {"units": "degrees", "long_name": "Pitch angle"}
+        ds["roll"].attrs = {"units": "degrees", "long_name": "Roll angle"}
+        ds["heading"].attrs = {"units": "degrees", "long_name": "Compass heading"}
+        ds["battery_voltage"].attrs = {"units": "volts", "long_name": "Battery voltage"}
+        
+        ds.attrs["Conventions"] = "CF-1.8"
+        ds.attrs["title"] = "ADCP Data"
+        ds.attrs["institution"] = "University of Hamburg"
+        ds.attrs["source"] = "Acoustic Doppler Current Profiler"
+        
+        return ds
+
+    def __read(self):
+        data_vars, coords = self.__parse_data(self.mat_file_path)
+        return self.__create_xarray_dataset(data_vars, coords)
+
+    def get_data(self):
+        return self.data
+
+
+class ADCPmatReader_13:
+    def __init__(self, mat_file_path):
+        self.mat_file_path = mat_file_path
+        self.data = self.__read()
+
+    def __parse_data(self, mat_file_path):
+        # Load the MATLAB file
+        mat_data = scipy.io.loadmat(mat_file_path)
+
+        # Extract time information
+        time = pd.to_datetime({
+            'year': mat_data['SerYear'].flatten() + 2000,
+            'month': mat_data['SerMon'].flatten(),
+            'day': mat_data['SerDay'].flatten(),
+            'hour': mat_data['SerHour'].flatten(),
+            'minute': mat_data['SerMin'].flatten(),
+            'second': mat_data['SerSec'].flatten() + mat_data['SerHund'].flatten() / 100
+        })
+
+        # Calculate depth bins
+        bin1_mid = mat_data['RDIBin1Mid'].item()
+        bin_size = mat_data['RDIBinSize'].item()
+        num_bins = mat_data['SerBins'].shape[1]
+        depth_bins = bin1_mid + bin_size * (np.arange(num_bins))
+
+        # Prepare data variables
+        data_vars = {
+            "east_velocity": (("time", "bin"), mat_data['SerEmmpersec'] / 1000),  # mm/s to m/s
+            "north_velocity": (("time", "bin"), mat_data['SerNmmpersec'] / 1000),
+            "up_velocity": (("time", "bin"), mat_data['SerVmmpersec'] / 1000),
+            "echo_intensity": (("time", "bin"), mat_data['SerEA1cnt']),
+            "correlation": (("time", "bin"), mat_data['SerC1cnt']),
+            "direction": (("time", "bin"), mat_data['SerDir10thDeg'] / 10),  # 10th degrees to degrees
+            "magnitude": (("time", "bin"), mat_data['SerMagmmpersec'] / 1000),
+            "heading": (("time"), mat_data['AnH100thDeg'].flatten() / 100),
+            "pitch": (("time"), mat_data['AnP100thDeg'].flatten() / 100),
+            "roll": (("time"), mat_data['AnR100thDeg'].flatten() / 100),
+            "temperature": (("time"), mat_data['AnT100thDeg'].flatten() / 100),
+            "battery_voltage": (("time"), mat_data['AnBatt'].flatten() / 10),  # Tenths of volts
+        }
+
+        coords = {
+            "time": time,
+            "bin": depth_bins,
+        }
+
+        return data_vars, coords
+
+    def __create_xarray_dataset(self, data_vars, coords):
+        # Create an xarray Dataset
+        ds = xr.Dataset(data_vars, coords=coords)
+
+        # Add metadata for CF compliance
+        ds["east_velocity"].attrs = {"units": "m/s", "long_name": "Eastward velocity", "standard_name": "eastward_sea_water_velocity"}
+        ds["north_velocity"].attrs = {"units": "m/s", "long_name": "Northward velocity", "standard_name": "northward_sea_water_velocity"}
+        ds["up_velocity"].attrs = {"units": "m/s", "long_name": "Upward velocity", "standard_name": "upward_sea_water_velocity"}
+        ds["echo_intensity"].attrs = {"units": "dB", "long_name": "Echo intensity"}
+        ds["correlation"].attrs = {"units": "", "long_name": "Correlation"}
+        ds["direction"].attrs = {"units": "degrees", "long_name": "Current direction"}
+        ds["magnitude"].attrs = {"units": "m/s", "long_name": "Current magnitude"}
+        ds["heading"].attrs = {"units": "degrees", "long_name": "Heading"}
+        ds["pitch"].attrs = {"units": "degrees", "long_name": "Pitch angle"}
+        ds["roll"].attrs = {"units": "degrees", "long_name": "Roll angle"}
+        ds["temperature"].attrs = {"units": "°C", "long_name": "Temperature", "standard_name": "sea_water_temperature"}
+        ds["battery_voltage"].attrs = {"units": "volts", "long_name": "Battery voltage"}
+
+        ds.attrs["Conventions"] = "CF-1.8"
+        ds.attrs["title"] = "ADCP Data"
+        ds.attrs["institution"] = "University of Hamburg"
+        ds.attrs["source"] = "Acoustic Doppler Current Profiler"
+
+        return ds
+
+    def __read(self):
+        data_vars, coords = self.__parse_data(self.mat_file_path)
+        return self.__create_xarray_dataset(data_vars, coords)
+
+    def get_data(self):
+        return self.data
+
+class ADCPmatReader_12_2:
+    def __init__(self, mat_file_path):
+        self.mat_file_path = mat_file_path
+        self.data = self.__read()
+
+    def __parse_data(self, mat_file_path):
+        # Load the MATLAB file
+        mat_data = scipy.io.loadmat(mat_file_path)
+        
+        # Extract relevant data and prepare for xarray Dataset
+        time = pd.to_datetime(mat_data['DS_19_12_ndaysens'].flatten() - 719529, unit='D')
+        depth_bins = mat_data['DS_19_12_binrange'].flatten()
+        
+        data_vars = {
+            "east_velocity": (["time", "bin"], mat_data['DS_19_12_u']),
+            "north_velocity": (["time", "bin"], mat_data['DS_19_12_v']),
+            "up_velocity": (["time", "bin"], mat_data['DS_19_12_w']),
+            "temperature": (["time"], mat_data['DS_19_12_t'].flatten()),
+            "echo_intensity": (["time", "bin"], mat_data['DS_19_12_echoa']),  # Example variable
+            "correlation": (["time", "bin"], mat_data['DS_19_12_corra']),  # Example variable
+            "pitch": (["time"], mat_data['DS_19_12_pitch'].flatten()),
+            "roll": (["time"], mat_data['DS_19_12_roll'].flatten()),
+            "heading": (["time"], mat_data['DS_19_12_head'].flatten()),
+            "battery_voltage": (["time"], mat_data['DS_19_12_batt'].flatten()),
+        }
+        
+        coords = {
+            "time": time,
+            "bin": depth_bins,
+        }
+        
+        return data_vars, coords
+
+    def __create_xarray_dataset(self, data_vars, coords):
+        # Create an xarray Dataset
+        ds = xr.Dataset(data_vars, coords=coords)
+        
+        # Add metadata for CF compliance
+        ds["east_velocity"].attrs = {"units": "m/s", "long_name": "Eastward velocity", "standard_name": "eastward_sea_water_velocity"}
+        ds["north_velocity"].attrs = {"units": "m/s", "long_name": "Northward velocity", "standard_name": "northward_sea_water_velocity"}
+        ds["up_velocity"].attrs = {"units": "m/s", "long_name": "Upward velocity", "standard_name": "upward_sea_water_velocity"}
+        ds["temperature"].attrs = {"units": "°C", "long_name": "Temperature", "standard_name": "sea_water_temperature"}
+        ds["echo_intensity"].attrs = {"units": "dB", "long_name": "Echo intensity"}
+        ds["pitch"].attrs = {"units": "degrees", "long_name": "Pitch angle"}
+        ds["roll"].attrs = {"units": "degrees", "long_name": "Roll angle"}
+        ds["heading"].attrs = {"units": "degrees", "long_name": "Compass heading"}
+        ds["battery_voltage"].attrs = {"units": "volts", "long_name": "Battery voltage"}
+        
+        ds.attrs["Conventions"] = "CF-1.8"
+        ds.attrs["title"] = "ADCP Data"
+        ds.attrs["institution"] = "University of Hamburg"
+        ds.attrs["source"] = "Acoustic Doppler Current Profiler"
+        
+        return ds
+
+    def __read(self):
+        data_vars, coords = self.__parse_data(self.mat_file_path)
+        return self.__create_xarray_dataset(data_vars, coords)
+
+    def get_data(self):
+        return self.data   
+
+class ADCPmatReader_11:
+    def __init__(self, mat_file_path):
+        self.mat_file_path = mat_file_path
+        self.data = self.__read()
+
+    def __parse_data(self, mat_file_path):
+        # Load the MATLAB file
+        mat_data = scipy.io.loadmat(mat_file_path)
+        
+        # Extract data from 'sens' (sensor data)
+        time_raw = mat_data['sens']['time'][0, 0].flatten()  # Convert to 1D array
+        salinity = mat_data['sens']['s'][0, 0].flatten()  # Salinity data
+        temperature = mat_data['sens']['t'][0, 0].flatten()  # Temperature data
+        pitch = mat_data['sens']['p'][0, 0].flatten()  # Pitch angle
+        roll = mat_data['sens']['r'][0, 0].flatten()  # Roll angle
+        heading = mat_data['sens']['h'][0, 0].flatten()  # Heading
+        battery_voltage = mat_data['sens']['v'][0, 0].flatten()  # Battery voltage
+
+        # Extract depth-related data from 'wt' (water profile)
+        depth_bins = mat_data['wt']['r'][0, 0].flatten()  # Depth bins (same as 'r')
+        
+        # Extract velocity data from 'wt'
+        east_velocity_raw = mat_data['wt']['vel'][0, 0]  # Raw velocity data (shape: (n_time, n_depth, n_velocity_components))
+        
+        # Dynamically calculate the shape for reshaping based on the data
+        n_time, n_depth, n_velocity_components = east_velocity_raw.shape
+        total_depth = n_depth * n_velocity_components  # Total number of depth bins * velocity components
+
+        # Reshape the data to (n_time, total_depth)
+        east_velocity = east_velocity_raw.reshape(-1, total_depth)
+        
+        # Convert Unix time format (seconds since epoch) to pandas datetime
+        time = pd.to_datetime(time_raw, unit='s', errors='coerce')
+        
+        # Create coordinate mappings
+        coords = {
+            "time": time,  # Flatten time to 1D
+            "depth_bin": depth_bins[:east_velocity.shape[1]],  # Adjust depth_bins to match east_velocity depth
+        }
+
+        # Organize data variables to return
+        data_vars = {
+            "east_velocity": (["time", "depth_bin"], east_velocity),
+            "temperature": (["time"], temperature),
+            "salinity": (["time"], salinity),
+            "pitch": (["time"], pitch),
+            "roll": (["time"], roll),
+            "heading": (["time"], heading),
+            "battery_voltage": (["time"], battery_voltage),
+        }
+
+        return data_vars, coords
+
+    def __create_xarray_dataset(self, data_vars, coords):
+        # Create an xarray Dataset
+        ds = xr.Dataset(data_vars, coords=coords)
+        
+        # Add metadata for CF compliance
+        ds["east_velocity"].attrs = {"units": "m/s", "long_name": "Eastward velocity", "standard_name": "eastward_sea_water_velocity"}
+        ds["temperature"].attrs = {"units": "°C", "long_name": "Temperature", "standard_name": "sea_water_temperature"}
+        ds["salinity"].attrs = {"units": "psu", "long_name": "Salinity", "standard_name": "sea_water_salinity"}
+        ds["pitch"].attrs = {"units": "degrees", "long_name": "Pitch angle"}
+        ds["roll"].attrs = {"units": "degrees", "long_name": "Roll angle"}
+        ds["heading"].attrs = {"units": "degrees", "long_name": "Compass heading"}
+        ds["battery_voltage"].attrs = {"units": "volts", "long_name": "Battery voltage"}
+        
+        ds.attrs["Conventions"] = "CF-1.8"
+        ds.attrs["title"] = "Modified ADCP Data"
+        ds.attrs["institution"] = "University of Hamburg"
+        ds.attrs["source"] = "Acoustic Doppler Current Profiler"
+        
+        return ds
+
+    def __read(self):
+        # Parse the data and create the dataset
+        data_vars, coords = self.__parse_data(self.mat_file_path)
+        return self.__create_xarray_dataset(data_vars, coords)
+
+    def get_data(self):
+        # Return the dataset created from the parsed data
+        return self.data
+

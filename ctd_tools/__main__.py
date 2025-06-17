@@ -4,7 +4,7 @@ import ctd_tools.ctd_parameters as ctdparams
 import re
 import pandas as pd
 
-from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader
+from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader, ADCPmatReader
 from .modules.writer import NetCdfWriter, CsvWriter, ExcelWriter
 from .modules.plotter import CtdPlotter
 from .modules.calculator import CtdCalculator, CtdResampler
@@ -17,6 +17,7 @@ INPUTFORMAT_KEY_CSV = 'csv'
 INPUTFORMAT_KEY_NETCDF = 'netcdf'
 INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
 INPUTFORMAT_KEY_NORTEK_ASCII = 'nortek-ascii'
+INPUTFORMAT_KEY_ADCP_MAT = 'adcp-mat'
 
 # Input formats for the CLI commands
 input_formats = [
@@ -25,7 +26,8 @@ input_formats = [
     INPUTFORMAT_KEY_CSV,          # Comma separated file
     INPUTFORMAT_KEY_NETCDF,       # netCDF
     INPUTFORMAT_KEY_RBR_ASCII,    # RBR ASCII
-    INPUTFORMAT_KEY_NORTEK_ASCII  # Nortek ASCII
+    INPUTFORMAT_KEY_NORTEK_ASCII, # Nortek ASCII
+    INPUTFORMAT_KEY_ADCP_MAT      # ADCP matlab files
 ]
 
 # Output formats for the CLI commands
@@ -78,6 +80,8 @@ class CommandController:
             reader = TobReader(input_file)
         elif format == INPUTFORMAT_KEY_RBR_ASCII:
             reader = RbrAsciiReader(input_file)
+        elif format == INPUTFORMAT_KEY_ADCP_MAT:
+            reader = ADCPmatReader(input_file)
         elif format == INPUTFORMAT_KEY_NORTEK_ASCII:
             if not header_input_file:
                 raise argparse.ArgumentTypeError("Header input file is required for Nortek ASCII files.")
