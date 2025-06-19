@@ -5,6 +5,7 @@ import numpy as np
 import gsw
 import re
 import csv
+import sqlite3
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -12,9 +13,29 @@ from datetime import datetime, timedelta
 import ctd_tools.ctd_parameters as ctdparams
 
 class AbstractReader(ABC):
-    """ Abstract super class for reading CTD data. """
+    """ Abstract super class for reading CTD data. 
 
-    def __init__(self, input_file: str, mapping = None):
+    Must be subclassed to implement specific file format readers.
+    
+    Attributes
+    ---------- 
+    input_file : str
+        The path to the input file containing sensor data.
+    data : xr.Dataset | None
+        The processed sensor data as an xarray Dataset, or None if not yet processed.
+    mapping : dict, optional
+        A dictionary mapping names used in the input file to standard names.
+    """
+
+    def __init__(self, input_file: str, mapping: dict | None = None):
+        """
+        Parameters
+        ---------- 
+        input_file : str
+            The path to the input file containing sensor data.
+        mapping : dict, optional
+            A dictionary mapping names used in the input file to standard names.
+        """
         self.input_file = input_file
         self.data = None
         self.mapping = mapping
@@ -87,7 +108,66 @@ class AbstractReader(ABC):
                 label = label.replace(f"[{unit}]", '').strip() # Remove unit from label
             ds[key].attrs['long_name'] = label
     
-    def get_data(self) -> xr.Dataset:
+    def _rename_xarray_parameters(self, ds: xr.Dataset) -> xr.Dataset:
+        """
+        Rename variables in an xarray.Dataset according to ctdparams.default_mappings.
+        If a variable matches any alias in default_mappings, it will be renamed to the standard key.
+        For the mapping, it uses the lowercased variable names to ensure case-insensitivity.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The xarray Dataset containing the variables to be renamed.
+
+        Returns
+        -------
+        xr.Dataset
+            The xarray Dataset with renamed variables.
+        """
+        ds_vars_lower = {var.lower(): var for var in ds.variables}
+        rename_dict = {}
+        for standard_name, aliases in ctdparams.default_mappings.items():
+            for alias in aliases:
+                alias_lower = alias.lower()
+                if alias_lower in ds_vars_lower and standard_name not in ds.variables:
+                    rename_dict[ds_vars_lower[alias_lower]] = standard_name
+                    break  # Only map the first found alias for each standard name
+
+        return ds.rename(rename_dict)
+
+    def _perform_default_postprocessing(self, ds: xr.Dataset) -> xr.Dataset:
+        """
+        Perform default post-processing on the xarray Dataset.
+        This includes renaming variables and assigning metadata.
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            The xarray Dataset to be processed.
+
+        Returns
+        -------
+        xr.Dataset
+            The processed xarray Dataset.
+        """
+
+        # Apply custom mapping of variable names if provided
+        if self.mapping is not None:
+            for key, value in self.mapping.items():
+                if value in ds.variables:
+                    ds = ds.rename({value: key})
+
+        # Rename variables according to default mappings
+        ds = self._rename_xarray_parameters(ds)
+
+        # Assign metadata for all attributes of the xarray Dataset
+        for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
+            self._assign_metadata_for_key_to_xarray_dataset(ds, key)
+
+        return ds   
+
+    def get_data(self) -> xr.Dataset | None:
+        """ Returns the processed data as an xarray Dataset. """
         return self.data
 
 
@@ -510,3 +590,85 @@ class NortekAsciiReader(AbstractReader):
 
     def get_data(self):
         return self.data
+    
+class RbrRskLegacyReader(AbstractReader):
+    """
+    Reads sensor data from a RBR .rsk file (legacy format) into a xarray Dataset.
+
+    This class is specifically designed to read RBR legacy files that are stored 
+    in a SQLite database format. It extracts channel information and measurement 
+    data, converts timestamps, and organizes the data into an xarray Dataset.
+
+    Attributes
+    ----------
+    data : xr.Dataset
+        The xarray Dataset containing the sensor data.
+    input_file : str
+        The path to the input file containing the RBR legacy data.
+    mapping : dict, optional
+        A dictionary mapping names used in the input file to standard names.
+    """
+
+    def __init__(self, input_file : str, mapping : dict | None = None):
+        """ Initializes the RbrRskLegacyReader with the input file and optional mapping.
+
+        Parameters
+        ----------
+        input_file : str
+            The path to the input file containing the data.
+        mapping : dict, optional
+            A dictionary mapping names used in the input file to standard names.
+        """
+        super().__init__(input_file, mapping)
+        self.__read()
+
+    def __read(self):
+        """ Reads a RSK file (legacy format) and converts it to a xarray Dataset. 
+        
+        This method connects to the SQLite database within the RSK file, retrieves
+        channel information and measurement data, processes the timestamps, and
+        organizes the data into a xarray Dataset. It also assigns long names and
+        units as attributes to the dataset variables.
+        """
+
+        # Connect to the SQLite database in the RSK file
+        con = sqlite3.connect( self.input_file )
+
+        # Load channel information
+        channels_df = pd.read_sql_query(
+            "SELECT channelID, shortName, longName, units " \
+            "FROM   channels " \
+            "ORDER BY channelID",
+            con
+        )
+
+        # Create list with channel column names
+        chan_cols = [f"channel{int(cid):02d}" for cid in channels_df['channelID']]
+
+        # Load all measurement data
+        select_cols = ["tstamp"] + chan_cols
+        df = pd.read_sql_query(f"SELECT {', '.join(select_cols)} FROM data", con)
+        con.close()
+
+        # Convert timestamp to datetime and set as index
+        df['time'] = pd.to_datetime(df['tstamp'], unit='ms')
+        df = df.set_index('time').drop(columns=['tstamp'])
+
+        # Replace the columns with the "channelXX" names with the short names
+        df.columns = channels_df['longName'].values
+
+        # Convert to an xarray.Dataset
+        ds = xr.Dataset.from_dataframe(df)
+
+        # Add long names and units as attributes
+        for short, longn, unit in zip(channels_df['shortName'],
+                                    channels_df['longName'],
+                                    channels_df['units']):
+            ds[longn].attrs['long_name'] = longn
+            ds[longn].attrs['units'] = unit
+
+        # Perform default post-processing
+        ds = self._perform_default_postprocessing(ds)
+
+        # Store processed data
+        self.data = ds
