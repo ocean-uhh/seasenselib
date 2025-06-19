@@ -4,7 +4,7 @@ import ctd_tools.ctd_parameters as ctdparams
 import re
 import pandas as pd
 
-from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader
+from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader, RbrRskLegacyReader
 from .modules.writer import NetCdfWriter, CsvWriter, ExcelWriter
 from .modules.plotter import CtdPlotter
 from .modules.calculator import CtdCalculator, CtdResampler
@@ -17,6 +17,7 @@ INPUTFORMAT_KEY_CSV = 'csv'
 INPUTFORMAT_KEY_NETCDF = 'netcdf'
 INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
 INPUTFORMAT_KEY_NORTEK_ASCII = 'nortek-ascii'
+INPUTFORMAT_KEY_RBR_RSK_LEGACY = 'rbr-rsk-legacy'
 
 # Input formats for the CLI commands
 input_formats = [
@@ -25,7 +26,8 @@ input_formats = [
     INPUTFORMAT_KEY_CSV,          # Comma separated file
     INPUTFORMAT_KEY_NETCDF,       # netCDF
     INPUTFORMAT_KEY_RBR_ASCII,    # RBR ASCII
-    INPUTFORMAT_KEY_NORTEK_ASCII  # Nortek ASCII
+    INPUTFORMAT_KEY_NORTEK_ASCII, # Nortek ASCII
+    INPUTFORMAT_KEY_RBR_RSK_LEGACY # RBR RSK Legacy
 ]
 
 # Output formats for the CLI commands
@@ -82,6 +84,8 @@ class CommandController:
             if not header_input_file:
                 raise argparse.ArgumentTypeError("Header input file is required for Nortek ASCII files.")
             reader = NortekAsciiReader(input_file, header_input_file)
+        elif format == INPUTFORMAT_KEY_RBR_RSK_LEGACY:
+            reader = RbrRskLegacyReader(input_file)
         else:
             raise argparse.ArgumentTypeError("Input file must be a netCDF (.nc) " \
                     "CSV (.csv), CNV (.cnv), or TOB (.tob), or RBR ASCII file.")

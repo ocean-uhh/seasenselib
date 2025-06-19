@@ -144,22 +144,22 @@ metadata = {
 
 default_mappings = {
     TEMPERATURE: [
-        't090C', 't068', 'tv290C', 't190C', 'TEMP'
+        't090C', 't068', 'tv290C', 't190C', 'TEMP', 'temp', 'Temp', 'Temperature'
     ],
     SALINITY: [
-        'sal00', 'sal11', 'PSAL2'
+        'sal00', 'sal11', 'PSAL2', 'PSAL', 'Salinity'
     ],
     CONDUCTIVITY: [
-        'c0mS/cm', 'c0', 'c1mS/cm', 'c1', 'cond0mS/cm'
+        'c0mS/cm', 'c0', 'c1mS/cm', 'c1', 'cond0mS/cm', 'COND', 'Conductivity'
     ],
     PRESSURE: [
-        'prdM', 'prDM', 'pr', 'PRES'
+        'prdM', 'prDM', 'pr', 'PRES', 'Pressure'
     ],
     TURBIDITY: [
-        'turbWETntu0'
+        'turbWETntu0', 'Turbidity'
     ],
     DEPTH: [
-        'depSM'
+        'depSM', 'Depth'
     ],
     TIME_J: [
         'timeJ', 'timeJV2', 'timeSCP'
@@ -174,37 +174,37 @@ default_mappings = {
         'timeS'
     ],
     OXYGEN: [
-        'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1'
+        'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1', 'Oxygen'
     ],
     LATITUDE: [
-        'latitude', 'LONGITUDE'
+        'latitude', 'LONGITUDE', 'lat', 'LAT', 'Latitude', 'Lat'
     ], 
     LONGITUDE: [
-        'longitude', 'LATITUDE'
+        'longitude', 'LATITUDE', 'lon', 'LON', 'Longitude', 'Lon'
     ],
     POWER_SUPPLY_INPUT_VOLTAGE: [
         'Vbatt', 'Vcharge', 'Vmote'
     ],
     EAST_VELOCITY: [
         'east_velocity', 'eastward_velocity', 'eastward_sea_water_velocity',
-        'Velocity (Beam1|X|East)'
+        'Velocity (Beam1|X|East)', 'Eastward velocity'
     ],
     NORTH_VELOCITY: [
         'north_velocity', 'northward_velocity', 'northward_sea_water_velocity',
-        'Velocity (Beam2|Y|North)'
+        'Velocity (Beam2|Y|North)', 'Northward velocity'
     ],
     UP_VELOCITY: [
         'up_velocity', 'upward_velocity', 'upward_sea_water_velocity',
-        'Velocity (Beam3|Z|Up)'
+        'Velocity (Beam3|Z|Up)', 'Upward velocity'
     ],
     EAST_AMPLITUDE: [
-        'Amplitude (Beam1)'
+        'Amplitude (Beam1)', 'Eastward amplitude'
     ],
     NORTH_AMPLITUDE: [
-        'Amplitude (Beam2)'
+        'Amplitude (Beam2)', 'Northward amplitude'
     ],
     UP_AMPLITUDE: [
-        'Amplitude (Beam3)'
+        'Amplitude (Beam3)', 'Upward amplitude'
     ],
     SPEED_OF_SOUND: [
         'Soundspeed'
