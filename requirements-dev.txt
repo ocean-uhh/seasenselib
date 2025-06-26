@@ -12,3 +12,4 @@ twine
 sphinx
 nbsphinx
 myst-parser
+sphinx_rtd_theme

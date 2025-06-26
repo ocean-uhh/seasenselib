@@ -60,7 +60,8 @@ dev = [
   "twine",
   "sphinx",
   "nbsphinx",
-  "myst-parser"
+  "myst-parser",
+  "sphinx_rtd_theme"
 ]
 
 [project.urls]
