@@ -1,0 +1,12 @@
+-i https://pypi.org/simple
+pycnv
+pandas
+xarray
+numpy
+scipy
+pylablib
+matplotlib
+netcdf4
+build
+twine
+sphinx

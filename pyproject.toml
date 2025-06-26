@@ -14,18 +14,6 @@ authors = [
   { name = "Yves Sorge", email = "yves.sorge@uni-hamburg.de" }
 ]
 
-dependencies = [
-  "pycnv",
-  "pandas",
-  "xarray",
-  "numpy",
-  "scipy",
-  "pylablib",
-  "matplotlib",
-  "netcdf4",
-  "gsw"
-]
-
 classifiers = [
   "Programming Language :: Python :: 3",
   "Operating System :: OS Independent",
@@ -52,6 +40,25 @@ keywords = [
   "tools",
   "plotting",
   "adcp"
+]
+
+dependencies = [
+  "pycnv",
+  "pandas",
+  "xarray",
+  "numpy",
+  "scipy",
+  "pylablib",
+  "matplotlib",
+  "netcdf4",
+  "gsw"
+]
+
+[project.optional-dependencies]
+dev = [
+  "build",
+  "twine",
+  "sphinx"
 ]
 
 [project.urls]
