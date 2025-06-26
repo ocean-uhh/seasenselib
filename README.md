@@ -182,7 +182,7 @@ Start here to set up your local development environment: clone the repository, c
 
    ```bash
    pip install --upgrade pip setuptools wheel
-   pip install -e .
+   pip install -e ".[dev]"
    ```
 
 The environment is now ready.
