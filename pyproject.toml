@@ -58,7 +58,8 @@ dependencies = [
 dev = [
   "build",
   "twine",
-  "sphinx"
+  "sphinx",
+  "nbsphinx"
 ]
 
 [project.urls]

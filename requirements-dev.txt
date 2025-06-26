@@ -10,3 +10,4 @@ netcdf4
 build
 twine
 sphinx
+nbsphinx

@@ -17,6 +17,7 @@ netcdf4 = "*"
 build = "*"
 twine = "*"
 sphinx = "*"
+nbsphinx = "*"
 
 [requires]
 python_version = "3.10"
