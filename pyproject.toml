@@ -59,7 +59,8 @@ dev = [
   "build",
   "twine",
   "sphinx",
-  "nbsphinx"
+  "nbsphinx",
+  "myst-parser"
 ]
 
 [project.urls]
