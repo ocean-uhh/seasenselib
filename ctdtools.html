@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctd-tools API &mdash; ctd_tools v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8b92e751"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="CTDtools overview" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ctd_tools
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">CTDtools overview</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ifmeo-hamburg/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctd-tools</span> <span class="pre">API</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.ctd_parameters.allowed_parameters"><code class="docutils literal notranslate"><span class="pre">allowed_parameters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.writer.CsvWriter"><code class="docutils literal notranslate"><span class="pre">CsvWriter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.writer.CsvWriter.write"><code class="docutils literal notranslate"><span class="pre">CsvWriter.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.writer.ExcelWriter"><code class="docutils literal notranslate"><span class="pre">ExcelWriter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.writer.ExcelWriter.write"><code class="docutils literal notranslate"><span class="pre">ExcelWriter.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.writer.NetCdfWriter"><code class="docutils literal notranslate"><span class="pre">NetCdfWriter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.writer.NetCdfWriter.write"><code class="docutils literal notranslate"><span class="pre">NetCdfWriter.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator"><code class="docutils literal notranslate"><span class="pre">CtdCalculator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.max"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.mean"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.median"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.median()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.min"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.min()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.std"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.std()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdCalculator.var"><code class="docutils literal notranslate"><span class="pre">CtdCalculator.var()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdResampler"><code class="docutils literal notranslate"><span class="pre">CtdResampler</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.calculator.CtdResampler.resample"><code class="docutils literal notranslate"><span class="pre">CtdResampler.resample()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.plotter.CtdPlotter"><code class="docutils literal notranslate"><span class="pre">CtdPlotter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.plotter.CtdPlotter.plot_profile"><code class="docutils literal notranslate"><span class="pre">CtdPlotter.plot_profile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.plotter.CtdPlotter.plot_time_series"><code class="docutils literal notranslate"><span class="pre">CtdPlotter.plot_time_series()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.plotter.CtdPlotter.plot_ts_diagram"><code class="docutils literal notranslate"><span class="pre">CtdPlotter.plot_ts_diagram()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.get_subset"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.get_subset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_parameter_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_parameter_value_max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_parameter_value_min()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_sample_max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_sample_min()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_max"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_time_max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min"><code class="docutils literal notranslate"><span class="pre">CtdSubsetter.set_time_min()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="search.html">Search Page</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ctd_tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctd-tools</span> <span class="pre">API</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ctdtools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ctd_tools.ctd_parameters">
+<span id="ctd-tools-api"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctd-tools</span> <span class="pre">API</span></code><a class="headerlink" href="#module-ctd_tools.ctd_parameters" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ctd_tools.ctd_parameters.allowed_parameters">
+<span class="sig-prename descclassname"><span class="pre">ctd_tools.ctd_parameters.</span></span><span class="sig-name descname"><span class="pre">allowed_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/ctd_parameters.html#allowed_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.ctd_parameters.allowed_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class" id="module-ctd_tools.modules.writer">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.CsvWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">CsvWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#CsvWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.CsvWriter" title="Link to this definition"></a></dt>
+<dd><p>Writes CTD data from a xarray Dataset to a CSV file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.CsvWriter.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#CsvWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.CsvWriter.write" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.ExcelWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">ExcelWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#ExcelWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.ExcelWriter" title="Link to this definition"></a></dt>
+<dd><p>Writes CTD data from a xarray Dataset to an Excel file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.ExcelWriter.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#ExcelWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.ExcelWriter.write" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.NetCdfWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">NetCdfWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#NetCdfWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.NetCdfWriter" title="Link to this definition"></a></dt>
+<dd><p>Writes CTD data from a xarray Dataset to a netCDF file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.writer.NetCdfWriter.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.NetCdfWriter.write" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-ctd_tools.modules.calculator">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.calculator.</span></span><span class="sig-name descname"><span class="pre">CtdCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.max">
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.max" title="Link to this definition"></a></dt>
+<dd><p>Maximum</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.mean">
+<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.mean" title="Link to this definition"></a></dt>
+<dd><p>Arithmetic mean</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.median">
+<span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.median" title="Link to this definition"></a></dt>
+<dd><p>Median</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.min">
+<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.min" title="Link to this definition"></a></dt>
+<dd><p>Minimum</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.std">
+<span class="sig-name descname"><span class="pre">std</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.std" title="Link to this definition"></a></dt>
+<dd><p>Standard deviation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdCalculator.var">
+<span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdCalculator.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdCalculator.var" title="Link to this definition"></a></dt>
+<dd><p>Variance</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdResampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.calculator.</span></span><span class="sig-name descname"><span class="pre">CtdResampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdResampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdResampler" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.calculator.CtdResampler.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/calculator.html#CtdResampler.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.calculator.CtdResampler.resample" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-ctd_tools.modules.plotter">
+<dt class="sig sig-object py" id="ctd_tools.modules.plotter.CtdPlotter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.plotter.</span></span><span class="sig-name descname"><span class="pre">CtdPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/plotter.html#CtdPlotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.plotter.CtdPlotter" title="Link to this definition"></a></dt>
+<dd><p>Plots different diagrams for CTD data from a xarray Dataset.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.plotter.CtdPlotter.plot_profile">
+<span class="sig-name descname"><span class="pre">plot_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Salinity</span> <span class="pre">and</span> <span class="pre">Temperature</span> <span class="pre">Profiles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dot_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_lines_between_dots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/plotter.html#CtdPlotter.plot_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.plotter.CtdPlotter.plot_profile" title="Link to this definition"></a></dt>
+<dd><p>Plots a vertical CTD profile for temperature and salinity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.plotter.CtdPlotter.plot_time_series">
+<span class="sig-name descname"><span class="pre">plot_time_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/plotter.html#CtdPlotter.plot_time_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.plotter.CtdPlotter.plot_time_series" title="Link to this definition"></a></dt>
+<dd><p>Plots a times series for a given parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.plotter.CtdPlotter.plot_ts_diagram">
+<span class="sig-name descname"><span class="pre">plot_ts_diagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'T-S</span> <span class="pre">Diagram'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dot_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_density_isolines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_lines_between_dots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/plotter.html#CtdPlotter.plot_ts_diagram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.plotter.CtdPlotter.plot_ts_diagram" title="Link to this definition"></a></dt>
+<dd><p>Plots a T-S diagram.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-ctd_tools.modules.subsetter">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.subsetter.</span></span><span class="sig-name descname"><span class="pre">CtdSubsetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.get_subset">
+<span class="sig-name descname"><span class="pre">get_subset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.get_subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.get_subset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name">
+<span class="sig-name descname"><span class="pre">set_parameter_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max">
+<span class="sig-name descname"><span class="pre">set_parameter_value_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_value_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min">
+<span class="sig-name descname"><span class="pre">set_parameter_value_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_value_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max">
+<span class="sig-name descname"><span class="pre">set_sample_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min">
+<span class="sig-name descname"><span class="pre">set_sample_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_time_max">
+<span class="sig-name descname"><span class="pre">set_time_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_time_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_max" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_time_min">
+<span class="sig-name descname"><span class="pre">set_time_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_time_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview.html" class="btn btn-neutral float-left" title="CTDtools overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
