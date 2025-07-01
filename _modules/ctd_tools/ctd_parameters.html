@@ -110,6 +110,8 @@
 <span class="n">NORTH_AMPLITUDE</span> <span class="o">=</span> <span class="s1">&#39;north_amplitude&#39;</span>
 <span class="n">UP_AMPLITUDE</span> <span class="o">=</span> <span class="s1">&#39;up_amplitude&#39;</span>
 <span class="n">SOUNDSPEED</span> <span class="o">=</span> <span class="s1">&#39;speed_of_sound&#39;</span>
+<span class="n">CHLOROPHYLL</span> <span class="o">=</span> <span class="s1">&#39;chlorophyll&#39;</span>
+<span class="n">FLUORESCENCE</span> <span class="o">=</span> <span class="s1">&#39;fluorescence&#39;</span>
 
 <span class="c1"># Meta data should use standardized values from https://cfconventions.org/</span>
 <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
@@ -229,7 +231,7 @@
 
 <span class="n">default_mappings</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;t090C&#39;</span><span class="p">,</span> <span class="s1">&#39;t068&#39;</span><span class="p">,</span> <span class="s1">&#39;tv290C&#39;</span><span class="p">,</span> <span class="s1">&#39;t190C&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">,</span> <span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;Temp&#39;</span><span class="p">,</span> <span class="s1">&#39;Temperature&#39;</span>
+        <span class="s1">&#39;t090C&#39;</span><span class="p">,</span> <span class="s1">&#39;t068&#39;</span><span class="p">,</span> <span class="s1">&#39;tv290C&#39;</span><span class="p">,</span> <span class="s1">&#39;t190C&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP&#39;</span><span class="p">,</span> <span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;Temp&#39;</span><span class="p">,</span> <span class="s1">&#39;Temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span>
     <span class="p">],</span>
     <span class="n">SALINITY</span><span class="p">:</span> <span class="p">[</span>
         <span class="s1">&#39;sal00&#39;</span><span class="p">,</span> <span class="s1">&#39;sal11&#39;</span><span class="p">,</span> <span class="s1">&#39;PSAL2&#39;</span><span class="p">,</span> <span class="s1">&#39;PSAL&#39;</span><span class="p">,</span> <span class="s1">&#39;Salinity&#39;</span>
@@ -238,10 +240,10 @@
         <span class="s1">&#39;c0mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;c0&#39;</span><span class="p">,</span> <span class="s1">&#39;c1mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;c1&#39;</span><span class="p">,</span> <span class="s1">&#39;cond0mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;COND&#39;</span><span class="p">,</span> <span class="s1">&#39;Conductivity&#39;</span>
     <span class="p">],</span>
     <span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;prdM&#39;</span><span class="p">,</span> <span class="s1">&#39;prDM&#39;</span><span class="p">,</span> <span class="s1">&#39;pr&#39;</span><span class="p">,</span> <span class="s1">&#39;PRES&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span>
+        <span class="s1">&#39;prdM&#39;</span><span class="p">,</span> <span class="s1">&#39;prDM&#39;</span><span class="p">,</span> <span class="s1">&#39;pr&#39;</span><span class="p">,</span> <span class="s1">&#39;PRES&#39;</span><span class="p">,</span> <span class="s1">&#39;Pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;Sea Pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;Sea pressure&#39;</span>
     <span class="p">],</span>
     <span class="n">TURBIDITY</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;turbWETntu0&#39;</span><span class="p">,</span> <span class="s1">&#39;Turbidity&#39;</span>
+        <span class="s1">&#39;turbWETntu0&#39;</span><span class="p">,</span> <span class="s1">&#39;Turbidity&#39;</span><span class="p">,</span> <span class="s1">&#39;Backscatter&#39;</span>
     <span class="p">],</span>
     <span class="n">DEPTH</span><span class="p">:</span> <span class="p">[</span>
         <span class="s1">&#39;depSM&#39;</span><span class="p">,</span> <span class="s1">&#39;Depth&#39;</span>
@@ -259,13 +261,15 @@
         <span class="s1">&#39;timeS&#39;</span>
     <span class="p">],</span>
     <span class="n">OXYGEN</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;oxsatMm/Kg&#39;</span><span class="p">,</span> <span class="s1">&#39;oxsolMm/Kg&#39;</span><span class="p">,</span> <span class="s1">&#39;sbeox0&#39;</span><span class="p">,</span> <span class="s1">&#39;sbeox1&#39;</span><span class="p">,</span> <span class="s1">&#39;Oxygen&#39;</span>
+        <span class="s1">&#39;oxsatMm/Kg&#39;</span><span class="p">,</span> <span class="s1">&#39;oxsolMm/Kg&#39;</span><span class="p">,</span> <span class="s1">&#39;sbeox0&#39;</span><span class="p">,</span> <span class="s1">&#39;sbeox1&#39;</span><span class="p">,</span> <span class="s1">&#39;Oxygen&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Dissolved Oxygen&#39;</span><span class="p">,</span> <span class="s1">&#39;O2&#39;</span><span class="p">,</span> <span class="s1">&#39;Dissolved O2 Saturation&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dissolved_o2_saturation&#39;</span><span class="p">,</span> <span class="s1">&#39;Dissolved O₂&#39;</span><span class="p">,</span> <span class="s1">&#39;Dissolved O₂ saturation&#39;</span>
     <span class="p">],</span>
     <span class="n">LATITUDE</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGITUDE&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;LAT&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Lat&#39;</span>
+        <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;LATITUDE&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;LAT&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Lat&#39;</span>
     <span class="p">],</span> 
     <span class="n">LONGITUDE</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;LATITUDE&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;LON&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Lon&#39;</span>
+        <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGITUDE&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;LON&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Lon&#39;</span>
     <span class="p">],</span>
     <span class="n">POWER_SUPPLY_INPUT_VOLTAGE</span><span class="p">:</span> <span class="p">[</span>
         <span class="s1">&#39;Vbatt&#39;</span><span class="p">,</span> <span class="s1">&#39;Vcharge&#39;</span><span class="p">,</span> <span class="s1">&#39;Vmote&#39;</span>
@@ -292,8 +296,14 @@
         <span class="s1">&#39;Amplitude (Beam3)&#39;</span><span class="p">,</span> <span class="s1">&#39;Upward amplitude&#39;</span>
     <span class="p">],</span>
     <span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">&#39;Soundspeed&#39;</span>
+        <span class="s1">&#39;Soundspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;Speed of Sound&#39;</span><span class="p">,</span> <span class="s1">&#39;speed_of_sound&#39;</span>
     <span class="p">],</span>
+    <span class="n">CHLOROPHYLL</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s1">&#39;Chlorophyll&#39;</span>
+    <span class="p">],</span>
+    <span class="n">FLUORESCENCE</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s1">&#39;Fluorescence&#39;</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">rename_list</span> <span class="o">=</span> <span class="p">{</span>
