@@ -25,6 +25,8 @@ EAST_AMPLITUDE = 'east_amplitude'
 NORTH_AMPLITUDE = 'north_amplitude'
 UP_AMPLITUDE = 'up_amplitude'
 SOUNDSPEED = 'speed_of_sound'
+CHLOROPHYLL = 'chlorophyll'
+FLUORESCENCE = 'fluorescence'
 
 # Meta data should use standardized values from https://cfconventions.org/
 metadata = {
@@ -144,7 +146,7 @@ metadata = {
 
 default_mappings = {
     TEMPERATURE: [
-        't090C', 't068', 'tv290C', 't190C', 'TEMP', 'temp', 'Temp', 'Temperature'
+        't090C', 't068', 'tv290C', 't190C', 'TEMP', 'temp', 'Temp', 'Temperature', 'temperature'
     ],
     SALINITY: [
         'sal00', 'sal11', 'PSAL2', 'PSAL', 'Salinity'
@@ -153,10 +155,10 @@ default_mappings = {
         'c0mS/cm', 'c0', 'c1mS/cm', 'c1', 'cond0mS/cm', 'COND', 'Conductivity'
     ],
     PRESSURE: [
-        'prdM', 'prDM', 'pr', 'PRES', 'Pressure'
+        'prdM', 'prDM', 'pr', 'PRES', 'Pressure', 'Sea Pressure', 'Sea pressure'
     ],
     TURBIDITY: [
-        'turbWETntu0', 'Turbidity'
+        'turbWETntu0', 'Turbidity', 'Backscatter'
     ],
     DEPTH: [
         'depSM', 'Depth'
@@ -174,13 +176,15 @@ default_mappings = {
         'timeS'
     ],
     OXYGEN: [
-        'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1', 'Oxygen'
+        'oxsatMm/Kg', 'oxsolMm/Kg', 'sbeox0', 'sbeox1', 'Oxygen',
+        'Dissolved Oxygen', 'O2', 'Dissolved O2 Saturation',
+        'dissolved_o2_saturation', 'Dissolved O₂', 'Dissolved O₂ saturation'
     ],
     LATITUDE: [
-        'latitude', 'LONGITUDE', 'lat', 'LAT', 'Latitude', 'Lat'
+        'latitude', 'LATITUDE', 'lat', 'LAT', 'Latitude', 'Lat'
     ], 
     LONGITUDE: [
-        'longitude', 'LATITUDE', 'lon', 'LON', 'Longitude', 'Lon'
+        'longitude', 'LONGITUDE', 'lon', 'LON', 'Longitude', 'Lon'
     ],
     POWER_SUPPLY_INPUT_VOLTAGE: [
         'Vbatt', 'Vcharge', 'Vmote'
@@ -207,8 +211,14 @@ default_mappings = {
         'Amplitude (Beam3)', 'Upward amplitude'
     ],
     SPEED_OF_SOUND: [
-        'Soundspeed'
+        'Soundspeed', 'Speed of Sound', 'speed_of_sound'
     ],
+    CHLOROPHYLL: [
+        'Chlorophyll'
+    ],
+    FLUORESCENCE: [
+        'Fluorescence'
+    ]
 }
 
 rename_list = {

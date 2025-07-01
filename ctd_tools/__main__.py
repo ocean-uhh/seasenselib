@@ -4,13 +4,18 @@ import ctd_tools.ctd_parameters as ctdparams
 import re
 import pandas as pd
 
-from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader, RbrRskLegacyReader
+from .modules.reader import NetCdfReader, CsvReader, CnvReader, TobReader, RbrAsciiReader, NortekAsciiReader, \
+    RbrRskLegacyReader, RbrRskReader, RbrRskAutoReader
 from .modules.writer import NetCdfWriter, CsvWriter, ExcelWriter
 from .modules.plotter import CtdPlotter
 from .modules.calculator import CtdCalculator, CtdResampler
 from .modules.subsetter import CtdSubsetter
 from datetime import datetime
 
+# module name
+__module_name__ = 'ctd_tools'
+
+# Input format keys for the CLI commands
 INPUTFORMAT_KEY_SBE_CNV = 'sbe-cnv'
 INPUTFORMAT_KEY_SEASUN_TOB = 'seasun-tob'
 INPUTFORMAT_KEY_CSV = 'csv'
@@ -18,6 +23,8 @@ INPUTFORMAT_KEY_NETCDF = 'netcdf'
 INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
 INPUTFORMAT_KEY_NORTEK_ASCII = 'nortek-ascii'
 INPUTFORMAT_KEY_RBR_RSK_LEGACY = 'rbr-rsk-legacy'
+INPUTFORMAT_KEY_RBR_RSK_DEFAULT = 'rbr-rsk-default'
+INPUTFORMAT_KEY_RBR_RSK_AUTO = 'rbr-rsk'
 
 # Input formats for the CLI commands
 input_formats = [
@@ -27,7 +34,9 @@ input_formats = [
     INPUTFORMAT_KEY_NETCDF,       # netCDF
     INPUTFORMAT_KEY_RBR_ASCII,    # RBR ASCII
     INPUTFORMAT_KEY_NORTEK_ASCII, # Nortek ASCII
-    INPUTFORMAT_KEY_RBR_RSK_LEGACY # RBR RSK Legacy
+    INPUTFORMAT_KEY_RBR_RSK_LEGACY, # RBR RSK Legacy
+    INPUTFORMAT_KEY_RBR_RSK_DEFAULT, # RBR RSK Default (modern format)
+    INPUTFORMAT_KEY_RBR_RSK_AUTO  # RBR RSK Auto (auto-detect format)
 ]
 
 # Output formats for the CLI commands
@@ -86,6 +95,10 @@ class CommandController:
             reader = NortekAsciiReader(input_file, header_input_file)
         elif format == INPUTFORMAT_KEY_RBR_RSK_LEGACY:
             reader = RbrRskLegacyReader(input_file)
+        elif format == INPUTFORMAT_KEY_RBR_RSK_DEFAULT:
+            reader = RbrRskReader(input_file)
+        elif input_file.lower().endswith('.rsk') or format == INPUTFORMAT_KEY_RBR_RSK_AUTO:
+            reader = RbrRskAutoReader(input_file)
         else:
             raise argparse.ArgumentTypeError("Input file must be a netCDF (.nc) " \
                     "CSV (.csv), CNV (.cnv), or TOB (.tob), or RBR ASCII file.")
