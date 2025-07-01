@@ -85,16 +85,66 @@
   <h1>Source code for ctd_tools.modules.subsetter</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.ctd_parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ctdparams</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
 <div class="viewcode-block" id="CtdSubsetter">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CtdSubsetter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Subsets sensor data based on sample number, time, and parameter values.</span>
+
+<span class="sd">    This class allows for flexible slicing of sensor data stored in an xarray Dataset.</span>
+<span class="sd">    It can filter data based on sample indices, time ranges, and specific parameter values.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        subsetter = CtdSubsetter(ds)</span>
+<span class="sd">        subsetter \</span>
+<span class="sd">            .set_sample_min(10) \</span>
+<span class="sd">            .set_sample_max(50) \</span>
+<span class="sd">            .set_time_min(&quot;2023-01-01&quot;) \</span>
+<span class="sd">            .set_time_max(&quot;2023-01-31&quot;)</span>
+<span class="sd">        ds_subset = subsetter.get_subset()</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    data : xarray.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be subsetted.</span>
+<span class="sd">    min_sample : int, optional</span>
+<span class="sd">        The minimum sample index to include in the subset.</span>
+<span class="sd">    max_sample : int, optional</span>
+<span class="sd">        The maximum sample index to include in the subset.</span>
+<span class="sd">    min_datetime : pd.Timestamp, optional</span>
+<span class="sd">        The minimum time to include in the subset.</span>
+<span class="sd">    max_datetime : pd.Timestamp, optional</span>
+<span class="sd">        The maximum time to include in the subset.</span>
+<span class="sd">    parameter_name : str, optional</span>
+<span class="sd">        The name of the parameter to filter by.</span>
+<span class="sd">    parameter_value_min : float, optional</span>
+<span class="sd">        The minimum value of the parameter to include in the subset.</span>
+<span class="sd">    parameter_value_max : float, optional</span>
+<span class="sd">        The maximum value of the parameter to include in the subset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initializes the CtdSubsetter with the provided xarray Dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        data (xarray.Dataset):</span>
+<span class="sd">            The xarray Dataset containing the sensor data to be subsetted.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided data is not a xarray.Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be a xarray.Dataset&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store the dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="c1"># Initialize slicing parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_sample</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_datetime</span> <span class="o">=</span> <span class="kc">None</span>
@@ -105,56 +155,264 @@
 
 <div class="viewcode-block" id="CtdSubsetter.set_sample_min">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_sample</span> <span class="o">=</span> <span class="n">value</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CtdSubsetter&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the minimum sample index for slicing the dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (int):</span>
+<span class="sd">            The minimum sample index to include in the subset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated minimum sample index.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not an integer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate the sample index</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Sample index must be an integer&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store the minimum sample index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_sample</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="CtdSubsetter.set_sample_max">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span> <span class="o">=</span> <span class="n">value</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CtdSubsetter&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the maximum sample index for slicing the dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (int):</span>
+<span class="sd">            The maximum sample index to include in the subset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated maximum sample index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__handle_time_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__handle_time_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Converts a time value to a pandas Timestamp.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (str or pd.Timestamp):</span>
+<span class="sd">            The time value to convert. Can be a string or a pandas Timestamp.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        pd.Timestamp:</span>
+<span class="sd">            The converted time value as a pandas Timestamp.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        ------- </span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not a string or a pandas Timestamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate the time value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Time value must be a string or a pandas Timestamp&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert the time value to a pandas Timestamp</span>
         <span class="n">datetime_object</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">datetime_object</span> <span class="o">=</span>  <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
             <span class="n">datetime_object</span> <span class="o">=</span> <span class="n">value</span>
+
         <span class="k">return</span> <span class="n">datetime_object</span>
 
 <div class="viewcode-block" id="CtdSubsetter.set_time_min">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_time_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__handle_time_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_time_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CtdSubsetter&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the minimum time for slicing the dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (str or pd.Timestamp):</span>
+<span class="sd">            The minimum time to include in the subset. Can be a string or a pandas Timestamp.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated minimum time.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not a string or a pandas Timestamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate the time value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Time value must be a string or a pandas Timestamp&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert the time value to a pandas Timestamp and store it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__handle_time_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="CtdSubsetter.set_time_max">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_time_max">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_time_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__handle_time_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the maximum time for slicing the dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (str or pd.Timestamp):</span>
+<span class="sd">            The maximum time to include in the subset. Can be a string or a pandas Timestamp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate the time value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Time value must be a string or a pandas Timestamp&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert the time value to a pandas Timestamp and store it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_datetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__handle_time_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="CtdSubsetter.set_parameter_name">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span> <span class="o">=</span> <span class="n">value</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the name of the parameter to filter by.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (str):</span>
+<span class="sd">            The name of the parameter to filter by. </span>
+<span class="sd">            This should be a valid variable name in the dataset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated parameter name.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not a string.</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            If the provided parameter name is not found in the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate the parameter name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter name must be a string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; not found in dataset&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store the parameter name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="CtdSubsetter.set_parameter_value_max">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter_value_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_max</span> <span class="o">=</span> <span class="n">value</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the maximum value of the parameter to include in the subset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (float):</span>
+<span class="sd">            The maximum value of the parameter to include in the subset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated maximum parameter value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not a number (int or float).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate the parameter value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter value must be a number (int or float)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store the maximum parameter value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_max</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="CtdSubsetter.set_parameter_value_min">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_parameter_value_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_min</span> <span class="o">=</span> <span class="n">value</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the minimum value of the parameter to include in the subset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value (float):</span>
+<span class="sd">            The minimum value of the parameter to include in the subset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        CtdSubsetter:</span>
+<span class="sd">            The current instance of CtdSubsetter with the updated minimum parameter value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided value is not a number (int or float).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate the parameter value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter value must be a number (int or float)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Store the minimum parameter value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_min</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__slice_by_sample_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Slices the dataset by sample number (index).</span>
+
+<span class="sd">        This method filters the dataset based on the minimum and maximum sample </span>
+<span class="sd">        indices set by the user.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        subset (xarray.Dataset):</span>
+<span class="sd">            The xarray Dataset to be sliced by sample number.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        xarray.Dataset:</span>
+<span class="sd">            The subset of the dataset that matches the specified sample number criteria.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            If the dataset does not contain the sample index coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the dataset has a sample index coordinate</span>
+        <span class="k">if</span> <span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subset</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset does not contain &#39;</span><span class="si">{</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="si">}</span><span class="s2">&#39; &quot;</span> \
+                             <span class="s2">&quot;coordinate for slicing by sample number&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get the time values from the dataset</span>
         <span class="n">time_values</span> <span class="o">=</span> <span class="n">subset</span><span class="p">[</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">selection_criteria</span> <span class="o">=</span> <span class="p">{</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span>
                 <span class="n">time_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_sample</span><span class="p">],</span> <span class="n">time_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span><span class="p">])}</span>
@@ -165,32 +423,102 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">selection_criteria</span> <span class="o">=</span> <span class="p">{</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">max_sample</span><span class="p">])}</span>
             <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">selection_criteria</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">subset</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__slice_by_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Slices the dataset by time.</span>
+<span class="sd">        </span>
+<span class="sd">        This method filters the dataset based on the minimum and maximum time </span>
+<span class="sd">        values set by the user.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        subset (xarray.Dataset):</span>
+<span class="sd">            The xarray Dataset to be sliced by time.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        xarray.Dataset:</span>
+<span class="sd">            The subset of the dataset that matches the specified time criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if the dataset has a time coordinate</span>
+        <span class="k">if</span> <span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subset</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset does not contain &#39;</span><span class="si">{</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="si">}</span><span class="s2">&#39; &quot;</span> \
+                             <span class="s2">&quot;coordinate for slicing by time&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If min or max datetime is set, slice the dataset accordingly</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_datetime</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_datetime</span><span class="p">:</span>
             <span class="n">slice_obj</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_datetime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_datetime</span><span class="p">)</span>
             <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="n">slice_obj</span><span class="p">})</span>
+
         <span class="k">return</span> <span class="n">subset</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="nf">__slice_by_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Slices the dataset by parameter values.</span>
+
+<span class="sd">        This method filters the dataset based on the specified parameter name and </span>
+<span class="sd">        its minimum and maximum values.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        subset (xarray.Dataset):</span>
+<span class="sd">            The xarray Dataset to be sliced by parameter values.    </span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        xarray.Dataset:</span>
+<span class="sd">            The subset of the dataset that matches the specified parameter value criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the parameter name is set</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="p">:</span>
+
+            <span class="c1"># Check if the parameter exists in the dataset</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">&#39; not available&quot;</span><span class="p">)</span>
+
+            <span class="c1"># If min value is set, filter the dataset for values greater than or equal to min value</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_min</span><span class="p">:</span>
-                <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_min</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="p">]</span> <span class="o">&gt;=</span> \
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_min</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># If max value is set, filter the dataset for values less than or equal to max value</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_max</span><span class="p">:</span>
-                <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_max</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parameter_name</span><span class="p">]</span> <span class="o">&lt;=</span> \
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">parameter_value_max</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">subset</span>
 
 <div class="viewcode-block" id="CtdSubsetter.get_subset">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.get_subset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the subset of the dataset based on the specified slicing parameters.</span>
+
+<span class="sd">        This method applies the slicing parameters set by the user to filter the dataset.</span>
+<span class="sd">        It slices the dataset by sample number, time, and parameter values as specified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        xarray.Dataset:</span>
+<span class="sd">            The subset of the dataset that matches the specified slicing parameters.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided data is not a xarray.Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate the dataset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">xarray</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be an xarray.Dataset&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Start with the full dataset</span>
         <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
 
         <span class="c1"># Slice by sample / index number</span>
         <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__slice_by_sample_number</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
-        
+
         <span class="c1"># Slice by time</span>
         <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__slice_by_time</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
 

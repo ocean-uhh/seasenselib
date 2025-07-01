@@ -139,34 +139,143 @@
 <dl class="py class" id="module-ctd_tools.modules.writer">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.CsvWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">CsvWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#CsvWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.CsvWriter" title="Link to this definition"></a></dt>
-<dd><p>Writes CTD data from a xarray Dataset to a CSV file.</p>
+<dd><p>Writes sensor data from a xarray Dataset to a CSV file.</p>
+<p>This class is used to save sensor data in a CSV format, which is a common format for
+tabular data. The provided data is expected to be in an xarray Dataset format.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>writer = CsvWriter(data)
+writer.write(“output_file.csv”)</p>
+</dd>
+</dl>
+<section id="attributes">
+<h2>Attributes:<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to a CSV file.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods:<a class="headerlink" href="#methods" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the CsvWriter with the provided xarray Dataset.</p>
+</dd>
+<dt>write(file_name: str, coordinate = ctdparams.TIME):</dt><dd><p>Writes the xarray Dataset to a CSV file with the specified file name and coordinate.
+The coordinate parameter specifies which coordinate to use for selecting the data.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.CsvWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#CsvWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.CsvWriter.write" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</p>
+<section id="parameters">
+<h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>file_name (str):</dt><dd><p>The name of the output CSV file where the data will be saved.</p>
+</dd>
+<dt>coordinate (str):</dt><dd><p>The coordinate to use for selecting the data. Default is ctdparams.TIME.
+This should be a valid coordinate present in the xarray Dataset.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.ExcelWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">ExcelWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#ExcelWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.ExcelWriter" title="Link to this definition"></a></dt>
-<dd><p>Writes CTD data from a xarray Dataset to an Excel file.</p>
+<dd><p>Writes sensor data from a xarray Dataset to an Excel file.</p>
+<p>This class is used to save sensor data in an Excel format, which is commonly used for
+tabular data. The provided data is expected to be in an xarray Dataset format.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>writer = ExcelWriter(data)
+writer.write(“output_file.xlsx”)</p>
+</dd>
+</dl>
+<section id="id1">
+<h2>Attributes:<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to an Excel file.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Methods:<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the ExcelWriter with the provided xarray Dataset.</p>
+</dd>
+<dt>write(file_name: str, coordinate = ctdparams.TIME):</dt><dd><p>Writes the xarray Dataset to an Excel file with the specified file name and coordinate.
+The coordinate parameter specifies which coordinate to use for selecting the data.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.ExcelWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#ExcelWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.ExcelWriter.write" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Writes the xarray Dataset to an Excel file with the specified file name and coordinate.</p>
+<section id="id3">
+<h3>Parameters:<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>file_name (str):</dt><dd><p>The name of the output Excel file where the data will be saved.</p>
+</dd>
+<dt>coordinate (str):</dt><dd><p>The coordinate to use for selecting the data. Default is ctdparams.TIME.
+This should be a valid coordinate present in the xarray Dataset.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h3>Raises:<a class="headerlink" href="#raises" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>ValueError:</dt><dd><p>If the provided coordinate is not found in the dataset.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.NetCdfWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.writer.</span></span><span class="sig-name descname"><span class="pre">NetCdfWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#NetCdfWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.NetCdfWriter" title="Link to this definition"></a></dt>
-<dd><p>Writes CTD data from a xarray Dataset to a netCDF file.</p>
+<dd><p>Writes sensor data from a xarray Dataset to a netCDF file.</p>
+<p>This class is used to save sensor data in a netCDF format, which is commonly used for
+storing large datasets, especially in the field of oceanography and environmental science.
+The provided data is expected to be in an xarray Dataset format.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>writer = NetCdfWriter(data)
+writer.write(“output_file.nc”)</p>
+</dd>
+</dl>
+<section id="id4">
+<h2>Attributes:<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to a netCDF file.</p>
+</dd>
+</dl>
+</section>
+<section id="id5">
+<h2>Methods:<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the NetCdfWriter with the provided xarray Dataset.</p>
+</dd>
+<dt>write(file_name: str):</dt><dd><p>Writes the xarray Dataset to a netCDF file with the specified file name.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.writer.NetCdfWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.writer.NetCdfWriter.write" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Writes the xarray Dataset to a netCDF file with the specified file name.</p>
+<section id="id6">
+<h3>Parameters:<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>file_name (str):</dt><dd><p>The name of the output netCDF file where the data will be saved.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py class" id="module-ctd_tools.modules.calculator">
@@ -247,46 +356,229 @@
 <dl class="py class" id="module-ctd_tools.modules.subsetter">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.modules.subsetter.</span></span><span class="sig-name descname"><span class="pre">CtdSubsetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter" title="Link to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Subsets sensor data based on sample number, time, and parameter values.</p>
+<p>This class allows for flexible slicing of sensor data stored in an xarray Dataset.
+It can filter data based on sample indices, time ranges, and specific parameter values.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>subsetter = CtdSubsetter(ds)
+subsetter             .set_sample_min(10)             .set_sample_max(50)             .set_time_min(“2023-01-01”)             .set_time_max(“2023-01-31”)
+ds_subset = subsetter.get_subset()</p>
+</dd>
+</dl>
+<section id="id7">
+<h2>Attributes:<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>data<span class="classifier">xarray.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be subsetted.</p>
+</dd>
+<dt>min_sample<span class="classifier">int, optional</span></dt><dd><p>The minimum sample index to include in the subset.</p>
+</dd>
+<dt>max_sample<span class="classifier">int, optional</span></dt><dd><p>The maximum sample index to include in the subset.</p>
+</dd>
+<dt>min_datetime<span class="classifier">pd.Timestamp, optional</span></dt><dd><p>The minimum time to include in the subset.</p>
+</dd>
+<dt>max_datetime<span class="classifier">pd.Timestamp, optional</span></dt><dd><p>The maximum time to include in the subset.</p>
+</dd>
+<dt>parameter_name<span class="classifier">str, optional</span></dt><dd><p>The name of the parameter to filter by.</p>
+</dd>
+<dt>parameter_value_min<span class="classifier">float, optional</span></dt><dd><p>The minimum value of the parameter to include in the subset.</p>
+</dd>
+<dt>parameter_value_max<span class="classifier">float, optional</span></dt><dd><p>The maximum value of the parameter to include in the subset.</p>
+</dd>
+</dl>
+<dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.get_subset">
 <span class="sig-name descname"><span class="pre">get_subset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.get_subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.get_subset" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Returns the subset of the dataset based on the specified slicing parameters.</p>
+<p>This method applies the slicing parameters set by the user to filter the dataset.
+It slices the dataset by sample number, time, and parameter values as specified.</p>
+<section id="returns">
+<h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>xarray.Dataset:</dt><dd><p>The subset of the dataset that matches the specified slicing parameters.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h3>Raises:<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided data is not a xarray.Dataset.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name">
 <span class="sig-name descname"><span class="pre">set_parameter_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the name of the parameter to filter by.</p>
+<section id="id9">
+<h3>Parameters:<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (str):</dt><dd><p>The name of the parameter to filter by.
+This should be a valid variable name in the dataset.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Returns:<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated parameter name.</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h3>Raises:<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided value is not a string.</p>
+</dd>
+<dt>ValueError:</dt><dd><p>If the provided parameter name is not found in the dataset.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max">
 <span class="sig-name descname"><span class="pre">set_parameter_value_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_value_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the maximum value of the parameter to include in the subset.</p>
+<section id="id12">
+<h3>Parameters:<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (float):</dt><dd><p>The maximum value of the parameter to include in the subset.</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h3>Returns:<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated maximum parameter value.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Raises:<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided value is not a number (int or float).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min">
 <span class="sig-name descname"><span class="pre">set_parameter_value_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_parameter_value_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the minimum value of the parameter to include in the subset.</p>
+<section id="id15">
+<h3>Parameters:<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (float):</dt><dd><p>The minimum value of the parameter to include in the subset.</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h3>Returns:<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated minimum parameter value.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h3>Raises:<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided value is not a number (int or float).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max">
-<span class="sig-name descname"><span class="pre">set_sample_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">set_sample_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter" title="ctd_tools.modules.subsetter.CtdSubsetter"><span class="pre">CtdSubsetter</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max" title="Link to this definition"></a></dt>
+<dd><p>Sets the maximum sample index for slicing the dataset.</p>
+<section id="id18">
+<h3>Parameters:<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (int):</dt><dd><p>The maximum sample index to include in the subset.</p>
+</dd>
+</dl>
+</section>
+<section id="id19">
+<h3>Returns:<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated maximum sample index.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min">
-<span class="sig-name descname"><span class="pre">set_sample_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">set_sample_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter" title="ctd_tools.modules.subsetter.CtdSubsetter"><span class="pre">CtdSubsetter</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_sample_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min" title="Link to this definition"></a></dt>
+<dd><p>Sets the minimum sample index for slicing the dataset.</p>
+<section id="id20">
+<h3>Parameters:<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (int):</dt><dd><p>The minimum sample index to include in the subset.</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h3>Returns:<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated minimum sample index.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h3>Raises:<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided value is not an integer.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_time_max">
 <span class="sig-name descname"><span class="pre">set_time_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_time_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_max" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Sets the maximum time for slicing the dataset.</p>
+<section id="id23">
+<h3>Parameters:<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (str or pd.Timestamp):</dt><dd><p>The maximum time to include in the subset. Can be a string or a pandas Timestamp.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ctd_tools.modules.subsetter.CtdSubsetter.set_time_min">
-<span class="sig-name descname"><span class="pre">set_time_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_time_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">set_time_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.modules.subsetter.CtdSubsetter" title="ctd_tools.modules.subsetter.CtdSubsetter"><span class="pre">CtdSubsetter</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/modules/subsetter.html#CtdSubsetter.set_time_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min" title="Link to this definition"></a></dt>
+<dd><p>Sets the minimum time for slicing the dataset.</p>
+<section id="id24">
+<h3>Parameters:<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>value (str or pd.Timestamp):</dt><dd><p>The minimum time to include in the subset. Can be a string or a pandas Timestamp.</p>
+</dd>
+</dl>
+</section>
+<section id="id25">
+<h3>Returns:<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>CtdSubsetter:</dt><dd><p>The current instance of CtdSubsetter with the updated minimum time.</p>
+</dd>
+</dl>
+</section>
+<section id="id26">
+<h3>Raises:<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError:</dt><dd><p>If the provided value is not a string or a pandas Timestamp.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
+</section>
 </dd></dl>
 
 </section>

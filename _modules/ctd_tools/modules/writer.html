@@ -89,14 +89,61 @@
 <div class="viewcode-block" id="NetCdfWriter">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.NetCdfWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NetCdfWriter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes CTD data from a xarray Dataset to a netCDF file. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to a netCDF file. </span>
+<span class="sd">    </span>
+<span class="sd">    This class is used to save sensor data in a netCDF format, which is commonly used for</span>
+<span class="sd">    storing large datasets, especially in the field of oceanography and environmental science.</span>
+<span class="sd">    The provided data is expected to be in an xarray Dataset format.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        writer = NetCdfWriter(data)</span>
+<span class="sd">        writer.write(&quot;output_file.nc&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be written to a netCDF file.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    __init__(data: xr.Dataset):</span>
+<span class="sd">        Initializes the NetCdfWriter with the provided xarray Dataset.</span>
+<span class="sd">    write(file_name: str):</span>
+<span class="sd">        Writes the xarray Dataset to a netCDF file with the specified file name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initializes the NetCdfWriter with the provided xarray Dataset.  </span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        data (xr.Dataset): </span>
+<span class="sd">            The xarray Dataset containing the CTD data to be written.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided data is not an xarray Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the provided data is an xarray Dataset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be an xarray Dataset.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set the data attribute to the provided xarray Dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
 
 <div class="viewcode-block" id="NetCdfWriter.write">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.NetCdfWriter.write">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a netCDF file with the specified file name.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        file_name (str): </span>
+<span class="sd">            The name of the output netCDF file where the data will be saved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
 </div>
 
@@ -104,19 +151,69 @@
 <div class="viewcode-block" id="CsvWriter">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.CsvWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CsvWriter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes CTD data from a xarray Dataset to a CSV file. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to a CSV file. </span>
+<span class="sd">    </span>
+<span class="sd">    This class is used to save sensor data in a CSV format, which is a common format for</span>
+<span class="sd">    tabular data. The provided data is expected to be in an xarray Dataset format.  </span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        writer = CsvWriter(data)</span>
+<span class="sd">        writer.write(&quot;output_file.csv&quot;)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be written to a CSV file.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    __init__(data: xr.Dataset):</span>
+<span class="sd">        Initializes the CsvWriter with the provided xarray Dataset.</span>
+<span class="sd">    write(file_name: str, coordinate = ctdparams.TIME):</span>
+<span class="sd">        Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</span>
+<span class="sd">        The coordinate parameter specifies which coordinate to use for selecting the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initializes the CsvWriter with the provided xarray Dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        data (xr.Dataset):</span>
+<span class="sd">            The xarray Dataset containing the CTD data to be written.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided data is not an xarray Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the provided data is an xarray Dataset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be an xarray Dataset.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set the data attribute to the provided xarray Dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
 
 <div class="viewcode-block" id="CsvWriter.write">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.CsvWriter.write">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coordinate</span> <span class="o">=</span> <span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        file_name (str):</span>
+<span class="sd">            The name of the output CSV file where the data will be saved.</span>
+<span class="sd">        coordinate (str):</span>
+<span class="sd">            The coordinate to use for selecting the data. Default is ctdparams.TIME.</span>
+<span class="sd">            This should be a valid coordinate present in the xarray Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># Select the data corresponding to the specified coordinate</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="n">coordinate</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">coordinate</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
 
         <span class="c1"># Convert the selected data to a pandas dataframe</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
 
         <span class="c1"># Write the dataframe to the CSV file</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
@@ -126,21 +223,80 @@
 <div class="viewcode-block" id="ExcelWriter">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.ExcelWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExcelWriter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes CTD data from a xarray Dataset to an Excel file. &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to an Excel file. </span>
+<span class="sd">    </span>
+<span class="sd">    This class is used to save sensor data in an Excel format, which is commonly used for</span>
+<span class="sd">    tabular data. The provided data is expected to be in an xarray Dataset format.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">        writer = ExcelWriter(data)</span>
+<span class="sd">        writer.write(&quot;output_file.xlsx&quot;)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be written to an Excel file.   </span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">    ------------</span>
+<span class="sd">    __init__(data: xr.Dataset):</span>
+<span class="sd">        Initializes the ExcelWriter with the provided xarray Dataset.</span>
+<span class="sd">    write(file_name: str, coordinate = ctdparams.TIME):</span>
+<span class="sd">        Writes the xarray Dataset to an Excel file with the specified file name and coordinate.</span>
+<span class="sd">        The coordinate parameter specifies which coordinate to use for selecting the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initializes the ExcelWriter with the provided xarray Dataset.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        data (xr.Dataset):</span>
+<span class="sd">            The xarray Dataset containing the CTD data to be written.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError:</span>
+<span class="sd">            If the provided data is not an xarray Dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the provided data is an xarray Dataset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be an xarray Dataset.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set the data attribute to the provided xarray Dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
 
 <div class="viewcode-block" id="ExcelWriter.write">
 <a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.modules.writer.ExcelWriter.write">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coordinate</span> <span class="o">=</span> <span class="n">ctdparams</span><span class="o">.</span><span class="n">TIME</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to an Excel file with the specified file name and coordinate.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        file_name (str):</span>
+<span class="sd">            The name of the output Excel file where the data will be saved.</span>
+<span class="sd">        coordinate (str):</span>
+<span class="sd">            The coordinate to use for selecting the data. Default is ctdparams.TIME.</span>
+<span class="sd">            This should be a valid coordinate present in the xarray Dataset.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            If the provided coordinate is not found in the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the provided coordinate is valid</span>
+        <span class="k">if</span> <span class="n">coordinate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coordinate &#39;</span><span class="si">{</span><span class="n">coordinate</span><span class="si">}</span><span class="s2">&#39; not found in the dataset.&quot;</span><span class="p">)</span>
+
         <span class="c1"># Select the data corresponding to the specified coordinate</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="n">coordinate</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">coordinate</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
 
         <span class="c1"># Convert the selected data to a pandas dataframe</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
 
-        <span class="c1"># Write the dataframe to the CSV file</span>
+        <span class="c1"># Write the dataframe to the Excel file</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;openpyxl&#39;</span><span class="p">)</span></div>
 </div>
 
