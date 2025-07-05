@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctd_tools.plotters.ts_diagram_plotter &mdash; ctd_tools v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ctd_tools
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">CTD Tools overview</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ifmeo-hamburg/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">CTD</span> <span class="pre">Tools</span> <span class="pre">API</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../search.html">Search Page</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ctd_tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ctd_tools.plotters.ts_diagram_plotter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ctd_tools.plotters.ts_diagram_plotter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for creating T-S (Temperature-Salinity) diagrams from sensor data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractPlotter</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+
+
+<div class="viewcode-block" id="TsDiagramPlotter">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.plotters.TsDiagramPlotter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TsDiagramPlotter</span><span class="p">(</span><span class="n">AbstractPlotter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates T-S (Temperature-Salinity) diagrams from CTD sensor data.</span>
+<span class="sd">    </span>
+<span class="sd">    This class specializes in creating T-S diagrams, which are scatter plots</span>
+<span class="sd">    of temperature vs salinity data points, often colored by depth and with</span>
+<span class="sd">    optional density isolines.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be plotted.</span>
+<span class="sd">    </span>
+<span class="sd">    Methods:</span>
+<span class="sd">    --------</span>
+<span class="sd">    plot(output_file=None, title=&#39;T-S Diagram&#39;, dot_size=70, use_colormap=True, </span>
+<span class="sd">         show_density_isolines=True, colormap=&#39;jet&#39;, show_lines_between_dots=True,</span>
+<span class="sd">         show_grid=True):</span>
+<span class="sd">        Creates and displays/saves the T-S diagram.</span>
+<span class="sd">    _plot_density_isolines():</span>
+<span class="sd">        Adds density isolines to the T-S diagram.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TsDiagramPlotter.plot">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.plotters.TsDiagramPlotter.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;T-S Diagram&#39;</span><span class="p">,</span>
+             <span class="n">dot_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">use_colormap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+             <span class="n">show_density_isolines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">colormap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;jet&#39;</span><span class="p">,</span>
+             <span class="n">show_lines_between_dots</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">show_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a T-S diagram plot.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        output_file : str, optional</span>
+<span class="sd">            Path to save the plot. If None, the plot is displayed.</span>
+<span class="sd">        title : str, default &#39;T-S Diagram&#39;</span>
+<span class="sd">            Title for the plot.</span>
+<span class="sd">        dot_size : int, default 70</span>
+<span class="sd">            Size of the scatter plot markers.</span>
+<span class="sd">        use_colormap : bool, default True</span>
+<span class="sd">            Whether to color points by depth using a colormap.</span>
+<span class="sd">        show_density_isolines : bool, default True</span>
+<span class="sd">            Whether to show density isolines on the plot.</span>
+<span class="sd">        colormap : str, default &#39;jet&#39;</span>
+<span class="sd">            Matplotlib colormap name to use for depth coloring.</span>
+<span class="sd">        show_lines_between_dots : bool, default True</span>
+<span class="sd">            Whether to connect data points with lines.</span>
+<span class="sd">        show_grid : bool, default True</span>
+<span class="sd">            Whether to show grid lines on the plot.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            If required variables (temperature, salinity, depth) are missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate required variables</span>
+        <span class="n">required_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_variables</span><span class="p">(</span><span class="n">required_vars</span><span class="p">)</span>
+
+        <span class="c1"># Get dataset without NaN values</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset_without_nan</span><span class="p">()</span>
+
+        <span class="n">temperature</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span>
+        <span class="n">salinity</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">]</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">]</span>
+
+        <span class="c1"># Check for potential temperature and use it if available</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">temperature</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">]</span>
+
+        <span class="c1"># Create figure</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+        <span class="c1"># Create a line plot of temperature vs. salinity</span>
+        <span class="k">if</span> <span class="n">show_lines_between_dots</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">salinity</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># Create a scatter plot of temperature vs. salinity</span>
+        <span class="k">if</span> <span class="n">use_colormap</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">salinity</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">dot_size</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Depth [m]&#39;</span><span class="p">)</span>  <span class="c1"># Plot legend for colormap</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">salinity</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">dot_size</span><span class="p">)</span>
+
+        <span class="c1"># Add grid lines to the plot for better readability</span>
+        <span class="k">if</span> <span class="n">show_grid</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># Set plot labels and title</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Salinity [PSU]&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Set y-label based on temperature type</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;long_name&#39;</span><span class="p">]</span> <span class="o">+</span> \
+                      <span class="s2">&quot; [&quot;</span> <span class="o">+</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;long_name&#39;</span><span class="p">]</span> <span class="o">+</span> \
+                      <span class="s2">&quot; [&quot;</span> <span class="o">+</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Integrate density isolines if wanted</span>
+        <span class="k">if</span> <span class="n">show_density_isolines</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_density_isolines</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+        <span class="c1"># Enable tight layout</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="c1"># Save or show the plot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_or_show_plot</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_density_isolines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plots density isolines into the T-S diagram.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        ds : xr.Dataset</span>
+<span class="sd">            The dataset containing temperature and salinity data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Define the min / max values for plotting isopycnals</span>
+        <span class="n">t_min</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">t_max</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">s_min</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">s_max</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="c1"># Calculate &quot;padding&quot; for temperature axis</span>
+        <span class="n">t_width</span> <span class="o">=</span> <span class="n">t_max</span> <span class="o">-</span> <span class="n">t_min</span>
+        <span class="n">t_min</span> <span class="o">-=</span> <span class="p">(</span><span class="n">t_width</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">t_max</span> <span class="o">+=</span> <span class="p">(</span><span class="n">t_width</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate &quot;padding&quot; for salinity axis</span>
+        <span class="n">s_width</span> <span class="o">=</span> <span class="n">s_max</span> <span class="o">-</span> <span class="n">s_min</span>
+        <span class="n">s_min</span> <span class="o">-=</span> <span class="p">(</span><span class="n">s_width</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">s_max</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s_width</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate how many gridcells we need in the x and y dimensions</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="n">t_width</span><span class="p">,</span> <span class="n">s_width</span><span class="p">])</span> <span class="o">/</span> <span class="nb">min</span><span class="p">([</span><span class="n">t_width</span><span class="p">,</span> <span class="n">s_width</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">s_width</span> <span class="o">&gt;</span> <span class="n">t_width</span><span class="p">:</span>
+            <span class="n">xdim</span> <span class="o">=</span> <span class="mi">150</span>
+            <span class="n">ydim</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">150</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ydim</span> <span class="o">=</span> <span class="mi">150</span>
+            <span class="n">xdim</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">150</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+
+        <span class="n">density</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">ydim</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">xdim</span><span class="p">)))</span>
+
+        <span class="c1"># Create temp and salt vectors of appropriate dimensions</span>
+        <span class="n">ti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t_min</span><span class="p">,</span> <span class="n">t_max</span><span class="p">,</span> <span class="n">ydim</span><span class="p">)</span>
+        <span class="n">si</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">s_min</span><span class="p">,</span> <span class="n">s_max</span><span class="p">,</span> <span class="n">xdim</span><span class="p">)</span>
+
+        <span class="c1"># Loop to fill in grid with densities</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ydim</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">xdim</span><span class="p">)):</span>
+                <span class="n">density</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">rho</span><span class="p">(</span><span class="n">si</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ti</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Subtract 1000 to convert density to sigma-t</span>
+        <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">density</span> <span class="o">-</span> <span class="mi">1000</span>
+
+        <span class="c1"># Plot isolines</span>
+        <span class="n">cs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">sigma_t</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%1.2f</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># Label every second level</span>
+
+        <span class="c1"># Add sigma_0 in gray in the left upper corner</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\sigma_0$&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> 
+                <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -44,12 +44,12 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">CTDtools overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">CTD Tools overview</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ifmeo-hamburg/ctd-tools">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ctdtools.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctd-tools</span> <span class="pre">API</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="ctdtools.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">CTD</span> <span class="pre">Tools</span> <span class="pre">API</span></code></a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Indices and tables</span></p>
 <ul class="current">
@@ -87,13 +87,17 @@
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -101,7 +105,13 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.ctd_parameters.allowed_parameters">allowed_parameters() (in module ctd_tools.ctd_parameters)</a>
+      <li><a href="ctdtools.html#ctd_tools.plotters.AbstractPlotter">AbstractPlotter (class in ctd_tools.plotters)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.processors.AbstractProcessor">AbstractProcessor (class in ctd_tools.processors)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.writers.AbstractWriter">AbstractWriter (class in ctd_tools.writers)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -109,68 +119,80 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.writer.CsvWriter">CsvWriter (class in ctd_tools.modules.writer)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.count_valid">count_valid() (ctd_tools.processors.StatisticsProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.writers.CsvWriter">CsvWriter (class in ctd_tools.writers)</a>
 </li>
       <li>
-    ctd_tools.ctd_parameters
+    ctd_tools.plotters
 
       <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.ctd_parameters">module</a>
-</li>
-      </ul></li>
-      <li>
-    ctd_tools.modules.calculator
-
-      <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.calculator">module</a>
-</li>
-      </ul></li>
-      <li>
-    ctd_tools.modules.plotter
-
-      <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.plotter">module</a>
+        <li><a href="ctdtools.html#module-ctd_tools.plotters">module</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    ctd_tools.modules.subsetter
+    ctd_tools.processors
 
       <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.subsetter">module</a>
+        <li><a href="ctdtools.html#module-ctd_tools.processors">module</a>
 </li>
       </ul></li>
       <li>
-    ctd_tools.modules.writer
+    ctd_tools.writers
 
       <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.writer">module</a>
+        <li><a href="ctdtools.html#module-ctd_tools.writers">module</a>
 </li>
       </ul></li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator">CtdCalculator (class in ctd_tools.modules.calculator)</a>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.plotters.AbstractPlotter.data">data (ctd_tools.plotters.AbstractPlotter property)</a>
+
+      <ul>
+        <li><a href="ctdtools.html#ctd_tools.writers.AbstractWriter.data">(ctd_tools.writers.AbstractWriter property)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.plotter.CtdPlotter">CtdPlotter (class in ctd_tools.modules.plotter)</a>
-</li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdResampler">CtdResampler (class in ctd_tools.modules.calculator)</a>
-</li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter">CtdSubsetter (class in ctd_tools.modules.subsetter)</a>
-</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.writer.ExcelWriter">ExcelWriter (class in ctd_tools.modules.writer)</a>
+      <li><a href="ctdtools.html#ctd_tools.writers.ExcelWriter">ExcelWriter (class in ctd_tools.writers)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.writers.AbstractWriter.file_extension">file_extension() (ctd_tools.writers.AbstractWriter static method)</a>
+
+      <ul>
+        <li><a href="ctdtools.html#ctd_tools.writers.CsvWriter.file_extension">(ctd_tools.writers.CsvWriter static method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.writers.ExcelWriter.file_extension">(ctd_tools.writers.ExcelWriter static method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.writers.NetCdfWriter.file_extension">(ctd_tools.writers.NetCdfWriter static method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.get_subset">get_subset() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.get_all_statistics">get_all_statistics() (ctd_tools.processors.StatisticsProcessor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.get_subset">get_subset() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -178,27 +200,25 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.max">max() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.max">max() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.mean">mean() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.mean">mean() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.median">median() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.median">median() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.min">min() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.min">min() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
       <ul>
-        <li><a href="ctdtools.html#module-ctd_tools.ctd_parameters">ctd_tools.ctd_parameters</a>
+        <li><a href="ctdtools.html#module-ctd_tools.plotters">ctd_tools.plotters</a>
 </li>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.calculator">ctd_tools.modules.calculator</a>
+        <li><a href="ctdtools.html#module-ctd_tools.processors">ctd_tools.processors</a>
 </li>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.plotter">ctd_tools.modules.plotter</a>
-</li>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.subsetter">ctd_tools.modules.subsetter</a>
-</li>
-        <li><a href="ctdtools.html#module-ctd_tools.modules.writer">ctd_tools.modules.writer</a>
+        <li><a href="ctdtools.html#module-ctd_tools.writers">ctd_tools.writers</a>
 </li>
       </ul></li>
   </ul></td>
@@ -207,7 +227,7 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.writer.NetCdfWriter">NetCdfWriter (class in ctd_tools.modules.writer)</a>
+      <li><a href="ctdtools.html#ctd_tools.writers.NetCdfWriter">NetCdfWriter (class in ctd_tools.writers)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -215,13 +235,49 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.plotter.CtdPlotter.plot_profile">plot_profile() (ctd_tools.modules.plotter.CtdPlotter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.plotters.AbstractPlotter.plot">plot() (ctd_tools.plotters.AbstractPlotter method)</a>
+
+      <ul>
+        <li><a href="ctdtools.html#ctd_tools.plotters.ProfilePlotter.plot">(ctd_tools.plotters.ProfilePlotter method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotter.plot">(ctd_tools.plotters.TimeSeriesPlotter method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti.plot">(ctd_tools.plotters.TimeSeriesPlotterMulti method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.plotters.TsDiagramPlotter.plot">(ctd_tools.plotters.TsDiagramPlotter method)</a>
+</li>
+      </ul></li>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_multiple_parameters">plot_multiple_parameters() (ctd_tools.plotters.TimeSeriesPlotterMulti method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_normalized_comparison">plot_normalized_comparison() (ctd_tools.plotters.TimeSeriesPlotterMulti method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.plotter.CtdPlotter.plot_time_series">plot_time_series() (ctd_tools.modules.plotter.CtdPlotter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotter.plot_parameter">plot_parameter() (ctd_tools.plotters.TimeSeriesPlotter method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.plotter.CtdPlotter.plot_ts_diagram">plot_ts_diagram() (ctd_tools.modules.plotter.CtdPlotter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_single_parameter">plot_single_parameter() (ctd_tools.plotters.TimeSeriesPlotterMulti method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_with_auto_dual_axis">plot_with_auto_dual_axis() (ctd_tools.plotters.TimeSeriesPlotterMulti method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.AbstractProcessor.process">process() (ctd_tools.processors.AbstractProcessor method)</a>
+
+      <ul>
+        <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.process">(ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.process">(ctd_tools.processors.StatisticsProcessor method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.process">(ctd_tools.processors.SubsetProcessor method)</a>
+</li>
+      </ul></li>
+      <li><a href="ctdtools.html#ctd_tools.plotters.ProfilePlotter">ProfilePlotter (class in ctd_tools.plotters)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.quantile">quantile() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -229,7 +285,27 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdResampler.resample">resample() (ctd_tools.modules.calculator.CtdResampler method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample">resample() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_count">resample_count() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_max">resample_max() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_mean">resample_mean() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_median">resample_median() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_min">resample_min() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_std">resample_std() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor.resample_sum">resample_sum() (ctd_tools.processors.ResampleProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.ResampleProcessor">ResampleProcessor (class in ctd_tools.processors)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.reset">reset() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -237,23 +313,41 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_name">set_parameter_name() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_parameter_name">set_parameter_name() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_max">set_parameter_value_max() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_parameter_value_max">set_parameter_value_max() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_parameter_value_min">set_parameter_value_min() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_parameter_value_min">set_parameter_value_min() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_max">set_sample_max() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_sample_max">set_sample_max() (ctd_tools.processors.SubsetProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_sample_min">set_sample_min() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_sample_min">set_sample_min() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_time_max">set_time_max() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_time_max">set_time_max() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor.set_time_min">set_time_min() (ctd_tools.processors.SubsetProcessor method)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.subsetter.CtdSubsetter.set_time_min">set_time_min() (ctd_tools.modules.subsetter.CtdSubsetter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor">StatisticsProcessor (class in ctd_tools.processors)</a>
 </li>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.std">std() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.std">std() (ctd_tools.processors.StatisticsProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.SubsetProcessor">SubsetProcessor (class in ctd_tools.processors)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotter">TimeSeriesPlotter (class in ctd_tools.plotters)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TimeSeriesPlotterMulti">TimeSeriesPlotterMulti (class in ctd_tools.plotters)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.plotters.TsDiagramPlotter">TsDiagramPlotter (class in ctd_tools.plotters)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -261,7 +355,13 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.calculator.CtdCalculator.var">var() (ctd_tools.modules.calculator.CtdCalculator method)</a>
+      <li><a href="ctdtools.html#ctd_tools.processors.AbstractProcessor.validate_coordinate">validate_coordinate() (ctd_tools.processors.AbstractProcessor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ctdtools.html#ctd_tools.processors.AbstractProcessor.validate_parameter">validate_parameter() (ctd_tools.processors.AbstractProcessor method)</a>
+</li>
+      <li><a href="ctdtools.html#ctd_tools.processors.StatisticsProcessor.var">var() (ctd_tools.processors.StatisticsProcessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -269,12 +369,14 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ctdtools.html#ctd_tools.modules.writer.CsvWriter.write">write() (ctd_tools.modules.writer.CsvWriter method)</a>
+      <li><a href="ctdtools.html#ctd_tools.writers.AbstractWriter.write">write() (ctd_tools.writers.AbstractWriter method)</a>
 
       <ul>
-        <li><a href="ctdtools.html#ctd_tools.modules.writer.ExcelWriter.write">(ctd_tools.modules.writer.ExcelWriter method)</a>
+        <li><a href="ctdtools.html#ctd_tools.writers.CsvWriter.write">(ctd_tools.writers.CsvWriter method)</a>
 </li>
-        <li><a href="ctdtools.html#ctd_tools.modules.writer.NetCdfWriter.write">(ctd_tools.modules.writer.NetCdfWriter method)</a>
+        <li><a href="ctdtools.html#ctd_tools.writers.ExcelWriter.write">(ctd_tools.writers.ExcelWriter method)</a>
+</li>
+        <li><a href="ctdtools.html#ctd_tools.writers.NetCdfWriter.write">(ctd_tools.writers.NetCdfWriter method)</a>
 </li>
       </ul></li>
   </ul></td>
