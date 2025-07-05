@@ -10,12 +10,16 @@ all: help
 help:
 	@echo "Please use \`make <target>\`, where <target> is one of:"
 	@echo "  setup         to create the Pipenv environment and install dependencies"
+	@echo "  sync-deps     to synchronize all dependency files"
+	@echo "  check-deps    to check if dependency files are in sync"
+	@echo "  update-deps   to update all dependencies to latest versions"
 	@echo "  install       to install the package locally (editable mode)"
 	@echo "  test          to run unit tests"
 	@echo "  build         to create distributions (sdist & wheel)"
 	@echo "  publish       to upload the package to PyPI"
 	@echo "  publish-test  to upload the package to Test PyPI"
 	@echo "  clean         to remove temporary files and builds"
+	@echo "  check-readers to verify all reader classes are in __all__"
 
 # ----------------------------------------
 # clean: remove old builds, __pycache__, etc.
@@ -70,3 +74,67 @@ publish-test: build
 publish: build
 	# Ensure Twine credentials are configured (e.g. in ~/.pypirc)
 	pipenv run twine upload dist/*
+
+# ----------------------------------------
+# check-readers: verify all reader classes are in __all__
+# ----------------------------------------
+check-readers:
+	@echo "Checking readers completeness..."
+	@$(PYTHON) scripts/check_readers_completeness.py
+
+# ----------------------------------------
+# sync-deps: synchronize all dependency files
+# ----------------------------------------
+sync-deps:
+	@echo "Synchronizing dependency files..."
+	@if [ -z "$(PIPENV)" ]; then \
+		echo "Error: pipenv is not installed. Please install it first: pip install pipenv"; exit 1; \
+	fi
+	# Generate requirements.txt from Pipfile
+	pipenv requirements > requirements.txt
+	# Generate requirements-dev.txt from Pipfile (dev dependencies)
+	pipenv requirements --dev > requirements-dev.txt
+	@echo "Dependency files synchronized!"
+
+# ----------------------------------------
+# check-deps: check if dependency files are in sync
+# ----------------------------------------
+check-deps:
+	@echo "Checking dependency synchronization..."
+	@if [ -z "$(PIPENV)" ]; then \
+		echo "Error: pipenv is not installed. Please install it first: pip install pipenv"; exit 1; \
+	fi
+	# Check if requirements.txt matches Pipfile
+	@pipenv requirements > /tmp/current_requirements.txt
+	@if ! diff -q requirements.txt /tmp/current_requirements.txt > /dev/null 2>&1; then \
+		echo "❌ requirements.txt is out of sync with Pipfile"; \
+		echo "Run 'make sync-deps' to synchronize"; \
+		exit 1; \
+	else \
+		echo "✅ requirements.txt is in sync"; \
+	fi
+	# Check if requirements-dev.txt matches Pipfile
+	@pipenv requirements --dev > /tmp/current_requirements_dev.txt
+	@if ! diff -q requirements-dev.txt /tmp/current_requirements_dev.txt > /dev/null 2>&1; then \
+		echo "❌ requirements-dev.txt is out of sync with Pipfile"; \
+		echo "Run 'make sync-deps' to synchronize"; \
+		exit 1; \
+	else \
+		echo "✅ requirements-dev.txt is in sync"; \
+	fi
+	@rm -f /tmp/current_requirements*.txt
+	@echo "All dependency files are synchronized! 🎉"
+
+# ----------------------------------------
+# update-deps: update all dependencies to latest versions
+# ----------------------------------------
+update-deps:
+	@echo "Updating dependencies..."
+	@if [ -z "$(PIPENV)" ]; then \
+		echo "Error: pipenv is not installed. Please install it first: pip install pipenv"; exit 1; \
+	fi
+	# Update Pipfile.lock with latest versions
+	pipenv update
+	# Sync the updated dependencies to requirements files
+	$(MAKE) sync-deps
+	@echo "Dependencies updated and synchronized!"

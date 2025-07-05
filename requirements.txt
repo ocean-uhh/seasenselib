@@ -7,3 +7,4 @@ scipy
 pylablib
 matplotlib
 netcdf4
+pyrsktools

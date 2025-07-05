@@ -10,7 +10,14 @@ description = "Read, convert, and plot oceanographic sensor data from moored ins
 readme = "README.md"
 requires-python = ">=3.7"
 license = "AGPL-3.0-only"
+
 authors = [
+  { name = "Eleanor Frajka-Williams", email = "eleanor.frajka@uni-hamburg.de" },
+  { name = "Isabelle Schmitz", email = "isabelle.schmitz@uni-hamburg.de" },
+  { name = "Yves Sorge", email = "yves.sorge@uni-hamburg.de" }
+]
+
+maintainers = [
   { name = "Yves Sorge", email = "yves.sorge@uni-hamburg.de" }
 ]
 
@@ -39,7 +46,8 @@ keywords = [
   "conventions",
   "tools",
   "plotting",
-  "adcp"
+  "adcp",
+  "netcdf"
 ]
 
 dependencies = [
@@ -51,7 +59,8 @@ dependencies = [
   "pylablib",
   "matplotlib",
   "netcdf4",
-  "gsw"
+  "gsw",
+  "pyrsktools"
 ]
 
 [project.optional-dependencies]
@@ -61,11 +70,12 @@ dev = [
   "sphinx",
   "nbsphinx",
   "myst-parser",
-  "sphinx_rtd_theme"
+  "sphinx_rtd_theme",
+  "pytest"
 ]
 
 [project.urls]
-Homepage    = "https://github.com/ifmeo-hamburg/ctd-tools"
+Homepage    = "https://ifmeo-hamburg.github.io/ctd-tools/"
 Source_Code = "https://github.com/ifmeo-hamburg/ctd-tools"
 Download    = "https://pypi.org/project/ctd-tools/"
 
