@@ -236,6 +236,7 @@ rename_list = {
 }
 
 def allowed_parameters():
+    """Returns a dictionary of allowed parameter names with their descriptions."""
     return {
         TEMPERATURE: 'Temperature in degrees Celsius',
         SALINITY: 'Salinity in PSU',

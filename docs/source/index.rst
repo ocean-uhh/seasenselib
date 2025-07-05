@@ -5,13 +5,12 @@
 :parser: myst_parser.sphinx_ # this is the markdown parser
 
 =============================================================
-CTD_tools: Methods for working with oceanographic sensor data
+CTD Tools: Methods for working with oceanographic sensor data
 =============================================================
 
-`ctd-tools` is a repository to process data from CTD (conductivity-temperature-depth) devices.
+`ctd-tools` is a library to process data from oceanographic sensor formats.
 
 For recommendations or bug reports, please visit https://github.com/ifmeo-hamburg/ctd-tools/issues/new
-
 
 
 .. toctree::

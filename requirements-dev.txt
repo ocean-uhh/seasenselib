@@ -7,9 +7,11 @@ scipy
 pylablib
 matplotlib
 netcdf4
+pyrsktools
 build
 twine
 sphinx
 nbsphinx
 myst-parser
 sphinx_rtd_theme
+pytest

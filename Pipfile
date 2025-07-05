@@ -12,6 +12,7 @@ scipy = "*"
 pylablib = "*"
 matplotlib = "*"
 netcdf4 = "*"
+pyrsktools = "*"
 
 [dev-packages]
 build = "*"
@@ -20,6 +21,7 @@ sphinx = "*"
 nbsphinx = "*"
 myst-parser = "*"
 sphinx_rtd_theme = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.10"

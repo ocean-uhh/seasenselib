@@ -29,12 +29,12 @@ Now you're ready to use the library.
 Example code for using the CTD Tools library in your project:
 
 ```python
-from ctd_tools.modules.reader import CnvReader, NetCdfReader
-from ctd_tools.modules.writer import NetCdfWriter
-from ctd_tools.modules.plotter import CtdPlotter
+from ctd_tools.readers import SbeCnvReader, NetCdfReader
+from ctd_tools.writers import NetCdfWriter
+from ctd_tools.plotters import TimeSeriesPlotter
 
 # Read CTD data from CNV file
-reader = CnvReader("sea-practical-2023.cnv")
+reader = SbeCnvReader("sea-practical-2023.cnv")
 dataset = reader.get_data()
 
 # Write dataset with CTD data to netCDF file
@@ -42,10 +42,8 @@ writer = NetCdfWriter(dataset)
 writer.write('sea-practical-2023.nc')
 
 # Plot CTD data
-plotter = CtdPlotter(dataset)
-plotter.plot_profile() # vertical profile
-plotter.plot_ts_diagram() # T-S diagram
-plotter.plot_time_series(parameter_name='temperature') # time series
+plotter = TimeSeriesPlotter(dataset)
+plotter.plot(parameter_name='temperature')
 ```
 
 ## CLI Usage
@@ -64,11 +62,12 @@ following table gives a short overview of the available commands.
 
 | Command | Description |
 |---|---|
-| `convert` | Converts a Seabird CNV file to a netCDF or CSV. |
-| `show` | Shows the summary for a netCDF, CSV, or CNV file.  |
-| `plot-ts` | Plots a T-S diagram based on data from a netCDF, CSV, or CNV file. Via argument you can plot on screen or into a file. |
-| `plot-profile` | Plots a vertical CTD profile based on data from a netCDF, CSV, or CNV file. Via argument you can plot on screen or into a file. |
-| `plot-series` | Plots a time series based on a given parameter from a netCDF, CSV, or CNV file. Via argument you can plot on screen or into a file. |
+| `formats` | Display all supported input file formats. |
+| `convert` | Converts a file of a specific instrument format to a netCDF, CSV, or Excel file. |
+| `show` | Shows the summary for a input file of a specific instrument format.  |
+| `plot-ts` | Plots a T-S diagram based on data from an input file. Via argument you can plot on screen or into a file. |
+| `plot-profile` | Plots a vertical profile based on data from the input file. Via argument you can plot on screen or into a file. |
+| `plot-series` | Plots a time series based on a given parameter from the input file. Via argument you can plot on screen or into a file. |
 
 Every command uses different parameters. To get more information about how to use the 
 program and each command, just run it with the `--help` (or `-h`) argument:
@@ -136,7 +135,7 @@ ctd-tools plot-profile -i output/sea-practical-2023.nc
 Plot a time series for 'temperature' parameter:
 
 ```bash
-ctd-tools plot-series -i output/sea-practical-2023.nc -p temperature
+ctd-tools plot-series -i output/sea-practical-2023.nc -p temperature salinity --dual-axis
 ```
 
 Also for this command, format detection works via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
