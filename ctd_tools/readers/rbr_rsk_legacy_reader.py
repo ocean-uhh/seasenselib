@@ -146,7 +146,6 @@ class RbrRskLegacyReader(AbstractReader):
         channels_df = self._read_channel_data(con)
         if channels_df.empty:
             raise ValueError("No channel data found in the RSK file.")
-        print(channels_df)
 
         # Create list with channel column names
         chan_cols = [f"channel{int(cid):02d}" for cid in channels_df['channelID']]
@@ -230,7 +229,6 @@ class RbrRskLegacyReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader."""
         return 'rbr-rsk-legacy'
 
     @staticmethod

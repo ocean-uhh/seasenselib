@@ -105,7 +105,6 @@ class RbrRskReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader."""
         return 'rbr-rsk-default'
 
     @staticmethod

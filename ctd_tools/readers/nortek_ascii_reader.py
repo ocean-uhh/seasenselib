@@ -138,18 +138,8 @@ class NortekAsciiReader(AbstractReader):
         ds = self.__create_xarray_dataset(data, headers)
         self.data = ds
 
-    def get_data(self):
-        return self.data
-
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'nortek-ascii'.
-        """
         return 'nortek-ascii'
 
     @staticmethod

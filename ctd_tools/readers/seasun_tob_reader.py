@@ -124,13 +124,6 @@ class SeasunTobReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'seasun-tob'.
-        """
         return 'seasun-tob'
 
     @staticmethod
