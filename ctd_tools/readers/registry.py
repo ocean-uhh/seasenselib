@@ -70,9 +70,9 @@ READER_REGISTRY: List[ReaderMetadata] = [
     ReaderMetadata(
         class_name="RbrRskReader",
         module_name=".rbr_rsk_reader",
-        format_name="RBR RSK",
-        format_key="rbr-rsk",
-        file_extension=".rsk"
+        format_name="RBR RSK Default",
+        format_key="rbr-rsk-default",
+        file_extension=None
     ),
     ReaderMetadata(
         class_name="RbrRskLegacyReader",
@@ -84,9 +84,9 @@ READER_REGISTRY: List[ReaderMetadata] = [
     ReaderMetadata(
         class_name="RbrRskAutoReader",
         module_name=".rbr_rsk_auto_reader",
-        format_name="RBR RSK Default",
-        format_key="rbr-rsk-default",
-        file_extension=None
+        format_name="RBR RSK",
+        format_key="rbr-rsk",
+        file_extension='.rsk'
     ),
     ReaderMetadata(
         class_name="RbrAsciiReader",
