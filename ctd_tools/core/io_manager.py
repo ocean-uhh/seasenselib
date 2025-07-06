@@ -94,36 +94,35 @@ class DataIOManager:
 
     def _create_reader(self, format_key: str, input_file: str, 
                       header_input_file: Optional[str], readers_module: Any) -> Any:
-        """Create the appropriate reader for the given format."""
-
+        """Create the appropriate reader for the given format using the registry."""
+        
+        # Import registry function for dynamic lookup
         # pylint: disable=C0415
-        from .format_detection import (
-            INPUTFORMAT_KEY_NETCDF, INPUTFORMAT_KEY_CSV, INPUTFORMAT_KEY_SBE_CNV,
-            INPUTFORMAT_KEY_SEASUN_TOB, INPUTFORMAT_KEY_RBR_ASCII, 
-            INPUTFORMAT_KEY_NORTEK_ASCII, INPUTFORMAT_KEY_RBR_RSK_LEGACY,
-            INPUTFORMAT_KEY_RBR_RSK_DEFAULT, INPUTFORMAT_KEY_RBR_RSK_AUTO
-        )
-        if format_key == INPUTFORMAT_KEY_NETCDF:
-            return readers_module.NetCdfReader(input_file)
-        if format_key == INPUTFORMAT_KEY_CSV:
-            return readers_module.CsvReader(input_file)
-        if format_key == INPUTFORMAT_KEY_SBE_CNV:
-            return readers_module.SbeCnvReader(input_file)
-        if format_key == INPUTFORMAT_KEY_SEASUN_TOB:
-            return readers_module.SeasunTobReader(input_file)
-        if format_key == INPUTFORMAT_KEY_RBR_ASCII:
-            return readers_module.RbrAsciiReader(input_file)
-        if format_key == INPUTFORMAT_KEY_NORTEK_ASCII:
+        from ..readers.registry import get_reader_by_format_key
+
+        # Get reader metadata from registry
+        reader_metadata = get_reader_by_format_key(format_key)
+        if not reader_metadata:
+            raise ReaderError(f"Unknown format key: {format_key}")
+
+        # Get the reader class from the readers module
+        reader_class = getattr(readers_module, reader_metadata.class_name)
+
+        # Handle special cases for reader construction
+        return self._instantiate_reader(reader_class, reader_metadata.format_key, 
+                                      input_file, header_input_file)
+
+    def _instantiate_reader(self, reader_class: Any, format_key: str, 
+                          input_file: str, header_input_file: Optional[str]) -> Any:
+        """Instantiate a reader with the correct parameters based on format."""
+        # Special case: Nortek ASCII reader requires header file
+        if format_key == "nortek-ascii":
             if not header_input_file:
                 raise ReaderError("Header input file is required for Nortek ASCII files.")
-            return readers_module.NortekAsciiReader(input_file, header_input_file)
-        if format_key == INPUTFORMAT_KEY_RBR_RSK_LEGACY:
-            return readers_module.RbrRskLegacyReader(input_file)
-        if format_key == INPUTFORMAT_KEY_RBR_RSK_DEFAULT:
-            return readers_module.RbrRskReader(input_file)
-        if format_key == INPUTFORMAT_KEY_RBR_RSK_AUTO:
-            return readers_module.RbrRskAutoReader(input_file)
-        raise ReaderError(f"Unknown format key: {format_key}")
+            return reader_class(input_file, header_input_file)
+
+        # Standard case: most readers only need input_file
+        return reader_class(input_file)
 
     def write_data(self, data: Any, output_file: str, format_hint: Optional[str] = None) -> None:
         """

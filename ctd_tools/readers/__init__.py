@@ -2,7 +2,9 @@
 CTD Tools Readers Module
 
 This module provides various reader classes for importing CTD sensor data
-from different file formats into xarray Datasets.
+from different file formats into xarray Datasets. It includes a registry
+of available readers, allowing for lazy loading of specific reader classes
+based on the file format.
 
 Available Readers:
 -----------------
@@ -46,6 +48,7 @@ def __getattr__(name):
     if name in _READER_MODULES:
         if name not in _loaded_readers:
             # Import only the specific module and class
+            # pylint: disable=C0415
             from importlib import import_module
             module = import_module(_READER_MODULES[name], package=__name__)
             _loaded_readers[name] = getattr(module, name)

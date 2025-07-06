@@ -17,17 +17,6 @@ from ..readers.registry import get_extension_map, get_input_formats
 EXTENSION_MAP = get_extension_map()
 INPUT_FORMATS = list(get_input_formats().keys())
 
-# Constants for format keys (still used by detection functions)
-INPUTFORMAT_KEY_NETCDF = 'netcdf'
-INPUTFORMAT_KEY_CSV = 'csv'
-INPUTFORMAT_KEY_SBE_CNV = 'sbe-cnv'
-INPUTFORMAT_KEY_SEASUN_TOB = 'seasun-tob'
-INPUTFORMAT_KEY_RBR_ASCII = 'rbr-ascii'
-INPUTFORMAT_KEY_NORTEK_ASCII = 'nortek-ascii'
-INPUTFORMAT_KEY_RBR_RSK_LEGACY = 'rbr-rsk-legacy'
-INPUTFORMAT_KEY_RBR_RSK_DEFAULT = 'rbr-rsk-default'
-INPUTFORMAT_KEY_RBR_RSK_AUTO = 'rbr-rsk'
-
 # Output formats (these are separate from readers)
 OUTPUT_FORMATS = ['netcdf', 'csv', 'excel']
 
