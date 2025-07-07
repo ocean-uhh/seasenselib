@@ -2,6 +2,7 @@
 Module for reading sensor data from netCDF files into xarray Datasets.
 """
 
+from __future__ import annotations
 import xarray as xr
 from .base import AbstractReader
 

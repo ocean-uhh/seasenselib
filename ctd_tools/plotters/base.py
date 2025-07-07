@@ -7,6 +7,8 @@ inherit from this class and implement the `plot` method to handle the specifics 
 creating different types of visualizations.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import xarray as xr
 import matplotlib.pyplot as plt

@@ -2,6 +2,7 @@
 Module for reading Nortek ASCII data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import re
 import pandas as pd
 import xarray as xr

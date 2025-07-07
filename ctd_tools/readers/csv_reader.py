@@ -2,6 +2,7 @@
 Module for reading CTD data from CSV files into xarray Datasets.
 """
 
+from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 import csv

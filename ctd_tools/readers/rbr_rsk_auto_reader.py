@@ -2,6 +2,7 @@
 Module for reading RBR RSK data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import sqlite3
 import xarray as xr
 from packaging.version import Version

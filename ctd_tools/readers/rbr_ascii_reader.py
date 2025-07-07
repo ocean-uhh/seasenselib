@@ -2,6 +2,7 @@
 Module for reading RBR ASCII data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import pandas as pd
 import xarray as xr
 import ctd_tools.parameters as params

@@ -2,6 +2,7 @@
 Module for reading CTD data from SBE CNV files.
 """
 
+from __future__ import annotations
 import re
 from datetime import datetime
 import pycnv

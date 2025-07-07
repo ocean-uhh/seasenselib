@@ -2,6 +2,7 @@
 Module for creating time series plots from CTD sensor data.
 """
 
+from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 

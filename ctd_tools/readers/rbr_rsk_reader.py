@@ -2,6 +2,7 @@
 Module for reading RBR .rsk files into xarray Datasets.
 """
 
+from __future__ import annotations
 import pandas as pd
 import xarray as xr
 from pyrsktools import RSK

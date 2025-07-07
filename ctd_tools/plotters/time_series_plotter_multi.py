@@ -6,6 +6,7 @@ plotting multiple parameters in a single time series plot with advanced
 features like dual y-axes, normalization, and custom styling.
 """
 
+from __future__ import annotations
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
