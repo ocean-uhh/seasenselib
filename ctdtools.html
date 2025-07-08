@@ -52,8 +52,30 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ifmeo-hamburg/ctd-tools">GitHub Repo</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">CTD</span> <span class="pre">Tools</span> <span class="pre">API</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#available-writers">Available Writers:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-readers">Available Readers:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ctd_tools.readers.AbstractReader"><code class="docutils literal notranslate"><span class="pre">AbstractReader</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.input_file"><code class="docutils literal notranslate"><span class="pre">AbstractReader.input_file</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.data"><code class="docutils literal notranslate"><span class="pre">AbstractReader.data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.mapping"><code class="docutils literal notranslate"><span class="pre">AbstractReader.mapping</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.perform_default_postprocessing"><code class="docutils literal notranslate"><span class="pre">AbstractReader.perform_default_postprocessing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.rename_variables"><code class="docutils literal notranslate"><span class="pre">AbstractReader.rename_variables</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.assign_metadata"><code class="docutils literal notranslate"><span class="pre">AbstractReader.assign_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.sort_variables"><code class="docutils literal notranslate"><span class="pre">AbstractReader.sort_variables</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader._perform_default_postprocessing"><code class="docutils literal notranslate"><span class="pre">AbstractReader._perform_default_postprocessing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.get_data"><code class="docutils literal notranslate"><span class="pre">AbstractReader.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">AbstractReader.assign_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.file_extension"><code class="docutils literal notranslate"><span class="pre">AbstractReader.file_extension()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.format_key"><code class="docutils literal notranslate"><span class="pre">AbstractReader.format_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ctd_tools.readers.AbstractReader.format_name"><code class="docutils literal notranslate"><span class="pre">AbstractReader.format_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">AbstractReader.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">AbstractReader.perform_default_postprocessing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">AbstractReader.rename_variables</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">AbstractReader.sort_variables</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#available-writers">Available Writers:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">Example Usage:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ctd_tools.writers.AbstractWriter"><code class="docutils literal notranslate"><span class="pre">AbstractWriter</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.writers.AbstractWriter.data"><code class="docutils literal notranslate"><span class="pre">AbstractWriter.data</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.writers.AbstractWriter.file_extension"><code class="docutils literal notranslate"><span class="pre">AbstractWriter.file_extension()</span></code></a></li>
@@ -76,7 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#available-plotters">Available Plotters:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id24">Example Usage:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id35">Example Usage:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ctd_tools.plotters.AbstractPlotter"><code class="docutils literal notranslate"><span class="pre">AbstractPlotter</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.plotters.AbstractPlotter.data"><code class="docutils literal notranslate"><span class="pre">AbstractPlotter.data</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.plotters.AbstractPlotter.plot"><code class="docutils literal notranslate"><span class="pre">AbstractPlotter.plot()</span></code></a></li>
@@ -104,7 +126,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#available-processors">Available Processors:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id74">Example Usage:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id85">Example Usage:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ctd_tools.processors.AbstractProcessor"><code class="docutils literal notranslate"><span class="pre">AbstractProcessor</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.processors.AbstractProcessor.process"><code class="docutils literal notranslate"><span class="pre">AbstractProcessor.process()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ctd_tools.processors.AbstractProcessor.validate_coordinate"><code class="docutils literal notranslate"><span class="pre">AbstractProcessor.validate_coordinate()</span></code></a></li>
@@ -183,9 +205,234 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-ctd_tools.writers">
-<span id="ctd-tools-api"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">CTD</span> <span class="pre">Tools</span> <span class="pre">API</span></code><a class="headerlink" href="#module-ctd_tools.writers" title="Link to this heading"></a></h1>
-<p>CTD Tools Writers Module</p>
+  <section id="module-ctd_tools.readers">
+<span id="ctd-tools-api"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">CTD</span> <span class="pre">Tools</span> <span class="pre">API</span></code><a class="headerlink" href="#module-ctd_tools.readers" title="Link to this heading"></a></h1>
+<p>CTD Tools Readers Module</p>
+<p>This module provides various reader classes for importing CTD sensor data
+from different file formats into xarray Datasets. It includes a registry
+of available readers, allowing for lazy loading of specific reader classes
+based on the file format.</p>
+<section id="available-readers">
+<h2>Available Readers:<a class="headerlink" href="#available-readers" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>NetCdfReader: Read NetCDF files</p></li>
+<li><p>CsvReader: Read CSV files</p></li>
+<li><p>RbrAsciiReader: Read RBR ASCII files</p></li>
+<li><p>NortekAsciiReader: Read Nortek ASCII files</p></li>
+<li><p>RbrRskLegacyReader: Read legacy RSK files</p></li>
+<li><p>RbrRskReader: Read RSK files</p></li>
+<li><p>RbrRskAutoReader: Auto-detect RSK format</p></li>
+<li><p>SbeCnvReader: Read SeaBird CNV files</p></li>
+<li><p>SeasunTobReader: Read Sea &amp; Sun TOB files</p></li>
+</ul>
+</section>
+<section id="example-usage">
+<h2>Example Usage:<a class="headerlink" href="#example-usage" title="Link to this heading"></a></h2>
+<p>from ctd_tools.readers import SbeCnvReader, NetCdfReader</p>
+<p># Read a CNV file
+reader = SbeCnvReader(“data.cnv”)
+data = reader.get_data()</p>
+<p># Read a NetCDF file
+nc_reader = NetCdfReader(“data.nc”)
+nc_data = nc_reader.get_data()</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ctd_tools.readers.</span></span><span class="sig-name descname"><span class="pre">AbstractReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_header_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perform_default_postprocessing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assign_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader" title="Link to this definition"></a></dt>
+<dd><p>Abstract super class for reading sensor data.</p>
+<p>Must be subclassed to implement specific file format readers.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.input_file">
+<span class="sig-name descname"><span class="pre">input_file</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.input_file" title="Link to this definition"></a></dt>
+<dd><p>The path to the input file containing sensor data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.data" title="Link to this definition"></a></dt>
+<dd><p>The processed sensor data as a xarray Dataset, or None if not yet processed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xr.Dataset | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.mapping">
+<span class="sig-name descname"><span class="pre">mapping</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.mapping" title="Link to this definition"></a></dt>
+<dd><p>A dictionary mapping names used in the input file to standard names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.perform_default_postprocessing">
+<span class="sig-name descname"><span class="pre">perform_default_postprocessing</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.perform_default_postprocessing" title="Link to this definition"></a></dt>
+<dd><p>Whether to perform default post-processing on the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.rename_variables">
+<span class="sig-name descname"><span class="pre">rename_variables</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.rename_variables" title="Link to this definition"></a></dt>
+<dd><p>Whether to rename xarray variables to standard names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.assign_metadata">
+<span class="sig-name descname"><span class="pre">assign_metadata</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.assign_metadata" title="Link to this definition"></a></dt>
+<dd><p>Whether to assign metadata to xarray variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.sort_variables">
+<span class="sig-name descname"><span class="pre">sort_variables</span></span><a class="headerlink" href="#ctd_tools.readers.AbstractReader.sort_variables" title="Link to this definition"></a></dt>
+<dd><p>Whether to sort xarray variables by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__(input_file:</span> <span class="pre">str,</span> <span class="pre">mapping:</span> <span class="pre">dict</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span></span></dt>
+<dd><blockquote>
+<div><p>perform_default_postprocessing: bool = True,
+rename_variables: bool = True, assign_metadata: bool = True,
+sort_variables: bool = True)</p>
+</div></blockquote>
+<p>Initializes the reader with the input file and optional mapping.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader._perform_default_postprocessing">
+<span class="sig-name descname"><span class="pre">_perform_default_postprocessing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xr.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xr.Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader._perform_default_postprocessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader._perform_default_postprocessing" title="Link to this definition"></a></dt>
+<dd><p>Performs default post-processing on the xarray Dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xr.Dataset</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader.get_data" title="Link to this definition"></a></dt>
+<dd><p>Returns the processed data as an xarray Dataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">assign_metadata</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.file_extension">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader.file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader.file_extension" title="Link to this definition"></a></dt>
+<dd><p>Get the file extension for this reader.</p>
+<p>This property must be implemented by all subclasses.</p>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>The file extension (e.g., ‘.cnv’, ‘.tob’, ‘.rsk’).</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises:<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>NotImplementedError:</dt><dd><p>If the subclass does not implement this property.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.format_key">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader.format_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader.format_key" title="Link to this definition"></a></dt>
+<dd><p>Get the format key for this reader.</p>
+<p>This property must be implemented by all subclasses.</p>
+<section id="id1">
+<h2>Returns:<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>The format key (e.g., ‘sbe-cnv’, ‘nortek-ascii’, ‘rbr-rsk’).</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Raises:<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>NotImplementedError:</dt><dd><p>If the subclass does not implement this property.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ctd_tools.readers.AbstractReader.format_name">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader.format_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.readers.AbstractReader.format_name" title="Link to this definition"></a></dt>
+<dd><p>Get the format name for this reader.</p>
+<p>This property must be implemented by all subclasses.</p>
+<section id="id3">
+<h2>Returns:<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>The format (e.g., ‘SeaBird CNV’, ‘Nortek ASCII’, ‘RBR RSK’).</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Raises:<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>NotImplementedError:</dt><dd><p>If the subclass does not implement this property.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ctd_tools/readers/base.html#AbstractReader.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>Returns the processed data as an xarray Dataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">perform_default_postprocessing</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">rename_variables</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">sort_variables</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p id="module-ctd_tools.writers">CTD Tools Writers Module</p>
 <p>This module provides various writer classes for exporting CTD sensor data
 from xarray Datasets to different file formats.</p>
 <section id="available-writers">
@@ -196,8 +443,8 @@ from xarray Datasets to different file formats.</p>
 <li><p>ExcelWriter: Export to Excel format</p></li>
 </ul>
 </section>
-<section id="example-usage">
-<h2>Example Usage:<a class="headerlink" href="#example-usage" title="Link to this heading"></a></h2>
+<section id="id9">
+<h2>Example Usage:<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
 <p>from ctd_tools.writers import NetCdfWriter, CsvWriter, ExcelWriter</p>
 <p># Write to NetCDF
 writer = NetCdfWriter(data)
@@ -234,12 +481,12 @@ the write method.</p>
 </dd>
 <dt>data.setter(value: xr.Dataset):</dt><dd><p>Sets the xarray Dataset with validation.</p>
 </dd>
-<dt>write(file_name: str, <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs):</dt><dd><p>Writes the xarray Dataset to a file (to be implemented by subclasses).</p>
+<dt>write(file_name: str, <a href="#id10"><span class="problematic" id="id11">**</span></a>kwargs):</dt><dd><p>Writes the xarray Dataset to a file (to be implemented by subclasses).</p>
 </dd>
 </dl>
 </section>
-<section id="raises">
-<h2>Raises:<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<section id="id12">
+<h2>Raises:<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>NotImplementedError:</dt><dd><p>If the subclass does not implement the <cite>write</cite> method or the <cite>file_extension</cite> property.</p>
 </dd>
@@ -250,8 +497,8 @@ the write method.</p>
 <dt class="sig sig-object py" id="ctd_tools.writers.AbstractWriter.data">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dataset</span></em><a class="headerlink" href="#ctd_tools.writers.AbstractWriter.data" title="Link to this definition"></a></dt>
 <dd><p>Get the xarray Dataset.</p>
-<section id="returns">
-<h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<section id="id13">
+<h3>Returns:<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset</dt><dd><p>The xarray Dataset containing the sensor data.</p>
 </dd>
@@ -264,15 +511,15 @@ the write method.</p>
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/writers/base.html#AbstractWriter.file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.AbstractWriter.file_extension" title="Link to this definition"></a></dt>
 <dd><p>Get the default file extension for this writer.</p>
 <p>This property must be implemented by all subclasses.</p>
-<section id="id3">
-<h3>Returns:<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id14">
+<h3>Returns:<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>str</dt><dd><p>The file extension (e.g., ‘.nc’, ‘.csv’, ‘.xlsx’).</p>
 </dd>
 </dl>
 </section>
-<section id="id4">
-<h3>Raises:<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<section id="id15">
+<h3>Raises:<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>NotImplementedError:</dt><dd><p>If the subclass does not implement this property.</p>
 </dd>
@@ -289,7 +536,7 @@ the write method.</p>
 <dl class="simple">
 <dt>file_name<span class="classifier">str</span></dt><dd><p>The name of the output file where the data will be saved.</p>
 </dd>
-<dt><a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs</dt><dd><p>Additional keyword arguments specific to the writer implementation.</p>
+<dt><a href="#id16"><span class="problematic" id="id17">**</span></a>kwargs</dt><dd><p>Additional keyword arguments specific to the writer implementation.</p>
 </dd>
 </dl>
 </section>
@@ -309,15 +556,15 @@ tabular data. The provided data is expected to be in an xarray Dataset format.</
 writer.write(“output_file.csv”)</p>
 </dd>
 </dl>
-<section id="id7">
-<h2>Attributes:<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id18">
+<h2>Attributes:<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to a CSV file.</p>
 </dd>
 </dl>
 </section>
-<section id="id8">
-<h2>Methods:<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id19">
+<h2>Methods:<a class="headerlink" href="#id19" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the CsvWriter with the provided xarray Dataset.</p>
 </dd>
@@ -331,8 +578,8 @@ The coordinate parameter specifies which coordinate to use for selecting the dat
 <dt class="sig sig-object py" id="ctd_tools.writers.CsvWriter.file_extension">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/writers/csv_writer.html#CsvWriter.file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.CsvWriter.file_extension" title="Link to this definition"></a></dt>
 <dd><p>Get the default file extension for this writer.</p>
-<section id="id9">
-<h3>Returns:<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<section id="id20">
+<h3>Returns:<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>str</dt><dd><p>The file extension for CSV files, which is ‘.csv’.</p>
 </dd>
@@ -344,15 +591,15 @@ The coordinate parameter specifies which coordinate to use for selecting the dat
 <dt class="sig sig-object py" id="ctd_tools.writers.CsvWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/writers/csv_writer.html#CsvWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.CsvWriter.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</p>
-<section id="id10">
-<h3>Parameters:<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<section id="id21">
+<h3>Parameters:<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>file_name (str):</dt><dd><p>The name of the output CSV file where the data will be saved.</p>
 </dd>
 <dt>coordinate (str):</dt><dd><p>The coordinate to use for selecting the data. Default is params.TIME.
 This should be a valid coordinate present in the xarray Dataset.</p>
 </dd>
-<dt><a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs:</dt><dd><p>Additional keyword arguments (unused in this implementation).</p>
+<dt><a href="#id22"><span class="problematic" id="id23">**</span></a>kwargs:</dt><dd><p>Additional keyword arguments (unused in this implementation).</p>
 </dd>
 </dl>
 </section>
@@ -372,15 +619,15 @@ tabular data. The provided data is expected to be in an xarray Dataset format.</
 writer.write(“output_file.xlsx”)</p>
 </dd>
 </dl>
-<section id="id13">
-<h2>Attributes:<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<section id="id24">
+<h2>Attributes:<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to an Excel file.</p>
 </dd>
 </dl>
 </section>
-<section id="id14">
-<h2>Methods:<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<section id="id25">
+<h2>Methods:<a class="headerlink" href="#id25" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the ExcelWriter with the provided xarray Dataset.</p>
 </dd>
@@ -394,8 +641,8 @@ The coordinate parameter specifies which coordinate to use for selecting the dat
 <dt class="sig sig-object py" id="ctd_tools.writers.ExcelWriter.file_extension">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/writers/excel_writer.html#ExcelWriter.file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.ExcelWriter.file_extension" title="Link to this definition"></a></dt>
 <dd><p>Get the default file extension for this writer.</p>
-<section id="id15">
-<h3>Returns:<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<section id="id26">
+<h3>Returns:<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>str</dt><dd><p>The file extension for Excel files, which is ‘.xlsx’.</p>
 </dd>
@@ -407,20 +654,20 @@ The coordinate parameter specifies which coordinate to use for selecting the dat
 <dt class="sig sig-object py" id="ctd_tools.writers.ExcelWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/writers/excel_writer.html#ExcelWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.ExcelWriter.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the xarray Dataset to an Excel file with the specified file name and coordinate.</p>
-<section id="id16">
-<h3>Parameters:<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<section id="id27">
+<h3>Parameters:<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>file_name (str):</dt><dd><p>The name of the output Excel file where the data will be saved.</p>
 </dd>
 <dt>coordinate (str):</dt><dd><p>The coordinate to use for selecting the data. Default is params.TIME.
 This should be a valid coordinate present in the xarray Dataset.</p>
 </dd>
-<dt><a href="#id17"><span class="problematic" id="id18">**</span></a>kwargs:</dt><dd><p>Additional keyword arguments (unused in this implementation).</p>
+<dt><a href="#id28"><span class="problematic" id="id29">**</span></a>kwargs:</dt><dd><p>Additional keyword arguments (unused in this implementation).</p>
 </dd>
 </dl>
 </section>
-<section id="id19">
-<h3>Raises:<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<section id="id30">
+<h3>Raises:<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If the provided coordinate is not found in the dataset.</p>
 </dd>
@@ -443,15 +690,15 @@ The provided data is expected to be in an xarray Dataset format.</p>
 writer.write(“output_file.nc”)</p>
 </dd>
 </dl>
-<section id="id20">
-<h2>Attributes:<a class="headerlink" href="#id20" title="Link to this heading"></a></h2>
+<section id="id31">
+<h2>Attributes:<a class="headerlink" href="#id31" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be written to a netCDF file.</p>
 </dd>
 </dl>
 </section>
-<section id="id21">
-<h2>Methods:<a class="headerlink" href="#id21" title="Link to this heading"></a></h2>
+<section id="id32">
+<h2>Methods:<a class="headerlink" href="#id32" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the NetCdfWriter with the provided xarray Dataset.</p>
 </dd>
@@ -464,8 +711,8 @@ writer.write(“output_file.nc”)</p>
 <dt class="sig sig-object py" id="ctd_tools.writers.NetCdfWriter.file_extension">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/ctd_tools/writers/netcdf_writer.html#NetCdfWriter.file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.NetCdfWriter.file_extension" title="Link to this definition"></a></dt>
 <dd><p>Get the default file extension for this writer.</p>
-<section id="id22">
-<h3>Returns:<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<section id="id33">
+<h3>Returns:<a class="headerlink" href="#id33" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>str</dt><dd><p>The file extension for netCDF files, which is ‘.nc’.</p>
 </dd>
@@ -477,8 +724,8 @@ writer.write(“output_file.nc”)</p>
 <dt class="sig sig-object py" id="ctd_tools.writers.NetCdfWriter.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/writers/netcdf_writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.writers.NetCdfWriter.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the xarray Dataset to a netCDF file with the specified file name.</p>
-<section id="id23">
-<h3>Parameters:<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<section id="id34">
+<h3>Parameters:<a class="headerlink" href="#id34" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>file_name (str):</dt><dd><p>The name of the output netCDF file where the data will be saved.</p>
 </dd>
@@ -500,8 +747,8 @@ from xarray Datasets using matplotlib.</p>
 <li><p>TimeSeriesPlotter: Create time series plots for any parameter</p></li>
 </ul>
 </section>
-<section id="id24">
-<h2>Example Usage:<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
+<section id="id35">
+<h2>Example Usage:<a class="headerlink" href="#id35" title="Link to this heading"></a></h2>
 <p>from ctd_tools.plotters import TsDiagramPlotter, ProfilePlotter, TimeSeriesPlotter</p>
 <p># Create a T-S diagram
 ts_plotter = TsDiagramPlotter(data)
@@ -520,15 +767,15 @@ time_plotter.plot(“temperature”, title=”Temperature Time Series”, output
 <p>This class provides a common interface for all plotter implementations.
 All concrete plotter classes should inherit from this class and implement
 the plot method.</p>
-<section id="id25">
-<h2>Attributes:<a class="headerlink" href="#id25" title="Link to this heading"></a></h2>
+<section id="id36">
+<h2>Attributes:<a class="headerlink" href="#id36" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be plotted.</p>
 </dd>
 </dl>
 </section>
-<section id="id26">
-<h2>Methods:<a class="headerlink" href="#id26" title="Link to this heading"></a></h2>
+<section id="id37">
+<h2>Methods:<a class="headerlink" href="#id37" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the plotter with the provided xarray Dataset.</p>
 </dd>
@@ -536,7 +783,7 @@ the plot method.</p>
 </dd>
 <dt>data.setter(value: xr.Dataset):</dt><dd><p>Sets the xarray Dataset with validation.</p>
 </dd>
-<dt>plot(<a href="#id27"><span class="problematic" id="id28">**</span></a>kwargs):</dt><dd><p>Creates the plot (to be implemented by subclasses).</p>
+<dt>plot(<a href="#id38"><span class="problematic" id="id39">**</span></a>kwargs):</dt><dd><p>Creates the plot (to be implemented by subclasses).</p>
 </dd>
 <dt>_get_dataset_without_nan() -&gt; xr.Dataset:</dt><dd><p>Returns dataset with NaN values removed from time dimension.</p>
 </dd>
@@ -544,8 +791,8 @@ the plot method.</p>
 </dd>
 </dl>
 </section>
-<section id="id29">
-<h2>Raises:<a class="headerlink" href="#id29" title="Link to this heading"></a></h2>
+<section id="id40">
+<h2>Raises:<a class="headerlink" href="#id40" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>NotImplementedError:</dt><dd><p>If the subclass does not implement the <cite>plot</cite> method.</p>
 </dd>
@@ -558,8 +805,8 @@ the plot method.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.AbstractPlotter.data">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dataset</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ctd_tools.plotters.AbstractPlotter.data" title="Link to this definition"></a></dt>
 <dd><p>Get the xarray Dataset containing the sensor data.</p>
-<section id="id30">
-<h3>Returns:<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<section id="id41">
+<h3>Returns:<a class="headerlink" href="#id41" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset | None</dt><dd><p>The xarray Dataset containing the sensor data.</p>
 </dd>
@@ -573,17 +820,17 @@ the plot method.</p>
 <dd><p>Create the plot.</p>
 <p>This method must be implemented by all subclasses to define
 how the specific type of plot should be created.</p>
-<section id="id31">
-<h3>Parameters:<a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<section id="id42">
+<h3>Parameters:<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><a href="#id32"><span class="problematic" id="id33">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>Positional arguments specific to the plot type.</p>
+<dt><a href="#id43"><span class="problematic" id="id44">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>Positional arguments specific to the plot type.</p>
 </dd>
-<dt><a href="#id34"><span class="problematic" id="id35">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments specific to the plot type.</p>
+<dt><a href="#id45"><span class="problematic" id="id46">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments specific to the plot type.</p>
 </dd>
 </dl>
 </section>
-<section id="id36">
-<h3>Raises:<a class="headerlink" href="#id36" title="Link to this heading"></a></h3>
+<section id="id47">
+<h3>Raises:<a class="headerlink" href="#id47" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>NotImplementedError:</dt><dd><p>If the subclass does not implement this method.</p>
 </dd>
@@ -600,15 +847,15 @@ how the specific type of plot should be created.</p>
 <dd><p>Creates vertical CTD profiles showing temperature and salinity vs depth.</p>
 <p>This class specializes in creating vertical profile plots with depth on the
 y-axis and temperature/salinity on separate x-axes.</p>
-<section id="id37">
-<h2>Attributes:<a class="headerlink" href="#id37" title="Link to this heading"></a></h2>
+<section id="id48">
+<h2>Attributes:<a class="headerlink" href="#id48" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be plotted.</p>
 </dd>
 </dl>
 </section>
-<section id="id38">
-<h2>Methods:<a class="headerlink" href="#id38" title="Link to this heading"></a></h2>
+<section id="id49">
+<h2>Methods:<a class="headerlink" href="#id49" title="Link to this heading"></a></h2>
 <dl>
 <dt>plot(output_file=None, title=’Salinity and Temperature Profiles’,</dt><dd><blockquote>
 <div><p>show_grid=True, dot_size=3, show_lines_between_dots=True):</p>
@@ -620,8 +867,8 @@ y-axis and temperature/salinity on separate x-axes.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.ProfilePlotter.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Salinity</span> <span class="pre">and</span> <span class="pre">Temperature</span> <span class="pre">Profiles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dot_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_lines_between_dots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/profile_plotter.html#ProfilePlotter.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.ProfilePlotter.plot" title="Link to this definition"></a></dt>
 <dd><p>Creates a vertical CTD profile plot.</p>
-<section id="id39">
-<h3>Parameters:<a class="headerlink" href="#id39" title="Link to this heading"></a></h3>
+<section id="id50">
+<h3>Parameters:<a class="headerlink" href="#id50" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>output_file<span class="classifier">str, optional</span></dt><dd><p>Path to save the plot. If None, the plot is displayed.</p>
 </dd>
@@ -633,12 +880,12 @@ y-axis and temperature/salinity on separate x-axes.</p>
 </dd>
 <dt>show_lines_between_dots<span class="classifier">bool, default True</span></dt><dd><p>Whether to connect data points with lines.</p>
 </dd>
-<dt><a href="#id40"><span class="problematic" id="id41">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional keyword arguments (for compatibility).</p>
+<dt><a href="#id51"><span class="problematic" id="id52">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional keyword arguments (for compatibility).</p>
 </dd>
 </dl>
 </section>
-<section id="id42">
-<h3>Raises:<a class="headerlink" href="#id42" title="Link to this heading"></a></h3>
+<section id="id53">
+<h3>Raises:<a class="headerlink" href="#id53" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If required variables (temperature, salinity, depth) are missing.</p>
 </dd>
@@ -655,15 +902,15 @@ y-axis and temperature/salinity on separate x-axes.</p>
 <dd><p>Creates time series plots for any parameter in the CTD dataset.</p>
 <p>This class specializes in creating time series plots showing how a specific
 parameter varies over time.</p>
-<section id="id43">
-<h2>Attributes:<a class="headerlink" href="#id43" title="Link to this heading"></a></h2>
+<section id="id54">
+<h2>Attributes:<a class="headerlink" href="#id54" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be plotted.</p>
 </dd>
 </dl>
 </section>
-<section id="id44">
-<h2>Methods:<a class="headerlink" href="#id44" title="Link to this heading"></a></h2>
+<section id="id55">
+<h2>Methods:<a class="headerlink" href="#id55" title="Link to this heading"></a></h2>
 <dl>
 <dt>plot(parameter_name, output_file=None, ylim_min=None, ylim_max=10,</dt><dd><blockquote>
 <div><p>xlim_min=None, xlim_max=None):</p>
@@ -675,20 +922,20 @@ parameter varies over time.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotter.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter.html#TimeSeriesPlotter.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotter.plot" title="Link to this definition"></a></dt>
 <dd><p>Creates a time series plot for a given parameter.</p>
-<section id="id45">
-<h3>Parameters:<a class="headerlink" href="#id45" title="Link to this heading"></a></h3>
+<section id="id56">
+<h3>Parameters:<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><a href="#id46"><span class="problematic" id="id47">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>First argument should be parameter_name (str).</p>
+<dt><a href="#id57"><span class="problematic" id="id58">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>First argument should be parameter_name (str).</p>
 </dd>
-<dt><a href="#id48"><span class="problematic" id="id49">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments:
+<dt><a href="#id59"><span class="problematic" id="id60">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments:
 - output_file : str, optional - Path to save the plot
 - ylim_min : float, optional - Minimum y-axis value
 - ylim_max : float, optional - Maximum y-axis value</p>
 </dd>
 </dl>
 </section>
-<section id="id50">
-<h3>Raises:<a class="headerlink" href="#id50" title="Link to this heading"></a></h3>
+<section id="id61">
+<h3>Raises:<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If the parameter_name is not found in the dataset or time data is missing.</p>
 </dd>
@@ -700,8 +947,8 @@ parameter varies over time.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotter.plot_parameter">
 <span class="sig-name descname"><span class="pre">plot_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter.html#TimeSeriesPlotter.plot_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotter.plot_parameter" title="Link to this definition"></a></dt>
 <dd><p>Convenience method with explicit parameters for better IDE support.</p>
-<section id="id51">
-<h3>Parameters:<a class="headerlink" href="#id51" title="Link to this heading"></a></h3>
+<section id="id62">
+<h3>Parameters:<a class="headerlink" href="#id62" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_name<span class="classifier">str</span></dt><dd><p>Name of the parameter to plot (must exist in the dataset).</p>
 </dd>
@@ -730,18 +977,18 @@ parameters vary over time. It supports:
 - Custom styling for each parameter
 - Data normalization for comparison
 - Single parameter plotting (for consistency)</p>
-<section id="id52">
-<h2>Attributes:<a class="headerlink" href="#id52" title="Link to this heading"></a></h2>
+<section id="id63">
+<h2>Attributes:<a class="headerlink" href="#id63" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be plotted.</p>
 </dd>
 </dl>
 </section>
-<section id="id53">
-<h2>Methods:<a class="headerlink" href="#id53" title="Link to this heading"></a></h2>
+<section id="id64">
+<h2>Methods:<a class="headerlink" href="#id64" title="Link to this heading"></a></h2>
 <dl>
 <dt>plot(parameter_names, output_file=None, dual_axis=False,</dt><dd><blockquote>
-<div><p>left_params=None, right_params=None, normalize=False, <a href="#id54"><span class="problematic" id="id55">**</span></a>kwargs):</p>
+<div><p>left_params=None, right_params=None, normalize=False, <a href="#id65"><span class="problematic" id="id66">**</span></a>kwargs):</p>
 </div></blockquote>
 <p>Creates and displays/saves the time series plot for multiple parameters.</p>
 </dd>
@@ -754,12 +1001,12 @@ parameters vary over time. It supports:
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotterMulti.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter_multi.html#TimeSeriesPlotterMulti.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotterMulti.plot" title="Link to this definition"></a></dt>
 <dd><p>Creates a time series plot for multiple parameters.</p>
-<section id="id56">
-<h3>Parameters:<a class="headerlink" href="#id56" title="Link to this heading"></a></h3>
+<section id="id67">
+<h3>Parameters:<a class="headerlink" href="#id67" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><a href="#id57"><span class="problematic" id="id58">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>First argument can be parameter_names (str or List[str]).</p>
+<dt><a href="#id68"><span class="problematic" id="id69">*</span></a>args<span class="classifier">tuple</span></dt><dd><p>First argument can be parameter_names (str or List[str]).</p>
 </dd>
-<dt><a href="#id59"><span class="problematic" id="id60">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments:
+<dt><a href="#id70"><span class="problematic" id="id71">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Keyword arguments:
 - parameter_names : str or List[str] - Parameter name(s) to plot
 - output_file : str, optional - Path to save the plot
 - dual_axis : bool, default False - Use dual y-axes for different units
@@ -773,8 +1020,8 @@ parameters vary over time. It supports:
 </dd>
 </dl>
 </section>
-<section id="id61">
-<h3>Raises:<a class="headerlink" href="#id61" title="Link to this heading"></a></h3>
+<section id="id72">
+<h3>Raises:<a class="headerlink" href="#id72" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If parameters are not found in the dataset or time data is missing.</p>
 </dd>
@@ -786,8 +1033,8 @@ parameters vary over time. It supports:
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotterMulti.plot_multiple_parameters">
 <span class="sig-name descname"><span class="pre">plot_multiple_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dual_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_left</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter_multi.html#TimeSeriesPlotterMulti.plot_multiple_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_multiple_parameters" title="Link to this definition"></a></dt>
 <dd><p>Convenience method for multi-parameter plotting with explicit parameters.</p>
-<section id="id62">
-<h3>Parameters:<a class="headerlink" href="#id62" title="Link to this heading"></a></h3>
+<section id="id73">
+<h3>Parameters:<a class="headerlink" href="#id73" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_names<span class="classifier">List[str]</span></dt><dd><p>List of parameter names to plot (must exist in the dataset).</p>
 </dd>
@@ -819,8 +1066,8 @@ parameters vary over time. It supports:
 <dd><p>Convenience method for normalized parameter comparison.</p>
 <p>All parameters are normalized to 0-1 range for easy comparison of trends
 regardless of their original units or scales.</p>
-<section id="id63">
-<h3>Parameters:<a class="headerlink" href="#id63" title="Link to this heading"></a></h3>
+<section id="id74">
+<h3>Parameters:<a class="headerlink" href="#id74" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_names<span class="classifier">List[str]</span></dt><dd><p>List of parameter names to plot (must exist in the dataset).</p>
 </dd>
@@ -828,7 +1075,7 @@ regardless of their original units or scales.</p>
 </dd>
 <dt>colors<span class="classifier">List[str], optional</span></dt><dd><p>Custom colors for each parameter line.</p>
 </dd>
-<dt><a href="#id64"><span class="problematic" id="id65">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional styling options.</p>
+<dt><a href="#id75"><span class="problematic" id="id76">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional styling options.</p>
 </dd>
 </dl>
 </section>
@@ -838,8 +1085,8 @@ regardless of their original units or scales.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotterMulti.plot_single_parameter">
 <span class="sig-name descname"><span class="pre">plot_single_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'-'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter_multi.html#TimeSeriesPlotterMulti.plot_single_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_single_parameter" title="Link to this definition"></a></dt>
 <dd><p>Convenience method for single parameter plotting.</p>
-<section id="id66">
-<h3>Parameters:<a class="headerlink" href="#id66" title="Link to this heading"></a></h3>
+<section id="id77">
+<h3>Parameters:<a class="headerlink" href="#id77" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_name<span class="classifier">str</span></dt><dd><p>Name of the parameter to plot (must exist in the dataset).</p>
 </dd>
@@ -861,8 +1108,8 @@ regardless of their original units or scales.</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.TimeSeriesPlotterMulti.plot_with_auto_dual_axis">
 <span class="sig-name descname"><span class="pre">plot_with_auto_dual_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/time_series_plotter_multi.html#TimeSeriesPlotterMulti.plot_with_auto_dual_axis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TimeSeriesPlotterMulti.plot_with_auto_dual_axis" title="Link to this definition"></a></dt>
 <dd><p>Convenience method that automatically uses dual axis based on parameter units.</p>
-<section id="id67">
-<h3>Parameters:<a class="headerlink" href="#id67" title="Link to this heading"></a></h3>
+<section id="id78">
+<h3>Parameters:<a class="headerlink" href="#id78" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_names<span class="classifier">List[str]</span></dt><dd><p>List of parameter names to plot (must exist in the dataset).</p>
 </dd>
@@ -870,7 +1117,7 @@ regardless of their original units or scales.</p>
 </dd>
 <dt>normalize<span class="classifier">bool, default False</span></dt><dd><p>Normalize all parameters to 0-1 range for comparison.</p>
 </dd>
-<dt><a href="#id68"><span class="problematic" id="id69">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional styling options (colors, line_styles, ylim_left, ylim_right).</p>
+<dt><a href="#id79"><span class="problematic" id="id80">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional styling options (colors, line_styles, ylim_left, ylim_right).</p>
 </dd>
 </dl>
 </section>
@@ -886,15 +1133,15 @@ regardless of their original units or scales.</p>
 <p>This class specializes in creating T-S diagrams, which are scatter plots
 of temperature vs salinity data points, often colored by depth and with
 optional density isolines.</p>
-<section id="id70">
-<h2>Attributes:<a class="headerlink" href="#id70" title="Link to this heading"></a></h2>
+<section id="id81">
+<h2>Attributes:<a class="headerlink" href="#id81" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be plotted.</p>
 </dd>
 </dl>
 </section>
-<section id="id71">
-<h2>Methods:<a class="headerlink" href="#id71" title="Link to this heading"></a></h2>
+<section id="id82">
+<h2>Methods:<a class="headerlink" href="#id82" title="Link to this heading"></a></h2>
 <dl>
 <dt>plot(output_file=None, title=’T-S Diagram’, dot_size=70, use_colormap=True,</dt><dd><blockquote>
 <div><p>show_density_isolines=True, colormap=’jet’, show_lines_between_dots=True,
@@ -909,8 +1156,8 @@ show_grid=True):</p>
 <dt class="sig sig-object py" id="ctd_tools.plotters.TsDiagramPlotter.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'T-S</span> <span class="pre">Diagram'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dot_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_density_isolines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_lines_between_dots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ctd_tools/plotters/ts_diagram_plotter.html#TsDiagramPlotter.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.plotters.TsDiagramPlotter.plot" title="Link to this definition"></a></dt>
 <dd><p>Creates a T-S diagram plot.</p>
-<section id="id72">
-<h3>Parameters:<a class="headerlink" href="#id72" title="Link to this heading"></a></h3>
+<section id="id83">
+<h3>Parameters:<a class="headerlink" href="#id83" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>output_file<span class="classifier">str, optional</span></dt><dd><p>Path to save the plot. If None, the plot is displayed.</p>
 </dd>
@@ -930,8 +1177,8 @@ show_grid=True):</p>
 </dd>
 </dl>
 </section>
-<section id="id73">
-<h3>Raises:<a class="headerlink" href="#id73" title="Link to this heading"></a></h3>
+<section id="id84">
+<h3>Raises:<a class="headerlink" href="#id84" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If required variables (temperature, salinity, depth) are missing.</p>
 </dd>
@@ -953,8 +1200,8 @@ sensor data stored in xarray Datasets.</p>
 <li><p>ResampleProcessor: Resample sensor data to different time intervals</p></li>
 </ul>
 </section>
-<section id="id74">
-<h2>Example Usage:<a class="headerlink" href="#id74" title="Link to this heading"></a></h2>
+<section id="id85">
+<h2>Example Usage:<a class="headerlink" href="#id85" title="Link to this heading"></a></h2>
 <p>from ctd_tools.processing import StatisticsProcessor, SubsetProcessor, ResampleProcessor</p>
 <p># Calculate statistics
 stats_processor = StatisticsProcessor(dataset, “temperature”)
@@ -974,15 +1221,15 @@ daily_data = resample_processor.resample(“1D”)</p>
 <p>This class provides a common interface for all processor implementations.
 All concrete processor classes should inherit from this class and implement
 their specific processing methods.</p>
-<section id="id75">
-<h2>Attributes:<a class="headerlink" href="#id75" title="Link to this heading"></a></h2>
+<section id="id86">
+<h2>Attributes:<a class="headerlink" href="#id86" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be processed.</p>
 </dd>
 </dl>
 </section>
-<section id="id76">
-<h2>Methods:<a class="headerlink" href="#id76" title="Link to this heading"></a></h2>
+<section id="id87">
+<h2>Methods:<a class="headerlink" href="#id87" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the processor with the provided xarray Dataset.</p>
 </dd>
@@ -993,8 +1240,8 @@ their specific processing methods.</p>
 <dd><p>Process the dataset.</p>
 <p>This method should be implemented by concrete processor classes
 to define their specific processing logic.</p>
-<section id="id77">
-<h3>Returns:<a class="headerlink" href="#id77" title="Link to this heading"></a></h3>
+<section id="id88">
+<h3>Returns:<a class="headerlink" href="#id88" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>Any:</dt><dd><p>The result of the processing operation.</p>
 </dd>
@@ -1006,15 +1253,15 @@ to define their specific processing logic.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.AbstractProcessor.validate_coordinate">
 <span class="sig-name descname"><span class="pre">validate_coordinate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/base.html#AbstractProcessor.validate_coordinate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.AbstractProcessor.validate_coordinate" title="Link to this definition"></a></dt>
 <dd><p>Validate that a coordinate exists in the dataset.</p>
-<section id="id78">
-<h3>Parameters:<a class="headerlink" href="#id78" title="Link to this heading"></a></h3>
+<section id="id89">
+<h3>Parameters:<a class="headerlink" href="#id89" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>coordinate_name<span class="classifier">str</span></dt><dd><p>The name of the coordinate to validate.</p>
 </dd>
 </dl>
 </section>
-<section id="id79">
-<h3>Raises:<a class="headerlink" href="#id79" title="Link to this heading"></a></h3>
+<section id="id90">
+<h3>Raises:<a class="headerlink" href="#id90" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If the coordinate is not found in the dataset.</p>
 </dd>
@@ -1026,15 +1273,15 @@ to define their specific processing logic.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.AbstractProcessor.validate_parameter">
 <span class="sig-name descname"><span class="pre">validate_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/base.html#AbstractProcessor.validate_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.AbstractProcessor.validate_parameter" title="Link to this definition"></a></dt>
 <dd><p>Validate that a parameter exists in the dataset.</p>
-<section id="id80">
-<h3>Parameters:<a class="headerlink" href="#id80" title="Link to this heading"></a></h3>
+<section id="id91">
+<h3>Parameters:<a class="headerlink" href="#id91" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>parameter_name<span class="classifier">str</span></dt><dd><p>The name of the parameter to validate.</p>
 </dd>
 </dl>
 </section>
-<section id="id81">
-<h3>Raises:<a class="headerlink" href="#id81" title="Link to this heading"></a></h3>
+<section id="id92">
+<h3>Raises:<a class="headerlink" href="#id92" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError:</dt><dd><p>If the parameter is not found in the dataset.</p>
 </dd>
@@ -1051,15 +1298,15 @@ to define their specific processing logic.</p>
 <dd><p>Resample sensor data to different time intervals.</p>
 <p>This class provides methods to resample sensor data along the time dimension
 to different frequencies (e.g., hourly, daily, monthly).</p>
-<section id="id82">
-<h2>Attributes:<a class="headerlink" href="#id82" title="Link to this heading"></a></h2>
+<section id="id93">
+<h2>Attributes:<a class="headerlink" href="#id93" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data.</p>
 </dd>
 </dl>
 </section>
-<section id="id83">
-<h2>Example Usage:<a class="headerlink" href="#id83" title="Link to this heading"></a></h2>
+<section id="id94">
+<h2>Example Usage:<a class="headerlink" href="#id94" title="Link to this heading"></a></h2>
 <p>resample_processor = ResampleProcessor(dataset)
 daily_data = resample_processor.resample(“1D”).mean()
 hourly_data = resample_processor.resample(“1H”).median()</p>
@@ -1069,8 +1316,8 @@ hourly_data = resample_processor.resample(“1H”).median()</p>
 <dd><p>Process the dataset (returns the original dataset).</p>
 <p>This method is required by the AbstractProcessor interface.
 For resampling, use the resample() method instead.</p>
-<section id="id84">
-<h3>Returns:<a class="headerlink" href="#id84" title="Link to this heading"></a></h3>
+<section id="id95">
+<h3>Returns:<a class="headerlink" href="#id95" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The original dataset.</p>
 </dd>
@@ -1082,8 +1329,8 @@ For resampling, use the resample() method instead.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample">
 <span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample" title="Link to this definition"></a></dt>
 <dd><p>Resample the dataset to a specified time interval.</p>
-<section id="id85">
-<h3>Parameters:<a class="headerlink" href="#id85" title="Link to this heading"></a></h3>
+<section id="id96">
+<h3>Parameters:<a class="headerlink" href="#id96" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling (e.g., “1H”, “1D”, “1M”).
 Uses pandas frequency strings.</p>
@@ -1092,8 +1339,8 @@ Uses pandas frequency strings.</p>
 </dd>
 </dl>
 </section>
-<section id="id86">
-<h3>Returns:<a class="headerlink" href="#id86" title="Link to this heading"></a></h3>
+<section id="id97">
+<h3>Returns:<a class="headerlink" href="#id97" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.core.resample.DatasetResample:</dt><dd><p>A resample object that can be used to apply aggregation functions.</p>
 </dd>
@@ -1112,8 +1359,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_count">
 <span class="sig-name descname"><span class="pre">resample_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_count" title="Link to this definition"></a></dt>
 <dd><p>Resample and count valid values.</p>
-<section id="id87">
-<h3>Parameters:<a class="headerlink" href="#id87" title="Link to this heading"></a></h3>
+<section id="id98">
+<h3>Parameters:<a class="headerlink" href="#id98" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1121,8 +1368,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id88">
-<h3>Returns:<a class="headerlink" href="#id88" title="Link to this heading"></a></h3>
+<section id="id99">
+<h3>Returns:<a class="headerlink" href="#id99" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with count values.</p>
 </dd>
@@ -1134,8 +1381,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_max">
 <span class="sig-name descname"><span class="pre">resample_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_max" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute maximum values.</p>
-<section id="id89">
-<h3>Parameters:<a class="headerlink" href="#id89" title="Link to this heading"></a></h3>
+<section id="id100">
+<h3>Parameters:<a class="headerlink" href="#id100" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1143,8 +1390,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id90">
-<h3>Returns:<a class="headerlink" href="#id90" title="Link to this heading"></a></h3>
+<section id="id101">
+<h3>Returns:<a class="headerlink" href="#id101" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with maximum values.</p>
 </dd>
@@ -1156,8 +1403,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_mean">
 <span class="sig-name descname"><span class="pre">resample_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_mean" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute mean values.</p>
-<section id="id91">
-<h3>Parameters:<a class="headerlink" href="#id91" title="Link to this heading"></a></h3>
+<section id="id102">
+<h3>Parameters:<a class="headerlink" href="#id102" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1165,8 +1412,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id92">
-<h3>Returns:<a class="headerlink" href="#id92" title="Link to this heading"></a></h3>
+<section id="id103">
+<h3>Returns:<a class="headerlink" href="#id103" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with mean values.</p>
 </dd>
@@ -1178,8 +1425,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_median">
 <span class="sig-name descname"><span class="pre">resample_median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_median" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute median values.</p>
-<section id="id93">
-<h3>Parameters:<a class="headerlink" href="#id93" title="Link to this heading"></a></h3>
+<section id="id104">
+<h3>Parameters:<a class="headerlink" href="#id104" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1187,8 +1434,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id94">
-<h3>Returns:<a class="headerlink" href="#id94" title="Link to this heading"></a></h3>
+<section id="id105">
+<h3>Returns:<a class="headerlink" href="#id105" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with median values.</p>
 </dd>
@@ -1200,8 +1447,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_min">
 <span class="sig-name descname"><span class="pre">resample_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_min" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute minimum values.</p>
-<section id="id95">
-<h3>Parameters:<a class="headerlink" href="#id95" title="Link to this heading"></a></h3>
+<section id="id106">
+<h3>Parameters:<a class="headerlink" href="#id106" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1209,8 +1456,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id96">
-<h3>Returns:<a class="headerlink" href="#id96" title="Link to this heading"></a></h3>
+<section id="id107">
+<h3>Returns:<a class="headerlink" href="#id107" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with minimum values.</p>
 </dd>
@@ -1222,8 +1469,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_std">
 <span class="sig-name descname"><span class="pre">resample_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_std" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute standard deviation.</p>
-<section id="id97">
-<h3>Parameters:<a class="headerlink" href="#id97" title="Link to this heading"></a></h3>
+<section id="id108">
+<h3>Parameters:<a class="headerlink" href="#id108" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1231,8 +1478,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id98">
-<h3>Returns:<a class="headerlink" href="#id98" title="Link to this heading"></a></h3>
+<section id="id109">
+<h3>Returns:<a class="headerlink" href="#id109" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with standard deviation values.</p>
 </dd>
@@ -1244,8 +1491,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.ResampleProcessor.resample_sum">
 <span class="sig-name descname"><span class="pre">resample_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/resample_processor.html#ResampleProcessor.resample_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.ResampleProcessor.resample_sum" title="Link to this definition"></a></dt>
 <dd><p>Resample and compute sum values.</p>
-<section id="id99">
-<h3>Parameters:<a class="headerlink" href="#id99" title="Link to this heading"></a></h3>
+<section id="id110">
+<h3>Parameters:<a class="headerlink" href="#id110" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>time_interval<span class="classifier">str</span></dt><dd><p>The time interval for resampling.</p>
 </dd>
@@ -1253,8 +1500,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 </dd>
 </dl>
 </section>
-<section id="id100">
-<h3>Returns:<a class="headerlink" href="#id100" title="Link to this heading"></a></h3>
+<section id="id111">
+<h3>Returns:<a class="headerlink" href="#id111" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The resampled dataset with sum values.</p>
 </dd>
@@ -1272,8 +1519,8 @@ hourly_max = resample_processor.resample(“1H”).max()</p>
 <p>This class provides methods to calculate various statistical measures
 like mean, median, standard deviation, etc. on specific parameters
 within a sensor dataset.</p>
-<section id="id101">
-<h2>Attributes:<a class="headerlink" href="#id101" title="Link to this heading"></a></h2>
+<section id="id112">
+<h2>Attributes:<a class="headerlink" href="#id112" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data.</p>
 </dd>
@@ -1281,8 +1528,8 @@ within a sensor dataset.</p>
 </dd>
 </dl>
 </section>
-<section id="id102">
-<h2>Example Usage:<a class="headerlink" href="#id102" title="Link to this heading"></a></h2>
+<section id="id113">
+<h2>Example Usage:<a class="headerlink" href="#id113" title="Link to this heading"></a></h2>
 <p>stats_processor = StatisticsProcessor(dataset, “temperature”)
 mean_temp = stats_processor.mean()
 max_temp = stats_processor.max()
@@ -1291,16 +1538,16 @@ stats = stats_processor.get_all_statistics()</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.count_valid">
 <span class="sig-name descname"><span class="pre">count_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.count_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.count_valid" title="Link to this definition"></a></dt>
 <dd><p>Count valid (non-NaN) values.</p>
-<section id="id103">
-<h3>Parameters:<a class="headerlink" href="#id103" title="Link to this heading"></a></h3>
+<section id="id114">
+<h3>Parameters:<a class="headerlink" href="#id114" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to count valid values.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id104">
-<h3>Returns:<a class="headerlink" href="#id104" title="Link to this heading"></a></h3>
+<section id="id115">
+<h3>Returns:<a class="headerlink" href="#id115" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>int or xr.DataArray:</dt><dd><p>The count of valid values.</p>
 </dd>
@@ -1312,16 +1559,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.get_all_statistics">
 <span class="sig-name descname"><span class="pre">get_all_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.get_all_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.get_all_statistics" title="Link to this definition"></a></dt>
 <dd><p>Calculate all available statistics.</p>
-<section id="id105">
-<h3>Parameters:<a class="headerlink" href="#id105" title="Link to this heading"></a></h3>
+<section id="id116">
+<h3>Parameters:<a class="headerlink" href="#id116" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate statistics.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id106">
-<h3>Returns:<a class="headerlink" href="#id106" title="Link to this heading"></a></h3>
+<section id="id117">
+<h3>Returns:<a class="headerlink" href="#id117" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dict:</dt><dd><p>A dictionary containing all calculated statistics.</p>
 </dd>
@@ -1333,16 +1580,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.max">
 <span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.max" title="Link to this definition"></a></dt>
 <dd><p>Calculate the maximum value.</p>
-<section id="id107">
-<h3>Parameters:<a class="headerlink" href="#id107" title="Link to this heading"></a></h3>
+<section id="id118">
+<h3>Parameters:<a class="headerlink" href="#id118" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the maximum.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id108">
-<h3>Returns:<a class="headerlink" href="#id108" title="Link to this heading"></a></h3>
+<section id="id119">
+<h3>Returns:<a class="headerlink" href="#id119" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>Any:</dt><dd><p>The maximum value(s).</p>
 </dd>
@@ -1354,16 +1601,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.mean" title="Link to this definition"></a></dt>
 <dd><p>Calculate the arithmetic mean.</p>
-<section id="id109">
-<h3>Parameters:<a class="headerlink" href="#id109" title="Link to this heading"></a></h3>
+<section id="id120">
+<h3>Parameters:<a class="headerlink" href="#id120" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the mean.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id110">
-<h3>Returns:<a class="headerlink" href="#id110" title="Link to this heading"></a></h3>
+<section id="id121">
+<h3>Returns:<a class="headerlink" href="#id121" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The mean value(s).</p>
 </dd>
@@ -1375,16 +1622,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.median">
 <span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.median" title="Link to this definition"></a></dt>
 <dd><p>Calculate the median value.</p>
-<section id="id111">
-<h3>Parameters:<a class="headerlink" href="#id111" title="Link to this heading"></a></h3>
+<section id="id122">
+<h3>Parameters:<a class="headerlink" href="#id122" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the median.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id112">
-<h3>Returns:<a class="headerlink" href="#id112" title="Link to this heading"></a></h3>
+<section id="id123">
+<h3>Returns:<a class="headerlink" href="#id123" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The median value(s).</p>
 </dd>
@@ -1396,16 +1643,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.min">
 <span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.min" title="Link to this definition"></a></dt>
 <dd><p>Calculate the minimum value.</p>
-<section id="id113">
-<h3>Parameters:<a class="headerlink" href="#id113" title="Link to this heading"></a></h3>
+<section id="id124">
+<h3>Parameters:<a class="headerlink" href="#id124" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the minimum.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id114">
-<h3>Returns:<a class="headerlink" href="#id114" title="Link to this heading"></a></h3>
+<section id="id125">
+<h3>Returns:<a class="headerlink" href="#id125" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The minimum value(s).</p>
 </dd>
@@ -1417,8 +1664,8 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.process">
 <span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.process" title="Link to this definition"></a></dt>
 <dd><p>Process the dataset to calculate all statistics.</p>
-<section id="id115">
-<h3>Returns:<a class="headerlink" href="#id115" title="Link to this heading"></a></h3>
+<section id="id126">
+<h3>Returns:<a class="headerlink" href="#id126" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dict:</dt><dd><p>A dictionary containing all calculated statistics.</p>
 </dd>
@@ -1430,8 +1677,8 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.quantile">
 <span class="sig-name descname"><span class="pre">quantile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.quantile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.quantile" title="Link to this definition"></a></dt>
 <dd><p>Calculate quantiles.</p>
-<section id="id116">
-<h3>Parameters:<a class="headerlink" href="#id116" title="Link to this heading"></a></h3>
+<section id="id127">
+<h3>Parameters:<a class="headerlink" href="#id127" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>q<span class="classifier">float or list</span></dt><dd><p>Quantile(s) to compute (0 &lt;= q &lt;= 1).</p>
 </dd>
@@ -1440,8 +1687,8 @@ If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id117">
-<h3>Returns:<a class="headerlink" href="#id117" title="Link to this heading"></a></h3>
+<section id="id128">
+<h3>Returns:<a class="headerlink" href="#id128" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The quantile value(s).</p>
 </dd>
@@ -1453,16 +1700,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.std">
 <span class="sig-name descname"><span class="pre">std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.std" title="Link to this definition"></a></dt>
 <dd><p>Calculate the standard deviation.</p>
-<section id="id118">
-<h3>Parameters:<a class="headerlink" href="#id118" title="Link to this heading"></a></h3>
+<section id="id129">
+<h3>Parameters:<a class="headerlink" href="#id129" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the standard deviation.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id119">
-<h3>Returns:<a class="headerlink" href="#id119" title="Link to this heading"></a></h3>
+<section id="id130">
+<h3>Returns:<a class="headerlink" href="#id130" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The standard deviation value(s).</p>
 </dd>
@@ -1474,16 +1721,16 @@ If None, uses the TIME parameter.</p>
 <dt class="sig sig-object py" id="ctd_tools.processors.StatisticsProcessor.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/statistics_processor.html#StatisticsProcessor.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.StatisticsProcessor.var" title="Link to this definition"></a></dt>
 <dd><p>Calculate the variance.</p>
-<section id="id120">
-<h3>Parameters:<a class="headerlink" href="#id120" title="Link to this heading"></a></h3>
+<section id="id131">
+<h3>Parameters:<a class="headerlink" href="#id131" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dim<span class="classifier">str, optional</span></dt><dd><p>The dimension along which to calculate the variance.
 If None, uses the TIME parameter.</p>
 </dd>
 </dl>
 </section>
-<section id="id121">
-<h3>Returns:<a class="headerlink" href="#id121" title="Link to this heading"></a></h3>
+<section id="id132">
+<h3>Returns:<a class="headerlink" href="#id132" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>float or xr.DataArray:</dt><dd><p>The variance value(s).</p>
 </dd>
@@ -1500,8 +1747,8 @@ If None, uses the TIME parameter.</p>
 <dd><p>Subset sensor data based on sample number, time, and parameter values.</p>
 <p>This class allows for flexible slicing of sensor data stored in an xarray Dataset.
 It can filter data based on sample indices, time ranges, and specific parameter values.</p>
-<section id="id122">
-<h2>Attributes:<a class="headerlink" href="#id122" title="Link to this heading"></a></h2>
+<section id="id133">
+<h2>Attributes:<a class="headerlink" href="#id133" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>data<span class="classifier">xr.Dataset</span></dt><dd><p>The xarray Dataset containing the sensor data to be subsetted.</p>
 </dd>
@@ -1521,8 +1768,8 @@ It can filter data based on sample indices, time ranges, and specific parameter 
 </dd>
 </dl>
 </section>
-<section id="id123">
-<h2>Example Usage:<a class="headerlink" href="#id123" title="Link to this heading"></a></h2>
+<section id="id134">
+<h2>Example Usage:<a class="headerlink" href="#id134" title="Link to this heading"></a></h2>
 <p>subset_processor = SubsetProcessor(dataset)
 subset_processor.set_sample_min(10).set_sample_max(50)
 subset_processor.set_time_min(“2023-01-01”).set_time_max(“2023-01-31”)
@@ -1533,8 +1780,8 @@ subset = subset_processor.get_subset()</p>
 <dd><p>Return the subset of the dataset based on the specified criteria.</p>
 <p>This method applies all the slicing parameters to filter the dataset.
 It slices the dataset by sample number, time, and parameter values as specified.</p>
-<section id="id124">
-<h3>Returns:<a class="headerlink" href="#id124" title="Link to this heading"></a></h3>
+<section id="id135">
+<h3>Returns:<a class="headerlink" href="#id135" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The subset of the dataset that matches the specified criteria.</p>
 </dd>
@@ -1547,8 +1794,8 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.process" title="Link to this definition"></a></dt>
 <dd><p>Process the dataset to create a subset.</p>
 <p>This method applies all the filtering criteria to create the final subset.</p>
-<section id="id125">
-<h3>Returns:<a class="headerlink" href="#id125" title="Link to this heading"></a></h3>
+<section id="id136">
+<h3>Returns:<a class="headerlink" href="#id136" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>xr.Dataset:</dt><dd><p>The subset of the dataset based on the specified criteria.</p>
 </dd>
@@ -1560,8 +1807,8 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.reset" title="Link to this definition"></a></dt>
 <dd><p>Reset all filtering criteria to None.</p>
-<section id="id126">
-<h3>Returns:<a class="headerlink" href="#id126" title="Link to this heading"></a></h3>
+<section id="id137">
+<h3>Returns:<a class="headerlink" href="#id137" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
@@ -1573,22 +1820,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_parameter_name">
 <span class="sig-name descname"><span class="pre">set_parameter_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_parameter_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_parameter_name" title="Link to this definition"></a></dt>
 <dd><p>Set the name of the parameter to filter by.</p>
-<section id="id127">
-<h3>Parameters:<a class="headerlink" href="#id127" title="Link to this heading"></a></h3>
+<section id="id138">
+<h3>Parameters:<a class="headerlink" href="#id138" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">str</span></dt><dd><p>The name of the parameter to filter by.</p>
 </dd>
 </dl>
 </section>
-<section id="id128">
-<h3>Returns:<a class="headerlink" href="#id128" title="Link to this heading"></a></h3>
+<section id="id139">
+<h3>Returns:<a class="headerlink" href="#id139" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id129">
-<h3>Raises:<a class="headerlink" href="#id129" title="Link to this heading"></a></h3>
+<section id="id140">
+<h3>Raises:<a class="headerlink" href="#id140" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not a string.</p>
 </dd>
@@ -1602,22 +1849,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_parameter_value_max">
 <span class="sig-name descname"><span class="pre">set_parameter_value_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_parameter_value_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_parameter_value_max" title="Link to this definition"></a></dt>
 <dd><p>Set the maximum value of the parameter to include in the subset.</p>
-<section id="id130">
-<h3>Parameters:<a class="headerlink" href="#id130" title="Link to this heading"></a></h3>
+<section id="id141">
+<h3>Parameters:<a class="headerlink" href="#id141" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">int or float</span></dt><dd><p>The maximum value of the parameter to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id131">
-<h3>Returns:<a class="headerlink" href="#id131" title="Link to this heading"></a></h3>
+<section id="id142">
+<h3>Returns:<a class="headerlink" href="#id142" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id132">
-<h3>Raises:<a class="headerlink" href="#id132" title="Link to this heading"></a></h3>
+<section id="id143">
+<h3>Raises:<a class="headerlink" href="#id143" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not a number.</p>
 </dd>
@@ -1629,22 +1876,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_parameter_value_min">
 <span class="sig-name descname"><span class="pre">set_parameter_value_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_parameter_value_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_parameter_value_min" title="Link to this definition"></a></dt>
 <dd><p>Set the minimum value of the parameter to include in the subset.</p>
-<section id="id133">
-<h3>Parameters:<a class="headerlink" href="#id133" title="Link to this heading"></a></h3>
+<section id="id144">
+<h3>Parameters:<a class="headerlink" href="#id144" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">int or float</span></dt><dd><p>The minimum value of the parameter to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id134">
-<h3>Returns:<a class="headerlink" href="#id134" title="Link to this heading"></a></h3>
+<section id="id145">
+<h3>Returns:<a class="headerlink" href="#id145" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id135">
-<h3>Raises:<a class="headerlink" href="#id135" title="Link to this heading"></a></h3>
+<section id="id146">
+<h3>Raises:<a class="headerlink" href="#id146" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not a number.</p>
 </dd>
@@ -1656,22 +1903,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_sample_max">
 <span class="sig-name descname"><span class="pre">set_sample_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_sample_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_sample_max" title="Link to this definition"></a></dt>
 <dd><p>Set the maximum sample index for slicing the dataset.</p>
-<section id="id136">
-<h3>Parameters:<a class="headerlink" href="#id136" title="Link to this heading"></a></h3>
+<section id="id147">
+<h3>Parameters:<a class="headerlink" href="#id147" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">int</span></dt><dd><p>The maximum sample index to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id137">
-<h3>Returns:<a class="headerlink" href="#id137" title="Link to this heading"></a></h3>
+<section id="id148">
+<h3>Returns:<a class="headerlink" href="#id148" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id138">
-<h3>Raises:<a class="headerlink" href="#id138" title="Link to this heading"></a></h3>
+<section id="id149">
+<h3>Raises:<a class="headerlink" href="#id149" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not an integer.</p>
 </dd>
@@ -1683,22 +1930,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_sample_min">
 <span class="sig-name descname"><span class="pre">set_sample_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_sample_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_sample_min" title="Link to this definition"></a></dt>
 <dd><p>Set the minimum sample index for slicing the dataset.</p>
-<section id="id139">
-<h3>Parameters:<a class="headerlink" href="#id139" title="Link to this heading"></a></h3>
+<section id="id150">
+<h3>Parameters:<a class="headerlink" href="#id150" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">int</span></dt><dd><p>The minimum sample index to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id140">
-<h3>Returns:<a class="headerlink" href="#id140" title="Link to this heading"></a></h3>
+<section id="id151">
+<h3>Returns:<a class="headerlink" href="#id151" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id141">
-<h3>Raises:<a class="headerlink" href="#id141" title="Link to this heading"></a></h3>
+<section id="id152">
+<h3>Raises:<a class="headerlink" href="#id152" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not an integer.</p>
 </dd>
@@ -1710,22 +1957,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_time_max">
 <span class="sig-name descname"><span class="pre">set_time_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_time_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_time_max" title="Link to this definition"></a></dt>
 <dd><p>Set the maximum time for slicing the dataset.</p>
-<section id="id142">
-<h3>Parameters:<a class="headerlink" href="#id142" title="Link to this heading"></a></h3>
+<section id="id153">
+<h3>Parameters:<a class="headerlink" href="#id153" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">str or pd.Timestamp</span></dt><dd><p>The maximum time to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id143">
-<h3>Returns:<a class="headerlink" href="#id143" title="Link to this heading"></a></h3>
+<section id="id154">
+<h3>Returns:<a class="headerlink" href="#id154" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id144">
-<h3>Raises:<a class="headerlink" href="#id144" title="Link to this heading"></a></h3>
+<section id="id155">
+<h3>Raises:<a class="headerlink" href="#id155" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not a string or a pandas Timestamp.</p>
 </dd>
@@ -1737,22 +1984,22 @@ It slices the dataset by sample number, time, and parameter values as specified.
 <dt class="sig sig-object py" id="ctd_tools.processors.SubsetProcessor.set_time_min">
 <span class="sig-name descname"><span class="pre">set_time_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Timestamp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ctd_tools.processors.SubsetProcessor" title="ctd_tools.processors.subset_processor.SubsetProcessor"><span class="pre">SubsetProcessor</span></a></span></span><a class="reference internal" href="_modules/ctd_tools/processors/subset_processor.html#SubsetProcessor.set_time_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ctd_tools.processors.SubsetProcessor.set_time_min" title="Link to this definition"></a></dt>
 <dd><p>Set the minimum time for slicing the dataset.</p>
-<section id="id145">
-<h3>Parameters:<a class="headerlink" href="#id145" title="Link to this heading"></a></h3>
+<section id="id156">
+<h3>Parameters:<a class="headerlink" href="#id156" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>value<span class="classifier">str or pd.Timestamp</span></dt><dd><p>The minimum time to include in the subset.</p>
 </dd>
 </dl>
 </section>
-<section id="id146">
-<h3>Returns:<a class="headerlink" href="#id146" title="Link to this heading"></a></h3>
+<section id="id157">
+<h3>Returns:<a class="headerlink" href="#id157" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>SubsetProcessor:</dt><dd><p>The current instance for method chaining.</p>
 </dd>
 </dl>
 </section>
-<section id="id147">
-<h3>Raises:<a class="headerlink" href="#id147" title="Link to this heading"></a></h3>
+<section id="id158">
+<h3>Raises:<a class="headerlink" href="#id158" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>TypeError:</dt><dd><p>If the provided value is not a string or a pandas Timestamp.</p>
 </dd>
