@@ -7,6 +7,7 @@ inherit from this class and implement the methods for reading and processing dat
 from specific file formats (e.g., CNV, TOB, NetCDF, CSV, RBR, Nortek).
 """
 
+from __future__ import annotations
 import platform
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone

@@ -2,6 +2,7 @@
 Module for reading RBR ASCII data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import pandas as pd
 import xarray as xr
 import ctd_tools.parameters as params
@@ -117,12 +118,8 @@ class RbrAsciiReader(AbstractReader):
         ds = self.__create_xarray_dataset(data)
         self.data = ds
 
-    def get_data(self):
-        return self.data
-
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader."""
         return 'rbr-ascii'
 
     @staticmethod

@@ -2,7 +2,9 @@
 CTD Tools Readers Module
 
 This module provides various reader classes for importing CTD sensor data
-from different file formats into xarray Datasets.
+from different file formats into xarray Datasets. It includes a registry
+of available readers, allowing for lazy loading of specific reader classes
+based on the file format.
 
 Available Readers:
 -----------------
@@ -29,25 +31,37 @@ nc_reader = NetCdfReader("data.nc")
 nc_data = nc_reader.get_data()
 """
 
-# Import the base class
+# Import the base class (lightweight)
 from .base import AbstractReader
 
-# Import all individual reader classes
-from .csv_reader import CsvReader
-from .netcdf_reader import NetCdfReader
-from .nortek_ascii_reader import NortekAsciiReader
-from .rbr_ascii_reader import RbrAsciiReader
-from .rbr_rsk_legacy_reader import RbrRskLegacyReader
-from .rbr_rsk_reader import RbrRskReader
-from .rbr_rsk_auto_reader import RbrRskAutoReader
-from .sbe_cnv_reader import SbeCnvReader
-from .seasun_tob_reader import SeasunTobReader
+# Import reader registry (single source of truth)
+from .registry import get_reader_modules, get_all_reader_classes
 
+# Get reader class mapping from registry for lazy loading
+_READER_MODULES = get_reader_modules()
+
+# Cache for loaded reader classes
+_loaded_readers = {}
+
+def __getattr__(name):
+    """Lazy loading of reader classes."""
+    if name in _READER_MODULES:
+        if name not in _loaded_readers:
+            # Import only the specific module and class
+            # pylint: disable=C0415
+            from importlib import import_module
+            module = import_module(_READER_MODULES[name], package=__name__)
+            _loaded_readers[name] = getattr(module, name)
+        return _loaded_readers[name]
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+# Build __all__ from registry  
 __all__ = [
     'AbstractReader',
     'CsvReader',
-    'NetCdfReader',
-    'NortekAsciiReader', 
+    'NetCdfReader', 
+    'NortekAsciiReader',
     'RbrAsciiReader',
     'RbrRskAutoReader',
     'RbrRskLegacyReader',

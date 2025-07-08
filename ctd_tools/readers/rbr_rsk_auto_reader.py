@@ -2,6 +2,7 @@
 Module for reading RBR RSK data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import sqlite3
 import xarray as xr
 from packaging.version import Version
@@ -80,15 +81,12 @@ class RbrRskAutoReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader."""
         return 'rbr-rsk'
 
     @staticmethod
     def format_name() -> str:
-        """Get the format name for this reader."""
         return 'RBR RSK'
 
     @staticmethod
     def file_extension() -> str | None:
-        """Get the file extension for this reader."""
         return '.rsk'

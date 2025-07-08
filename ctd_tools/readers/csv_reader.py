@@ -2,6 +2,7 @@
 Module for reading CTD data from CSV files into xarray Datasets.
 """
 
+from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 import csv
@@ -88,19 +89,12 @@ class CsvReader(AbstractReader):
             self.data = ds
 
     @staticmethod
+    def format_key() -> str:
+        return 'csv'
+    
+    @staticmethod
     def format_name() -> str:
         return 'CSV'
-
-    @staticmethod
-    def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'csv'.
-        """
-        return 'csv'
 
     @staticmethod
     def file_extension() -> str | None:

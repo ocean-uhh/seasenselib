@@ -2,6 +2,7 @@
 Module for reading CTD data from SBE CNV files.
 """
 
+from __future__ import annotations
 import re
 from datetime import datetime
 import pycnv
@@ -169,13 +170,6 @@ class SbeCnvReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'sbe-cnv'.
-        """
         return 'sbe-cnv'
 
     @staticmethod

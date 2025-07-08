@@ -2,8 +2,8 @@
 Module for creating vertical CTD profiles from sensor data.
 """
 
+from __future__ import annotations
 import matplotlib.pyplot as plt
-
 from ctd_tools.plotters.base import AbstractPlotter
 import ctd_tools.parameters as params
 

@@ -12,13 +12,25 @@ Main Components:
 - processors: Classes for processing sensor data
 """
 
-try:
-    from . import readers
-    from . import writers
-    from . import plotters
-    from . import processors
-except ImportError:
-    pass
+# Import modules lazily to improve startup performance
+# The actual imports happen when these modules are first accessed
+
+import sys
+from importlib import import_module
+
+# Cache for loaded modules to avoid re-importing
+_loaded_modules = {}
+
+def __getattr__(name):
+    """Lazy loading of package modules."""
+    if name in ['readers', 'writers', 'plotters', 'processors']:
+        if name not in _loaded_modules:
+            # Use absolute import to avoid recursion
+            module_name = f'ctd_tools.{name}'
+            _loaded_modules[name] = import_module(module_name)
+        return _loaded_modules[name]
+    else:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 __all__ = [
     'readers',

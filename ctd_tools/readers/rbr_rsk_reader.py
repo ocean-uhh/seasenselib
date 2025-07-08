@@ -2,6 +2,7 @@
 Module for reading RBR .rsk files into xarray Datasets.
 """
 
+from __future__ import annotations
 import pandas as pd
 import xarray as xr
 from pyrsktools import RSK
@@ -105,7 +106,6 @@ class RbrRskReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader."""
         return 'rbr-rsk-default'
 
     @staticmethod

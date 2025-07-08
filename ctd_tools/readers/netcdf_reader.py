@@ -2,6 +2,7 @@
 Module for reading sensor data from netCDF files into xarray Datasets.
 """
 
+from __future__ import annotations
 import xarray as xr
 from .base import AbstractReader
 
@@ -60,14 +61,13 @@ class NetCdfReader(AbstractReader):
         super()._validate_necessary_parameters(self.data, None, None, 'netCDF file')
 
     @staticmethod
+    def format_key() -> str:
+        return 'netcdf'
+
+    @staticmethod
     def format_name() -> str:
         return 'netCDF'
 
     @staticmethod
     def file_extension() -> str | None:
         return '.nc'
-
-    @staticmethod
-    def format_key() -> str:
-        """Get the default format key for this reader."""
-        return 'netcdf'

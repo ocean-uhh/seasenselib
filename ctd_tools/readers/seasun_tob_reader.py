@@ -2,6 +2,7 @@
 Module for reading CTD data from TOB files into xarray Datasets.
 """
 
+from __future__ import annotations
 import pandas as pd
 import xarray as xr
 import gsw
@@ -124,13 +125,6 @@ class SeasunTobReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'seasun-tob'.
-        """
         return 'seasun-tob'
 
     @staticmethod

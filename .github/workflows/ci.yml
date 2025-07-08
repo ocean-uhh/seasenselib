@@ -1,0 +1,39 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11", "3.12", "3.x"]  # Min, popular, latest stable, bleeding edge
+      fail-fast: false
+    continue-on-error: ${{ matrix.python-version == '3.x' }}  # Don't fail CI if newest Python has issues
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        pip install -r requirements.txt
+
+    - name: Install CTD Tools in development mode
+      run: |
+        pip install -e .
+
+    - name: Run unit tests from tests folder
+      run: |
+        pytest tests/ -v -x

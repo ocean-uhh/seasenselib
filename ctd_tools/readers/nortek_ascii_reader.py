@@ -2,6 +2,7 @@
 Module for reading Nortek ASCII data files into xarray Datasets.
 """
 
+from __future__ import annotations
 import re
 import pandas as pd
 import xarray as xr
@@ -138,18 +139,8 @@ class NortekAsciiReader(AbstractReader):
         ds = self.__create_xarray_dataset(data, headers)
         self.data = ds
 
-    def get_data(self):
-        return self.data
-
     @staticmethod
     def format_key() -> str:
-        """Get the default format key for this reader.
-
-        Returns:
-        --------
-        str
-            The format key for this reader, which is 'nortek-ascii'.
-        """
         return 'nortek-ascii'
 
     @staticmethod
