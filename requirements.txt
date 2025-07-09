@@ -8,3 +8,4 @@ pylablib
 matplotlib
 netcdf4
 pyrsktools
+setuptools

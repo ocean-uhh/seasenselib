@@ -60,7 +60,8 @@ dependencies = [
   "matplotlib",
   "netcdf4",
   "gsw",
-  "pyrsktools"
+  "pyrsktools",
+  "setuptools"
 ]
 
 [project.optional-dependencies]

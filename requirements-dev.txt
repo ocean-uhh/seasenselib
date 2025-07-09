@@ -8,6 +8,7 @@ pylablib
 matplotlib
 netcdf4
 pyrsktools
+setuptools
 build
 twine
 sphinx
