@@ -7,7 +7,7 @@ import re
 import ctd_tools.parameters as ctdparams
 from .base import AbstractReader
 
-class AdcpMatlabReader:
+class AdcpMatlabReader(AbstractReader):
     """Reader for ADCP data stored in MATLAB .mat files."""
 
     def __init__(self, mat_file_path, mapping=None):
