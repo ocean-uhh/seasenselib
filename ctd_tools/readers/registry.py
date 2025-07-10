@@ -107,7 +107,7 @@ READER_REGISTRY: List[ReaderMetadata] = [
         module_name=".adcp_matlab_reader",
         format_name="ADCP Matlab",
         format_key="adcp-matlab",
-        file_extension= '.mat'
+        file_extension= None
     ),
 ]
 

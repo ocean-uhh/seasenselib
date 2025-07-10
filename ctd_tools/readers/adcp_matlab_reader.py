@@ -223,4 +223,4 @@ class AdcpMatlabReader(AbstractReader):
 
     @staticmethod
     def file_extension() -> str | None:
-        return '.mat'
+        return None
