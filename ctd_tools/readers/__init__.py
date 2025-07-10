@@ -67,6 +67,6 @@ __all__ = [
     'RbrRskLegacyReader',
     'RbrRskReader',
     'SbeCnvReader',
-    'SeasunTobReader'
+    'SeasunTobReader',
     'AdcpMatlabReader'
 ]
