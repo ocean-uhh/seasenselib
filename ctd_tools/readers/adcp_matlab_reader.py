@@ -3,7 +3,6 @@ import xarray as xr
 import scipy.io
 import pandas as pd
 from datetime import datetime, timedelta
-from __future__ import annotations
 import re
 import ctd_tools.parameters as ctdparams
 from .base import AbstractReader
