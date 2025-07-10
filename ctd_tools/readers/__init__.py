@@ -59,6 +59,7 @@ def __getattr__(name):
 # Build __all__ from registry  
 __all__ = [
     'AbstractReader',
+    'AdcpMatlabReader'
     'CsvReader',
     'NetCdfReader', 
     'NortekAsciiReader',
@@ -67,6 +68,5 @@ __all__ = [
     'RbrRskLegacyReader',
     'RbrRskReader',
     'SbeCnvReader',
-    'SeasunTobReader',
-    'AdcpMatlabReader'
+    'SeasunTobReader'
 ]
