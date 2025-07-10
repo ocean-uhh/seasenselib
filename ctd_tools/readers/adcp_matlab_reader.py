@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import re
 import ctd_tools.parameters as ctdparams
-from .base import AbstractReader
+from ctd_tools.readers.base import AbstractReader
 
 class AdcpMatlabReader(AbstractReader):
     """Reader for ADCP data stored in MATLAB .mat files."""
@@ -212,3 +212,15 @@ class AdcpMatlabReader(AbstractReader):
             "institution": "University of Hamburg",
             "source": "Acoustic Doppler Current Profiler",
         })
+
+    @staticmethod
+    def format_key() -> str:
+        return 'adcp-matlab'
+
+    @staticmethod
+    def format_name() -> str:
+        return 'ADCP Matlab'
+
+    @staticmethod
+    def file_extension() -> str | None:
+        return '.mat'
