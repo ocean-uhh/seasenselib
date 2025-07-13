@@ -127,3 +127,15 @@ class SbeAsciiReader(AbstractReader):
 
     def get_data(self):
         return self.data
+
+    @staticmethod
+    def format_key() -> str:
+        return 'sbe-ascii'
+
+    @staticmethod
+    def format_name() -> str:
+        return 'SBE ASCII'
+
+    @staticmethod
+    def file_extension() -> str | None:
+        return None
