@@ -62,6 +62,7 @@ __all__ = [
     'CsvReader',
     'NetCdfReader', 
     'NortekAsciiReader',
+    'RcmMatlabReader',
     'RbrAsciiReader',
     'RbrRskAutoReader',
     'RbrRskLegacyReader',
