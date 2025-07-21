@@ -107,7 +107,7 @@ READER_REGISTRY: List[ReaderMetadata] = [
         module_name=".rcm_matlab_reader",
         format_name="RCM Matlab",
         format_key="rcm-matlab",
-        file_extension=".mat"
+        file_extension=None
     ),
 ]
 
