@@ -103,12 +103,19 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension=None
     ),
     ReaderMetadata(
+        class_name="RcmMatlabReader",
+        module_name=".rcm_matlab_reader",
+        format_name="RCM Matlab",
+        format_key="rcm-matlab",
+        file_extension=None
+    ),
+    ReaderMetadata(
         class_name="SbeAsciiReader",
         module_name=".sbe_ascii_reader",
         format_name="SeaBird ASCII",
         format_key="sbe-ascii",
         file_extension=None
-    ),
+    )
 ]
 
 
