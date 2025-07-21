@@ -1,24 +1,22 @@
 """
-Module for reading CTD data from SBE Ascii files.
+Module for reading CTD data from SBE ASCII files.
 """
 
 from __future__ import annotations
 import re
 from datetime import datetime
-import pycnv
+import codecs
 import pandas as pd
 import xarray as xr
-import numpy as np
-import gsw
-import codecs
 
 from ctd_tools.readers.base import AbstractReader
-import ctd_tools.parameters as params
 
 class SbeAsciiReader(AbstractReader):
     """Reads CTD data from a SeaBird ASCII file into an xarray Dataset."""
-    def __init__(self, file_path):
-        self.file_path = file_path
+
+    def __init__(self, input_file: str, mapping=None):
+        super().__init__(input_file, mapping)
+        self.file_path = input_file
         self.__read()
 
     def __extract_sample_interval(self, file_path):
@@ -34,7 +32,7 @@ class SbeAsciiReader(AbstractReader):
                     sample_interval = parts[1].strip().split()[0]
                     break
         return sample_interval
-    
+
     def __extract_instrument_type(self, file_path):
         with codecs.open(file_path, 'r', 'ascii') as fo:
             first_line = fo.readline()
@@ -42,7 +40,7 @@ class SbeAsciiReader(AbstractReader):
         if match:
             return match.group(1)
         return "Unknown Instrument"
-    
+
     def __parse_data(self, file_path):
         with open(file_path, 'r') as f:
             lines = f.readlines()
@@ -51,8 +49,8 @@ class SbeAsciiReader(AbstractReader):
         data_start = 0
         for i, line in enumerate(lines):
             if line.startswith('*END*'):
-              data_start = i + 1
-              break
+                data_start = i + 1
+                break
             if '=' in line:
                 key, value = line.split('=', 1)
                 metadata[re.sub(r'^\* ', '', key.strip())] = value.strip()
@@ -88,7 +86,6 @@ class SbeAsciiReader(AbstractReader):
 
         return df, metadata
 
-
     def __create_xarray_dataset(self, df, metadata, sample_interval, instrument_type):
         ds = xr.Dataset.from_dataframe(df)
 
@@ -116,12 +113,13 @@ class SbeAsciiReader(AbstractReader):
             # Assign meta information for all attributes of the xarray Dataset
         for key in (list(ds.data_vars.keys()) + list(ds.coords.keys())):
             super()._assign_metadata_for_key_to_xarray_dataset( ds, key)
+
         return ds
-    
+
     def __read(self):
-        df, metadata = self.__parse_data(self.file_path)
-        sample_interval = self.__extract_sample_interval(self.file_path)
-        instrument_type = self.__extract_instrument_type(self.file_path)
+        df, metadata = self.__parse_data(self.input_file)
+        sample_interval = self.__extract_sample_interval(self.input_file)
+        instrument_type = self.__extract_instrument_type(self.input_file)
         ds = self.__create_xarray_dataset(df, metadata, sample_interval, instrument_type)
         self.data = ds
 
@@ -134,7 +132,7 @@ class SbeAsciiReader(AbstractReader):
 
     @staticmethod
     def format_name() -> str:
-        return 'SBE ASCII'
+        return 'SeaBird ASCII'
 
     @staticmethod
     def file_extension() -> str | None:

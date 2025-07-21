@@ -105,7 +105,7 @@ READER_REGISTRY: List[ReaderMetadata] = [
     ReaderMetadata(
         class_name="SbeAsciiReader",
         module_name=".sbe_ascii_reader",
-        format_name="SBE ASCII",
+        format_name="SeaBird ASCII",
         format_key="sbe-ascii",
         file_extension=None
     ),
