@@ -122,7 +122,8 @@ READER_REGISTRY: List[ReaderMetadata] = [
         format_name="SeaBird ASCII",
         format_key="sbe-ascii",
         file_extension=None
-    )
+    ),
+]
 
 # Utility functions to extract information from registry
 def get_reader_modules() -> Dict[str, str]:
