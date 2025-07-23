@@ -18,6 +18,7 @@ help:
 	@echo "  build         to create distributions (sdist & wheel)"
 	@echo "  publish       to upload the package to PyPI"
 	@echo "  publish-test  to upload the package to Test PyPI"
+	@echo "  release       to create a GitHub release after PyPI upload"
 	@echo "  clean         to remove temporary files and builds"
 	@echo "  check-readers to verify all reader classes are in __all__"
 
@@ -74,6 +75,31 @@ publish-test: build
 publish: build
 	# Ensure Twine credentials are configured (e.g. in ~/.pypirc)
 	pipenv run twine upload dist/*
+
+# ----------------------------------------
+# release: create GitHub release with built artifacts
+# ----------------------------------------
+release: build
+	@echo "Creating GitHub release..."
+	@# Extract version from pyproject.toml
+	@VERSION=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	echo "Creating release for version: $$VERSION"; \
+	git tag -a "v$$VERSION" -m "Release version $$VERSION" 2>/dev/null || echo "Tag v$$VERSION already exists"; \
+	git push origin "v$$VERSION" 2>/dev/null || echo "Tag already pushed"; \
+	if command -v gh > /dev/null; then \
+		gh release create "v$$VERSION" \
+			--title "CTD Tools v$$VERSION" \
+			--notes "Release version $$VERSION" \
+			--draft \
+			dist/ctd_tools-$$VERSION.tar.gz \
+			dist/ctd_tools-$$VERSION-py3-none-any.whl; \
+		echo "GitHub release created as draft. Please edit and publish manually."; \
+	else \
+		echo "GitHub CLI (gh) not found. Please create release manually at:"; \
+		echo "https://github.com/ifmeo-hamburg/ctd-tools/releases/new"; \
+		echo "Tag: v$$VERSION"; \
+		echo "Upload files: dist/ctd_tools-$$VERSION.tar.gz and dist/ctd_tools-$$VERSION-py3-none-any.whl"; \
+	fi
 
 # ----------------------------------------
 # check-readers: verify all reader classes are in __all__
