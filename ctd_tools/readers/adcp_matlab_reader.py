@@ -9,17 +9,57 @@ import ctd_tools.parameters as ctdparams
 from ctd_tools.readers.base import AbstractReader
 
 class AdcpMatlabReader(AbstractReader):
-    """Reader for ADCP data stored in MATLAB .mat files."""
+    """ Reads ADCP data from a matlab (.mat) file into a xarray Dataset. 
 
-    def __init__(self, mat_file_path, mapping=None):
-        self.mat_file_path = mat_file_path
-        self.data = scipy.io.loadmat(mat_file_path, struct_as_record=False)
+        This class is used to read ADCP files, which are stored in .mat files.
+        The provided data is expected to be in a matlab format, and this reader
+        is designed to detect the format, rename the variables under CF standards and create an xarra Dataset.
+        As there are various versions of variable names and file structures,
+        the reader will detect the version and parse accordingly.
+
+        Attributes:
+        ---------- 
+        data : xr.Dataset
+            The xarray Dataset containing the ADCP data previously stored in a .mat file.
+        input_file : str
+            The path to the input ADCP file containing the sensor data stored in MATLAB .mat file.
+
+        Methods:
+        -------
+        __init__(input_file):
+            Initializes the AdcpMatlabReader with the input file.
+        __read():
+            Reads the ADCP file and processes the data into an xarray Dataset.
+        get_data():
+            Returns the xarray Dataset containing the sensor data.
+        _detect_format():
+            Detects the format of the ADCP -mat input file and redirects accordingly.
+        _parse_time():
+            Handles different time formats in the ADCP .mat files.
+        _add_time():
+            Adds time coordinates to the dataset based on the detected format.
+        _add_data_and_coords():
+            Adds data variables and coordinates to the dataset based on the detected format.
+        _add_metadata():
+            Adds common metadata attributes to the dataset.
+        """
+
+    def __init__(self, input_file, mapping=None):
+        super().__init__(input_file, mapping)
+        self.dataset = None
+        self.format = None
+        self._read()
+
+    def _read(self):
+        self.data = scipy.io.loadmat(self.input_file, struct_as_record=False)
         self.format = self._detect_format()
-        super().__init__(mat_file_path, mapping)
         if not self.format:
-            raise ValueError(f"Could not detect ADCP format in {mat_file_path}.")
-        self.data_vars, self.coords = self._add_data_and_coords()
-        self.dataset = xr.Dataset(data_vars=self.data_vars, coords=self.coords)
+            raise ValueError(f"Could not detect ADCP format in {self.input_file}.")
+        data_vars, coords = self._add_data_and_coords()
+        self.dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+        # Assign meta information for all attributes of the xarray Dataset
+        for key in (list(self.dataset.data_vars.keys()) + list(self.dataset.coords.keys())):
+            super()._assign_metadata_for_key_to_xarray_dataset(self.dataset, key)
 
     def get_data(self):
         return self.dataset
@@ -101,13 +141,13 @@ class AdcpMatlabReader(AbstractReader):
                 ctdparams.EAST_VELOCITY: (("time", "bin"), self.data["dat_u"]),
                 ctdparams.NORTH_VELOCITY: (("time", "bin"), self.data["dat_v"]),
                 ctdparams.UP_VELOCITY: (("time", "bin"), self.data["dat_w"]),
-                ctdparams.TEMPERATURE: (["time"], self.data['dat_t'].flatten()),
-                ctdparams.ECHO_INTENSITY: (["time", "bin"], self.data['dat_echoa']),  # Example variable
-                ctdparams.CORRELATION: (["time", "bin"], self.data['dat_corra']),  # Example variable
-                ctdparams.PITCH: (["time"], self.data['dat_pitch'].flatten()),
-                ctdparams.ROLL: (["time"], self.data['dat_roll'].flatten()),
-                ctdparams.HEADING: (["time"], self.data['dat_head'].flatten()),
-                ctdparams.BATTERY_VOLTAGE: (["time"], self.data['dat_batt'].flatten()),
+                ctdparams.TEMPERATURE: (("time"), self.data['dat_t'].flatten()),
+                ctdparams.ECHO_INTENSITY: (("time", "bin"), self.data['dat_echoa']),
+                ctdparams.CORRELATION: (("time", "bin"), self.data['dat_corra']), 
+                ctdparams.PITCH: (("time"), self.data['dat_pitch'].flatten()),
+                ctdparams.ROLL: (("time"), self.data['dat_roll'].flatten()),
+                ctdparams.HEADING: (("time"), self.data['dat_head'].flatten()),
+                ctdparams.BATTERY_VOLTAGE: (("time"), self.data['dat_batt'].flatten()),
             }
         
         elif fmt == "v13":
@@ -147,16 +187,16 @@ class AdcpMatlabReader(AbstractReader):
         }
             
             data_vars = {
-                ctdparams.EAST_VELOCITY: (["time", "bin"], self.data['DS_19_12_u']),
-                ctdparams.NORTH_VELOCITY: (["time", "bin"], self.data['DS_19_12_v']),
-                ctdparams.UP_VELOCITY: (["time", "bin"], self.data['DS_19_12_w']),
-                ctdparams.TEMPERATURE: (["time"], self.data['DS_19_12_t'].flatten()),
-                ctdparams.ECHO_INTENSITY: (["time", "bin"], self.data['DS_19_12_echoa']),  # Example variable
-                ctdparams.CORRELATION: (["time", "bin"], self.data['DS_19_12_corra']),  # Example variable
-                ctdparams.PITCH: (["time"], self.data['DS_19_12_pitch'].flatten()),
-                ctdparams.ROLL: (["time"], self.data['DS_19_12_roll'].flatten()),
-                ctdparams.HEADING: (["time"], self.data['DS_19_12_head'].flatten()),
-                ctdparams.BATTERY_VOLTAGE: (["time"], self.data['DS_19_12_batt'].flatten()),
+                ctdparams.EAST_VELOCITY: (("time", "bin"), self.data['DS_19_12_u']),
+                ctdparams.NORTH_VELOCITY: (("time", "bin"), self.data['DS_19_12_v']),
+                ctdparams.UP_VELOCITY: (("time", "bin"), self.data['DS_19_12_w']),
+                ctdparams.TEMPERATURE: (("time"), self.data['DS_19_12_t'].flatten()),
+                ctdparams.ECHO_INTENSITY: (("time", "bin"), self.data['DS_19_12_echoa']),
+                ctdparams.CORRELATION: (("time", "bin"), self.data['DS_19_12_corra']),
+                ctdparams.PITCH: (("time"), self.data['DS_19_12_pitch'].flatten()),
+                ctdparams.ROLL: (("time"), self.data['DS_19_12_roll'].flatten()),
+                ctdparams.HEADING: (("time"), self.data['DS_19_12_head'].flatten()),
+                ctdparams.BATTERY_VOLTAGE: (("time"), self.data['DS_19_12_batt'].flatten()),
         }
 
         elif fmt == "v11":
@@ -190,18 +230,14 @@ class AdcpMatlabReader(AbstractReader):
 
             # Organize data variables to return
             data_vars = {
-                ctdparams.EAST_VELOCITY: (["time", "depth_bin"], east_velocity),
-                ctdparams.TEMPERATURE: (["time"], temperature),
-                ctdparams.SALINITY: (["time"], salinity),
-                ctdparams.PITCH: (["time"], pitch),
-                ctdparams.ROLL: (["time"], roll),
-                ctdparams.HEADING: (["time"], heading),
-                ctdparams.BATTERY_VOLTAGE: (["time"], battery_voltage),
+                ctdparams.EAST_VELOCITY: (("time", "depth_bin"), east_velocity),
+                ctdparams.TEMPERATURE: (("time"), temperature),
+                ctdparams.SALINITY: (("time"), salinity),
+                ctdparams.PITCH: (("time"), pitch),
+                ctdparams.ROLL: (("time"), roll),
+                ctdparams.HEADING: (("time"), heading),
+                ctdparams.BATTERY_VOLTAGE: (("time"), battery_voltage),
             }
-        # Assign meta information for all attributes of the xarray Dataset
-        for key in (list(self.dataset.data_vars.keys()) + list(self.dataset.coords.keys())):
-            super()._assign_metadata_for_key_to_xarray_dataset(self.dataset, key)
-
 
         return data_vars, coords
     
@@ -210,7 +246,6 @@ class AdcpMatlabReader(AbstractReader):
         self.dataset.attrs.update({
             "Conventions": "CF-1.8",
             "title": "ADCP Data",
-            "institution": "University of Hamburg",
             "source": "Acoustic Doppler Current Profiler",
         })
 
