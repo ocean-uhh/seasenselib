@@ -12,9 +12,9 @@ requires-python = ">=3.7"
 license = "AGPL-3.0-only"
 
 authors = [
-  { name = "Eleanor Frajka-Williams", email = "eleanor.frajka@uni-hamburg.de" },
-  { name = "Isabelle Schmitz", email = "isabelle.schmitz@uni-hamburg.de" },
-  { name = "Yves Sorge", email = "yves.sorge@uni-hamburg.de" }
+  { name = "Eleanor Frajka-Williams" },
+  { name = "Isabelle Schmitz" },
+  { name = "Yves Sorge" }
 ]
 
 maintainers = [
