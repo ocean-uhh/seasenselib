@@ -103,6 +103,13 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension=None
     ),
     ReaderMetadata(
+        class_name="AdcpMatlabReader",
+        module_name=".adcp_matlab_reader",
+        format_name="ADCP Matlab",
+        format_key="adcp-matlab",
+        file_extension= None
+    ),
+    ReaderMetadata(
         class_name="RcmMatlabReader",
         module_name=".rcm_matlab_reader",
         format_name="RCM Matlab",
@@ -115,9 +122,8 @@ READER_REGISTRY: List[ReaderMetadata] = [
         format_name="SeaBird ASCII",
         format_key="sbe-ascii",
         file_extension=None
-    )
+    ),
 ]
-
 
 # Utility functions to extract information from registry
 def get_reader_modules() -> Dict[str, str]:
