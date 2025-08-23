@@ -240,7 +240,7 @@ class RbrMatlabRsktoolsReader(AbstractReader):
 
     @staticmethod
     def format_name() -> str:
-        return "RBR Matlab RSKtools Reader"
+        return "RBR Matlab RSKtools"
 
     @staticmethod
     def file_extension() -> str | None:
