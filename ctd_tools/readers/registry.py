@@ -110,6 +110,13 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension= None
     ),
     ReaderMetadata(
+        class_name="AdcpMatlabReaderEfw",
+        module_name=".adcp_matlab_reader_efw",
+        format_name="ADCP Matlab EFW",
+        format_key="adcp-matlab-efw",
+        file_extension= None
+    ),
+    ReaderMetadata(
         class_name="RcmMatlabReader",
         module_name=".rcm_matlab_reader",
         format_name="RCM Matlab",

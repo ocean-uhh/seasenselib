@@ -60,6 +60,7 @@ def __getattr__(name):
 __all__ = [
     'AbstractReader',
     'AdcpMatlabReader',
+    'AdcpMatlabReaderEfw',
     'CsvReader',
     'NetCdfReader', 
     'NortekAsciiReader',
