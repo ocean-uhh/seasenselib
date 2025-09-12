@@ -338,8 +338,8 @@ class AdcpMatlabReaderEfw(AbstractReader):
 
     @staticmethod
     def format_name() -> str:
-        return "ADCP Matlab"
+        return "ADCP Matlab EFW"
 
     @staticmethod
     def file_extension() -> str | None:
-        return ".mat"
+        return None
