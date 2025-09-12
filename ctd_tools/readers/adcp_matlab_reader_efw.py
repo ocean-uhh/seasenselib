@@ -334,7 +334,7 @@ class AdcpMatlabReaderEfw(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        return "adcp-matlab"
+        return "adcp-matlab-efw"
 
     @staticmethod
     def format_name() -> str:
