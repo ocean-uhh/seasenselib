@@ -100,6 +100,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
 <span class="n">MODULE_NAME</span> <span class="o">=</span> <span class="s1">&#39;ctd_tools&#39;</span>
@@ -191,8 +192,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sort_variables</span> <span class="o">=</span> <span class="n">sort_variables</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_julian_to_gregorian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">julian_days</span><span class="p">,</span> <span class="n">start_date</span><span class="p">):</span>
-        <span class="n">full_days</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">julian_days</span><span class="p">)</span>
-        <span class="n">seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">julian_days</span> <span class="o">-</span> <span class="n">full_days</span><span class="p">)</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span>
+        <span class="n">full_days</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">julian_days</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Julian days start at 1, not 0</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">julian_days</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">julian_days</span><span class="p">))</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span>
         <span class="k">return</span> <span class="n">start_date</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">full_days</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_elapsed_seconds_since_jan_1970_to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed_seconds</span><span class="p">):</span>
@@ -203,7 +204,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_elapsed_seconds_since_jan_2000_to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed_seconds</span><span class="p">):</span>
         <span class="n">base_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">time_delta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">elapsed_seconds</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">base_date</span> <span class="o">+</span> <span class="n">time_delta</span>
+        <span class="n">date_value</span> <span class="o">=</span> <span class="n">base_date</span> <span class="o">+</span> <span class="n">time_delta</span>
+        <span class="k">return</span> <span class="n">date_value</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_elapsed_seconds_since_offset_to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed_seconds</span><span class="p">,</span> <span class="n">offset_datetime</span><span class="p">):</span>
         <span class="n">base_date</span> <span class="o">=</span> <span class="n">offset_datetime</span>
@@ -218,15 +220,21 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="si">}</span><span class="s2">&#39; is missing in </span><span class="si">{</span><span class="n">entity</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_xarray_dataset_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">,</span> <span class="n">depth_array</span><span class="p">,</span> 
-                <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">):</span>
+                <span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">depth_name</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">,</span>
+            <span class="n">latitude</span> <span class="o">=</span> <span class="n">latitude</span><span class="p">,</span>
+            <span class="n">longitude</span> <span class="o">=</span> <span class="n">longitude</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Only add depth coordinate if depth_array is not None</span>
+        <span class="k">if</span> <span class="n">depth_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coords</span><span class="p">[</span><span class="n">depth_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">depth_array</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
-            <span class="n">data_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> 
-            <span class="n">coords</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-                <span class="n">time</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">,</span>
-                <span class="n">depth</span> <span class="o">=</span> <span class="p">([</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">depth_array</span><span class="p">),</span>
-                <span class="n">latitude</span> <span class="o">=</span> <span class="n">latitude</span><span class="p">,</span>
-                <span class="n">longitude</span> <span class="o">=</span> <span class="n">longitude</span><span class="p">,</span>
-            <span class="p">),</span> <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">data_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">,</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
                 <span class="n">latitude</span> <span class="o">=</span> <span class="n">latitude</span><span class="p">,</span>
                 <span class="n">longitude</span> <span class="o">=</span> <span class="n">longitude</span><span class="p">,</span>
                 <span class="n">CreateTime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">),</span>
@@ -258,6 +266,70 @@
             <span class="k">if</span> <span class="n">unit</span><span class="p">:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="c1"># Remove unit from label</span>
             <span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;long_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_derive_oceanographic_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Derive oceanographic parameters from temperature, pressure, and salinity.</span>
+<span class="sd">        </span>
+<span class="sd">        This method calculates derived parameters like density and potential temperature</span>
+<span class="sd">        using the Gibbs SeaWater (GSW) oceanographic toolbox when temperature, pressure,</span>
+<span class="sd">        and salinity data are available in the xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        For multiple sensors (e.g., temperature_1, temperature_2), it will use the first</span>
+<span class="sd">        available sensor (temperature_1) or the base parameter name if only one exists.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ds : xr.Dataset</span>
+<span class="sd">            The xarray Dataset containing the sensor data and to add derived parameters to.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            The xarray Dataset with derived parameters added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Find the appropriate temperature variable</span>
+        <span class="n">temperature_var</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">temperature_var</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span>
+        <span class="k">elif</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="si">}</span><span class="s2">_1&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">temperature_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="si">}</span><span class="s2">_1&quot;</span>
+        
+        <span class="c1"># Find the appropriate salinity variable</span>
+        <span class="n">salinity_var</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">salinity_var</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span>
+        <span class="k">elif</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="si">}</span><span class="s2">_1&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">salinity_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="si">}</span><span class="s2">_1&quot;</span>
+        
+        <span class="c1"># Pressure should typically be singular, but check both possibilities</span>
+        <span class="n">pressure_var</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">pressure_var</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span>
+        <span class="k">elif</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="si">}</span><span class="s2">_1&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">pressure_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="si">}</span><span class="s2">_1&quot;</span>
+        
+        <span class="c1"># Check if we have all required parameters for oceanographic calculations</span>
+        <span class="k">if</span> <span class="n">temperature_var</span> <span class="ow">and</span> <span class="n">salinity_var</span> <span class="ow">and</span> <span class="n">pressure_var</span><span class="p">:</span>
+            
+            <span class="c1"># Derive density using GSW</span>
+            <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">DENSITY</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">gsw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">rho</span><span class="p">(</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">salinity_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">ds</span><span class="p">[</span><span class="n">temperature_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">ds</span><span class="p">[</span><span class="n">pressure_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+            
+            <span class="c1"># Derive potential temperature using GSW</span>
+            <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">gsw</span><span class="o">.</span><span class="n">pt0_from_t</span><span class="p">(</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">salinity_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">ds</span><span class="p">[</span><span class="n">temperature_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">ds</span><span class="p">[</span><span class="n">pressure_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">assign_metadata</span><span class="p">:</span>
+                <span class="c1"># Assign metadata for derived parameters</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">DENSITY</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">ds</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sort_xarray_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorts the variables in an xarray Dataset based on their standard names.</span>
@@ -355,7 +427,7 @@
         <span class="n">module_reader_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="n">python_version</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span>
         <span class="n">input_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span>
-        <span class="n">input_file_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_name</span>
+        <span class="n">input_file_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_name</span><span class="p">()</span>
         <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ&quot;</span><span class="p">)</span>
 
         <span class="c1"># assemble history entry</span>
