@@ -44,14 +44,14 @@ If you want to contribute to the project or modify the code, follow these steps:
 
    On Windows (CMD):
 
-   .. code-block:: bash
+   .. code-block:: bat
 
       python -m venv venv
       venv\Scripts\activate.bat
 
    On Windows (PowerShell):
 
-   .. code-block:: bash
+   .. code-block:: powershell
 
       python -m venv venv
       venv\Scripts\Activate.ps1

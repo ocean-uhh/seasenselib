@@ -30,7 +30,7 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/ct
    :maxdepth: 2
    :caption: Help and reference
 
-   GitHub Repo <http://github.com/ocean-uhh/ctd-tools>
+   GitHub Repo <https://github.com/ocean-uhh/ctd-tools>
    ctdtools
 
 

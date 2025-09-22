@@ -7,8 +7,7 @@ Readers
 -------
 
 .. automodule:: ctd_tools.readers
-   :members:
-   :undoc-members:
+   :no-members:
    :show-inheritance:
 
 Base Reader Classes
@@ -61,8 +60,7 @@ Writers
 -------
 
 .. automodule:: ctd_tools.writers
-   :members:
-   :undoc-members:
+   :no-members:
    :show-inheritance:
 
 Base Writer Classes
@@ -95,8 +93,7 @@ Plotters
 --------
 
 .. automodule:: ctd_tools.plotters
-   :members:
-   :undoc-members:
+   :no-members:
    :show-inheritance:
 
 Base Plotter Classes
@@ -134,8 +131,7 @@ Processors
 ----------
 
 .. automodule:: ctd_tools.processors
-   :members:
-   :undoc-members:
+   :no-members:
    :show-inheritance:
 
 Base Processor Classes
