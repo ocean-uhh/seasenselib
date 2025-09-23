@@ -63,9 +63,21 @@ class RbrMatlabLegacyReader(AbstractReader):
             self.serial_number = None
 
         # Start / end times as numpy datetime64
+
         def _parse_start_end(s: str) -> np.datetime64:
-            # e.g., "12/08/2018 12:00:00 PM"
-            return np.datetime64(datetime.strptime(s, "%d/%m/%Y %I:%M:%S %p"))
+            """Parse start/end date from string, supporting multiple formats."""
+            # Try legacy format first
+            try:
+                return np.datetime64(datetime.strptime(s, "%d/%m/%Y %I:%M:%S %p"))
+            except Exception:
+                pass
+            # Try ISO format fallback
+            try:
+                return np.datetime64(datetime.strptime(s, "%Y-%m-%d %H:%M:%S"))
+            except Exception:
+                pass
+            # If all fails, raise error
+            raise ValueError(f"Could not parse date string: {s}")
 
         self.start_date = _parse_start_end(RBR.starttime)
         self.end_date   = _parse_start_end(RBR.endtime)

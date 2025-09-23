@@ -124,6 +124,13 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension=None
     ),
     ReaderMetadata(
+        class_name="RbrMatlabReader",
+        module_name=".rbr_matlab_reader",
+        format_name="RBR Matlab",
+        format_key="rbr-matlab",
+        file_extension=None
+    ),
+    ReaderMetadata(
         class_name="RbrMatlabLegacyReader",
         module_name=".rbr_matlab_legacy_reader",
         format_name="RBR Matlab Legacy",

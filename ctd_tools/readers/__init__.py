@@ -13,6 +13,7 @@ Available Readers:
 - CsvReader: Read CSV files
 - RbrAsciiReader: Read RBR ASCII files
 - NortekAsciiReader: Read Nortek ASCII files
+- RbrMatlabReader: Auto-detect RBR Matlab format
 - RbrMatlabLegacyReader: Read RBR Matlab Legacy files
 - RbrMatlabRsktoolsReader: Read RBR Matlab RSKtools files
 - RbrRskLegacyReader: Read legacy RSK files
@@ -67,6 +68,7 @@ __all__ = [
     'NetCdfReader', 
     'NortekAsciiReader',
     'RbrAsciiReader',
+    'RbrMatlabReader',
     'RbrMatlabLegacyReader',
     'RbrMatlabRsktoolsReader',
     'RbrRskAutoReader',
