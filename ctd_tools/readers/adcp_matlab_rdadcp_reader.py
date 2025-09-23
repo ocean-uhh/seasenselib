@@ -1,5 +1,5 @@
 """
-Module for reading ADCP (RDI/Teledyne Workhorse) data from MATLAB .mat files.
+Module for reading ADCP (RDI/Teledyne Workhorse) data from MATLAB .mat files converted from binary with rdadcp.
 """
 
 from __future__ import annotations
@@ -11,8 +11,8 @@ from datetime import datetime
 from ctd_tools.readers.base import AbstractReader
 
 
-class AdcpMatlabReaderEfw(AbstractReader):
-    """Reader which converts ADCP data stored in MATLAB .mat files into an xarray Dataset."""
+class AdcpMatlabRdadcpReader(AbstractReader):
+    """Reader which converts ADCP data stored in MATLAB .mat files converted from binary with rdadcp into an xarray Dataset."""
 
     def __init__(self, input_file, mapping=None, time_dim: str = "time",
                  bin_dim: str = "bin", beam_dim: str = "beam"):
@@ -334,11 +334,11 @@ class AdcpMatlabReaderEfw(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        return "adcp-matlab-efw"
+        return "adcp-matlab-rdadcp"
 
     @staticmethod
     def format_name() -> str:
-        return "ADCP Matlab EFW"
+        return "ADCP Matlab rdadcp"
 
     @staticmethod
     def file_extension() -> str | None:
