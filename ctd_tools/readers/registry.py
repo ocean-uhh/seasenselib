@@ -103,10 +103,17 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension=None
     ),
     ReaderMetadata(
-        class_name="AdcpMatlabReader",
-        module_name=".adcp_matlab_reader",
-        format_name="ADCP Matlab",
-        format_key="adcp-matlab",
+        class_name="AdcpMatlabUhhdsReader",
+        module_name=".adcp_matlab_uhhds_reader",
+        format_name="ADCP Matlab UHH DS",
+        format_key="adcp-matlab-uhhds",
+        file_extension= None
+    ),
+    ReaderMetadata(
+        class_name="AdcpMatlabRdadcpReader",
+        module_name=".adcp_matlab_rdadcp_reader",
+        format_name="ADCP Matlab rdadcp",
+        format_key="adcp-matlab-rdadcp",
         file_extension= None
     ),
     ReaderMetadata(

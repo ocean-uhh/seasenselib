@@ -1,3 +1,5 @@
+"""Module for reading ADCP data from MATLAB .mat files converted from binaries recorded from UHH during DS cruises."""
+
 from __future__ import annotations
 import numpy as np
 import xarray as xr
@@ -8,7 +10,7 @@ import re
 import ctd_tools.parameters as ctdparams
 from ctd_tools.readers.base import AbstractReader
 
-class AdcpMatlabReader(AbstractReader):
+class AdcpMatlabUhhdsReader(AbstractReader):
     """ Reads ADCP data from a matlab (.mat) file into a xarray Dataset. 
 
         This class is used to read ADCP files, which are stored in .mat files.
@@ -251,11 +253,11 @@ class AdcpMatlabReader(AbstractReader):
 
     @staticmethod
     def format_key() -> str:
-        return 'adcp-matlab'
+        return 'adcp-matlab-uhhds'
 
     @staticmethod
     def format_name() -> str:
-        return 'ADCP Matlab'
+        return 'ADCP Matlab UHH DS'
 
     @staticmethod
     def file_extension() -> str | None:
