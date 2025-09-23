@@ -18,9 +18,9 @@ import glob
 import re
 
 from pathlib import Path
-from ctd_tools import readers
-from ctd_tools.readers.base import AbstractReader
-from ctd_tools.readers.registry import READER_REGISTRY, ReaderMetadata
+from seasenselib import readers
+from seasenselib.readers.base import AbstractReader
+from seasenselib.readers.registry import READER_REGISTRY, ReaderMetadata
 
 
 class TestReadersCompleteness(unittest.TestCase):
@@ -85,7 +85,7 @@ class TestReadersCompleteness(unittest.TestCase):
 
         for file_path in reader_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.readers.{file_name}"
+            module_name = f"seasenselib.readers.{file_name}"
 
             try:
                 # Import the individual reader module
@@ -125,7 +125,7 @@ class TestReadersCompleteness(unittest.TestCase):
 
                 # Get the class and check its module
                 reader_class = getattr(self.readers_module, class_name)
-                expected_module = f"ctd_tools.readers.{self._class_name_to_file_name(class_name)}"
+                expected_module = f"seasenselib.readers.{self._class_name_to_file_name(class_name)}"
 
                 self.assertEqual(reader_class.__module__, expected_module,
                                f"Class '{class_name}' should be from module '{expected_module}', "
@@ -204,7 +204,7 @@ class TestReadersCompleteness(unittest.TestCase):
 
         for file_path in reader_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.readers.{file_name}"
+            module_name = f"seasenselib.readers.{file_name}"
 
             try:
                 # Import the individual reader module
@@ -238,7 +238,7 @@ class TestReadersCompleteness(unittest.TestCase):
 
         for file_path in reader_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.readers.{file_name}"
+            module_name = f"seasenselib.readers.{file_name}"
 
             try:
                 # Import the individual reader module
@@ -424,7 +424,7 @@ class TestReadersCompleteness(unittest.TestCase):
         for entry in self.registry:
             with self.subTest(class_name=entry.class_name):
                 try:
-                    module = importlib.import_module(f"ctd_tools.readers{entry.module_name}")
+                    module = importlib.import_module(f"seasenselib.readers{entry.module_name}")
                     reader_class = getattr(module, entry.class_name)
                     self.assertTrue(inspect.isclass(reader_class),
                                   f"{entry.class_name} should be a class")
@@ -447,7 +447,7 @@ class TestReadersCompleteness(unittest.TestCase):
 
         for file_path in reader_files:
             file_name = Path(file_path).stem
-            module_name = f"ctd_tools.readers.{file_name}"
+            module_name = f"seasenselib.readers.{file_name}"
 
             try:
                 module = importlib.import_module(module_name)
@@ -477,7 +477,7 @@ class TestReadersCompleteness(unittest.TestCase):
             with self.subTest(class_name=entry.class_name):
                 try:
                     # Import and get the class
-                    module = importlib.import_module(f"ctd_tools.readers{entry.module_name}")
+                    module = importlib.import_module(f"seasenselib.readers{entry.module_name}")
                     reader_class = getattr(module, entry.class_name)
                     
                     # Test format_key consistency

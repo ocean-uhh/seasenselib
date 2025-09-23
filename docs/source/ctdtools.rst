@@ -1,19 +1,19 @@
 API Reference
 =============
 
-This section provides detailed API documentation for all CTD Tools modules.
+This section provides detailed API documentation for all SeaSenseLib modules.
 
 Readers
 -------
 
-.. automodule:: ctd_tools.readers
+.. automodule:: seasenselib.readers
    :no-members:
    :show-inheritance:
 
 Base Reader Classes
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.readers.base.AbstractReader
+.. autoclass:: seasenselib.readers.base.AbstractReader
    :members:
    :undoc-members:
    :show-inheritance:
@@ -21,37 +21,37 @@ Base Reader Classes
 Specific Reader Classes
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.readers.SbeCnvReader
+.. autoclass:: seasenselib.readers.SbeCnvReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.NetCdfReader
+.. autoclass:: seasenselib.readers.NetCdfReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.CsvReader
+.. autoclass:: seasenselib.readers.CsvReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.RbrRskReader
+.. autoclass:: seasenselib.readers.RbrRskReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.RbrRskAutoReader
+.. autoclass:: seasenselib.readers.RbrRskAutoReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.RbrAsciiReader
+.. autoclass:: seasenselib.readers.RbrAsciiReader
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.readers.NortekAsciiReader
+.. autoclass:: seasenselib.readers.NortekAsciiReader
    :members:
    :undoc-members:
    :show-inheritance:
@@ -59,14 +59,14 @@ Specific Reader Classes
 Writers
 -------
 
-.. automodule:: ctd_tools.writers
+.. automodule:: seasenselib.writers
    :no-members:
    :show-inheritance:
 
 Base Writer Classes
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.writers.base.AbstractWriter
+.. autoclass:: seasenselib.writers.base.AbstractWriter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -74,17 +74,17 @@ Base Writer Classes
 Specific Writer Classes
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.writers.NetCdfWriter
+.. autoclass:: seasenselib.writers.NetCdfWriter
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.writers.CsvWriter
+.. autoclass:: seasenselib.writers.CsvWriter
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.writers.ExcelWriter
+.. autoclass:: seasenselib.writers.ExcelWriter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -92,14 +92,14 @@ Specific Writer Classes
 Plotters
 --------
 
-.. automodule:: ctd_tools.plotters
+.. automodule:: seasenselib.plotters
    :no-members:
    :show-inheritance:
 
 Base Plotter Classes
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.plotters.base.AbstractPlotter
+.. autoclass:: seasenselib.plotters.base.AbstractPlotter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -107,22 +107,22 @@ Base Plotter Classes
 Specific Plotter Classes
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.plotters.TsDiagramPlotter
+.. autoclass:: seasenselib.plotters.TsDiagramPlotter
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.plotters.ProfilePlotter
+.. autoclass:: seasenselib.plotters.ProfilePlotter
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.plotters.TimeSeriesPlotter
+.. autoclass:: seasenselib.plotters.TimeSeriesPlotter
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.plotters.TimeSeriesPlotterMulti
+.. autoclass:: seasenselib.plotters.TimeSeriesPlotterMulti
    :members:
    :undoc-members:
    :show-inheritance:
@@ -130,14 +130,14 @@ Specific Plotter Classes
 Processors
 ----------
 
-.. automodule:: ctd_tools.processors
+.. automodule:: seasenselib.processors
    :no-members:
    :show-inheritance:
 
 Base Processor Classes
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.processors.base.AbstractProcessor
+.. autoclass:: seasenselib.processors.base.AbstractProcessor
    :members:
    :undoc-members:
    :show-inheritance:
@@ -145,17 +145,17 @@ Base Processor Classes
 Specific Processor Classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ctd_tools.processors.SubsetProcessor
+.. autoclass:: seasenselib.processors.SubsetProcessor
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.processors.ResampleProcessor
+.. autoclass:: seasenselib.processors.ResampleProcessor
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: ctd_tools.processors.StatisticsProcessor
+.. autoclass:: seasenselib.processors.StatisticsProcessor
    :members:
    :undoc-members:
    :show-inheritance:

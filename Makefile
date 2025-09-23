@@ -88,17 +88,17 @@ release: build
 	git push origin "v$$VERSION" 2>/dev/null || echo "Tag already pushed"; \
 	if command -v gh > /dev/null; then \
 		gh release create "v$$VERSION" \
-			--title "CTD Tools v$$VERSION" \
+			--title "SeaSenseLib v$$VERSION" \
 			--notes "Release version $$VERSION" \
 			--draft \
-			dist/ctd_tools-$$VERSION.tar.gz \
-			dist/ctd_tools-$$VERSION-py3-none-any.whl; \
+			dist/seasenselib-$$VERSION.tar.gz \
+			dist/seasenselib-$$VERSION-py3-none-any.whl; \
 		echo "GitHub release created as draft. Please edit and publish manually."; \
 	else \
 		echo "GitHub CLI (gh) not found. Please create release manually at:"; \
-		echo "https://github.com/ocean-uhh/ctd-tools/releases/new"; \
+		echo "https://github.com/ocean-uhh/seasenselib/releases/new"; \
 		echo "Tag: v$$VERSION"; \
-		echo "Upload files: dist/ctd_tools-$$VERSION.tar.gz and dist/ctd_tools-$$VERSION-py3-none-any.whl"; \
+		echo "Upload files: dist/seasenselib-$$VERSION.tar.gz and dist/seasenselib-$$VERSION-py3-none-any.whl"; \
 	fi
 
 # ----------------------------------------

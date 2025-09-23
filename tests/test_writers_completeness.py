@@ -17,8 +17,8 @@ import glob
 import re
 from pathlib import Path
 
-from ctd_tools import writers
-from ctd_tools.writers.base import AbstractWriter
+from seasenselib import writers
+from seasenselib.writers.base import AbstractWriter
 
 
 class TestWritersCompleteness(unittest.TestCase):
@@ -82,7 +82,7 @@ class TestWritersCompleteness(unittest.TestCase):
 
         for file_path in writer_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.writers.{file_name}"
+            module_name = f"seasenselib.writers.{file_name}"
 
             try:
                 # Import the individual writer module
@@ -122,7 +122,7 @@ class TestWritersCompleteness(unittest.TestCase):
 
                 # Get the class and check its module
                 writer_class = getattr(self.writers_module, class_name)
-                expected_module = f"ctd_tools.writers.{self._class_name_to_file_name(class_name)}"
+                expected_module = f"seasenselib.writers.{self._class_name_to_file_name(class_name)}"
 
                 self.assertEqual(writer_class.__module__, expected_module,
                                f"Class '{class_name}' should be from module '{expected_module}', "
@@ -206,7 +206,7 @@ class TestWritersCompleteness(unittest.TestCase):
 
         for file_path in writer_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.writers.{file_name}"
+            module_name = f"seasenselib.writers.{file_name}"
 
             try:
                 # Import the individual writer module
@@ -240,7 +240,7 @@ class TestWritersCompleteness(unittest.TestCase):
 
         for file_path in writer_files:
             file_name = Path(file_path).stem  # Get filename without extension
-            module_name = f"ctd_tools.writers.{file_name}"
+            module_name = f"seasenselib.writers.{file_name}"
 
             try:
                 # Import the individual writer module

@@ -1,11 +1,11 @@
-# CTD Tools
+# SeaSenseLib
 
 A tool for reading, converting, and plotting sensor data from different oceanographic formats. 
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [How to import CTD Tools](#how-to-import-ctd-tools)
+- [How to import SeaSenseLib](#how-to-import-seasenselib)
 - [CLI Usage](#cli-usage)
 - [Example data](#example-data)
   - [Converting a CNV file to netCDF](#converting-a-cnv-file-to-netcdf)
@@ -15,23 +15,23 @@ A tool for reading, converting, and plotting sensor data from different oceanogr
 
 ## Installation
 
-To install CTD Tools, we strongly recommend using a scientific Python distribution. 
-If you already have Python, you can install CTD Tools with:
+To install SeaSenseLib, we strongly recommend using a scientific Python distribution. 
+If you already have Python, you can install SeaSenseLib with:
 
 ```bash
-pip install ctd-tools
+pip install seasenselib
 ```
 
 Now you're ready to use the library.
 
-## How to import CTD Tools
+## How to import SeaSenseLib
 
-Example code for using the CTD Tools library in your project:
+Example code for using the SeaSenseLib library in your project:
 
 ```python
-from ctd_tools.readers import SbeCnvReader, NetCdfReader
-from ctd_tools.writers import NetCdfWriter
-from ctd_tools.plotters import TimeSeriesPlotter
+from seasenselib.readers import SbeCnvReader, NetCdfReader
+from seasenselib.writers import NetCdfWriter
+from seasenselib.plotters import TimeSeriesPlotter
 
 # Read CTD data from CNV file
 reader = SbeCnvReader("sea-practical-2023.cnv")
@@ -54,7 +54,7 @@ This chapter describes how to run the program from CLI.
 After installing as a Python package, you can run it via CLI by just using the package name: 
 
 ```bash
-ctd-tools
+seasenselib
 ```
 The various features of the tool can be executed by using different commands. To invoke a command, simply append 
 it as an argument to the program call via CLI (see following example section for some examples). The 
@@ -73,18 +73,18 @@ Every command uses different parameters. To get more information about how to us
 program and each command, just run it with the `--help` (or `-h`) argument:
 
 ```bash
-ctd-tools --help
+seasenselib --help
 ```
 
 To get help for a single command, add `--help` (or `-h`) argument after typing the command name:
 
 ```bash
-ctd-tools convert --help
+seasenselib convert --help
 ```
 
 ## Example data
 
-In the `examples` directory of the [code repository on GitLab](https://gitlab.rrz.uni-hamburg.de/ifmeo-sea-practical/ctd-tools) you'll find example Seabird CNV files from real research cruises.
+In the `examples` directory of the [code repository](https://github.com/ocean-uhh/seasenselib) you'll find example files from real research cruises.
 
 - The file `sea-practical-2023.cnv` contains data from a vertical CTD profile (one downcast) with parameters `temperature`, `salinity`, `pressure`, `oxygen`, `turbidity`.
 - The file `denmark-strait-ds-m1-17.cnv` contains data from an instrument moored over six days in a depth of around 650 m with parameters `temperature`, `salinity`, `pressure`.
@@ -96,7 +96,7 @@ The following examples will guide you through all available commands using the f
 Use the following command to convert a CNV file to a netCDF file:
 
 ```bash
-ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
+seasenselib convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc
 ```
 
 As you can see, format detection works for this command via file extension (`.nc` for netCDF or `.csv` for CSV), but you can also specify it via argument `--format` (or `-f`).
@@ -105,7 +105,7 @@ Important note: Our example files work out of the box. But in some cases your Se
 are not known of our program or the `pycnv` library which we're using. If you get an error due to missing parameters while converting or if you miss parameters during further data processing, e.g. something essential like the temperature, then a parameter mapping might be necessary. A parameter mapping is performed with the argument `--mapping` (or `-m`), which is followed by a list of mapping pairs separated with spaces. A mapping pair consists of a standard parameter name that we use within the program and the corresponding name of the column or channel from the Seabird CNV file. Example for a mapping which works for the example above:
 
 ```bash
-ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
+seasenselib convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc -m temperature=tv290C pressure=prdM salinity=sal00 depth=depSM
 ```
 
 ### Showing the summary of a netCDF
@@ -113,7 +113,7 @@ ctd-tools convert -i examples/sea-practical-2023.cnv -o output/sea-practical-202
 For the created netCDF file:
 
 ```bash
-ctd-tools show -i output/sea-practical-2023.nc
+seasenselib show -i output/sea-practical-2023.nc
 ```
 
 Again, format detection works also for this command via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
@@ -123,19 +123,19 @@ Again, format detection works also for this command via file extension (`.nc` fo
 Plot a T-S diagram:
 
 ```bash
-ctd-tools plot-ts -i output/sea-practical-2023.nc
+seasenselib plot-ts -i output/sea-practical-2023.nc
 ```
 
 Plot a vertical CTD profile:
 
 ```bash
-ctd-tools plot-profile -i output/sea-practical-2023.nc
+seasenselib plot-profile -i output/sea-practical-2023.nc
 ```
 
 Plot a time series for 'temperature' parameter:
 
 ```bash
-ctd-tools plot-series -i output/sea-practical-2023.nc -p temperature salinity --dual-axis
+seasenselib plot-series -i output/sea-practical-2023.nc -p temperature salinity --dual-axis
 ```
 
 Also for this command, format detection works via file extension (`.nc` for netCDF, `.csv` for CSV, `.cnv` for CNV).
@@ -150,8 +150,8 @@ Start here to set up your local development environment: clone the repository, c
 1. **Clone the repo**  
 
    ```bash
-   git clone https://github.com/ocean-uhh/ctd-tools.git
-   cd ctd-tools
+   git clone https://github.com/ocean-uhh/seasenselib.git
+   cd seasenselib
    ```
 
 2. **Create and activate a virtual environment**
@@ -197,7 +197,7 @@ Useful commands:
 - **Execute the application**
 
   ```bash
-  python -m ctd_tools
+  python -m seasenselib
   ```
 
 - **Build distributions**

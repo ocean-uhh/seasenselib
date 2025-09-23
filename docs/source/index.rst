@@ -3,12 +3,12 @@
    contain the root `toctree` directive.
 
 
-Welcome to CTD Tools documentation!
+Welcome to SeaSenseLib documentation!
 ====================================
 
-`ctd-tools` is a library to process data from oceanographic sensor formats.
+`seasenselib` is a library to process data from oceanographic sensor formats.
 
-For recommendations or bug reports, please visit https://github.com/ocean-uhh/ctd-tools/issues/new
+For recommendations or bug reports, please visit https://github.com/ocean-uhh/seasenselib/issues/new
 
 
 .. toctree::
@@ -30,7 +30,7 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/ct
    :maxdepth: 2
    :caption: Help and reference
 
-   GitHub Repo <http://github.com/ocean-uhh/ctd-tools>
+   GitHub Repo <http://github.com/ocean-uhh/seasenselib>
    ctdtools
 
 

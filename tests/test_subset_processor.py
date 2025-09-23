@@ -1,5 +1,5 @@
 """
-Unit tests for the SubsetProcessor class in ctd_tools.processors module.
+Unit tests for the SubsetProcessor class in seasenselib.processors module.
 """
 
 import unittest
@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from ctd_tools.processors import SubsetProcessor
+from seasenselib.processors import SubsetProcessor
 
 class TestSubsetProcessor(unittest.TestCase):
     """Unit tests for the SubsetProcessor class."""
