@@ -96,7 +96,7 @@ release: build
 		echo "GitHub release created as draft. Please edit and publish manually."; \
 	else \
 		echo "GitHub CLI (gh) not found. Please create release manually at:"; \
-		echo "https://github.com/ifmeo-hamburg/ctd-tools/releases/new"; \
+		echo "https://github.com/ocean-uhh/ctd-tools/releases/new"; \
 		echo "Tag: v$$VERSION"; \
 		echo "Upload files: dist/ctd_tools-$$VERSION.tar.gz and dist/ctd_tools-$$VERSION-py3-none-any.whl"; \
 	fi

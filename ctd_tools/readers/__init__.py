@@ -8,10 +8,16 @@ based on the file format.
 
 Available Readers:
 -----------------
+- AdcpMatlabReader: Read ADCP Matlab files
 - NetCdfReader: Read NetCDF files
 - CsvReader: Read CSV files
+- AdcpMatlabRdadcpReader: Read ADCP Matlab files converted from rdadcp binaries
+- AdcpMatlabUhhdsReader: Read ADCP Matlab files converted from UHH DS binaries
 - RbrAsciiReader: Read RBR ASCII files
 - NortekAsciiReader: Read Nortek ASCII files
+- RbrMatlabReader: Auto-detect RBR Matlab format
+- RbrMatlabLegacyReader: Read RBR Matlab Legacy files
+- RbrMatlabRsktoolsReader: Read RBR Matlab RSKtools files
 - RbrRskLegacyReader: Read legacy RSK files
 - RbrRskReader: Read RSK files
 - RbrRskAutoReader: Auto-detect RSK format
@@ -59,11 +65,15 @@ def __getattr__(name):
 # Build __all__ from registry  
 __all__ = [
     'AbstractReader',
-    'AdcpMatlabReader',
+    'AdcpMatlabRdadcpReader',
+    'AdcpMatlabUhhdsReader',
     'CsvReader',
     'NetCdfReader', 
     'NortekAsciiReader',
     'RbrAsciiReader',
+    'RbrMatlabLegacyReader',
+    'RbrMatlabReader',
+    'RbrMatlabRsktoolsReader',
     'RbrRskAutoReader',
     'RbrRskLegacyReader',
     'RbrRskReader',

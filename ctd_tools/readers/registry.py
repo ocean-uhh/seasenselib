@@ -103,10 +103,17 @@ READER_REGISTRY: List[ReaderMetadata] = [
         file_extension=None
     ),
     ReaderMetadata(
-        class_name="AdcpMatlabReader",
-        module_name=".adcp_matlab_reader",
-        format_name="ADCP Matlab",
-        format_key="adcp-matlab",
+        class_name="AdcpMatlabUhhdsReader",
+        module_name=".adcp_matlab_uhhds_reader",
+        format_name="ADCP Matlab UHH DS",
+        format_key="adcp-matlab-uhhds",
+        file_extension= None
+    ),
+    ReaderMetadata(
+        class_name="AdcpMatlabRdadcpReader",
+        module_name=".adcp_matlab_rdadcp_reader",
+        format_name="ADCP Matlab rdadcp",
+        format_key="adcp-matlab-rdadcp",
         file_extension= None
     ),
     ReaderMetadata(
@@ -121,6 +128,27 @@ READER_REGISTRY: List[ReaderMetadata] = [
         module_name=".sbe_ascii_reader",
         format_name="SeaBird ASCII",
         format_key="sbe-ascii",
+        file_extension=None
+    ),
+    ReaderMetadata(
+        class_name="RbrMatlabReader",
+        module_name=".rbr_matlab_reader",
+        format_name="RBR Matlab",
+        format_key="rbr-matlab",
+        file_extension=None
+    ),
+    ReaderMetadata(
+        class_name="RbrMatlabLegacyReader",
+        module_name=".rbr_matlab_legacy_reader",
+        format_name="RBR Matlab Legacy",
+        format_key="rbr-matlab-legacy",
+        file_extension=None
+    ),
+    ReaderMetadata(
+        class_name="RbrMatlabRsktoolsReader",
+        module_name=".rbr_matlab_rsktools_reader",
+        format_name="RBR Matlab RSKtools",
+        format_key="rbr-matlab-rsktools",
         file_extension=None
     ),
 ]
