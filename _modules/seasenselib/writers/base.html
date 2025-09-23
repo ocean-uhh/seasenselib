@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ctd_tools.writers.base &mdash; ctd_tools v0.0.0 documentation</title>
+  <title>seasenselib.writers.base &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
@@ -32,7 +32,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            ctd_tools
+            seasenselib
               <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
@@ -45,7 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -54,7 +54,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
 </ul>
 
@@ -64,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">ctd_tools</a>
+          <a href="../../../index.html">seasenselib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,7 +73,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">ctd_tools.writers.base</li>
+      <li class="breadcrumb-item active">seasenselib.writers.base</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,12 +82,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for ctd_tools.writers.base</h1><div class="highlight"><pre>
+  <h1>Source code for seasenselib.writers.base</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for abstract base class for writing sensor data from xarray Datasets.</span>
 
 <span class="sd">This module defines the `AbstractWriter` class, which serves as a base class for</span>
-<span class="sd">all writer implementations in the CTD Tools package. Concrete writer classes should</span>
+<span class="sd">all writer implementations in the SeaSenseLib package. Concrete writer classes should</span>
 <span class="sd">inherit from this class and implement the `write` method to handle the specifics of</span>
 <span class="sd">writing data to various formats (e.g., NetCDF, CSV, Excel).</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -96,7 +96,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <div class="viewcode-block" id="AbstractWriter">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.writers.base.AbstractWriter">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for writing sensor data from xarray Datasets.</span>
 <span class="sd">    </span>
@@ -150,7 +150,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>  <span class="c1"># This will use the setter</span>
 
 <div class="viewcode-block" id="AbstractWriter.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.writers.base.AbstractWriter.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -201,7 +201,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="AbstractWriter.write">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.writers.base.AbstractWriter.write">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.write">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the xarray Dataset to a file.</span>

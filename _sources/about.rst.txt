@@ -1,7 +1,7 @@
-About CTD Tools
+About SeaSenseLib
 ===============
 
-CTD Tools is a Python library for reading, converting, and plotting oceanographic sensor data from various instruments and formats. The package is designed to work seamlessly with data from moored instruments and CTD profiles, supporting multiple file formats commonly used in oceanographic research.
+SeaSenseLib is a Python library for reading, converting, and plotting oceanographic sensor data from various instruments and formats. The package is designed to work seamlessly with data from moored instruments and CTD profiles, supporting multiple file formats commonly used in oceanographic research.
 
 **Key Features:**
 
@@ -22,7 +22,7 @@ CTD Tools is a Python library for reading, converting, and plotting oceanographi
 
 **Project Goals:**
 
-CTD Tools aims to simplify the process of working with oceanographic sensor data by providing:
+SeaSenseLib aims to simplify the process of working with oceanographic sensor data by providing:
 
 1. **Standardized Data Access**: Convert proprietary formats to standard xarray Datasets
 2. **Consistent API**: Uniform interface across different instrument types
@@ -30,7 +30,7 @@ CTD Tools aims to simplify the process of working with oceanographic sensor data
 4. **Research Reproducibility**: Enable easy sharing and reprocessing of oceanographic datasets
 5. **Educational Use**: Provide tools suitable for teaching oceanographic data analysis
 
-**Who Should Use CTD Tools:**
+**Who Should Use SeaSenseLib:**
 
 * Oceanographic researchers working with CTD and mooring data
 * Students learning oceanographic data analysis
@@ -39,4 +39,4 @@ CTD Tools aims to simplify the process of working with oceanographic sensor data
 
 **Community and Support:**
 
-CTD Tools is developed and maintained by the oceanographic community. We welcome contributions, bug reports, and feature requests through our GitHub repository.
+SeaSenseLib is developed and maintained by the oceanographic community. We welcome contributions, bug reports, and feature requests through our GitHub repository.

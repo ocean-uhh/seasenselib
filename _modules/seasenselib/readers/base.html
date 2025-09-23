@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ctd_tools.readers.base &mdash; ctd_tools v0.0.0 documentation</title>
+  <title>seasenselib.readers.base &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
@@ -32,7 +32,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            ctd_tools
+            seasenselib
               <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
@@ -45,7 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -54,7 +54,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
 </ul>
 
@@ -64,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">ctd_tools</a>
+          <a href="../../../index.html">seasenselib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,7 +73,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">ctd_tools.readers.base</li>
+      <li class="breadcrumb-item active">seasenselib.readers.base</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,12 +82,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for ctd_tools.readers.base</h1><div class="highlight"><pre>
+  <h1>Source code for seasenselib.readers.base</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for abstract base class for reading sensor data from various file formats.</span>
 
 <span class="sd">This module defines the `AbstractReader` class, which serves as a base class for</span>
-<span class="sd">all reader implementations in the CTD Tools package. Concrete reader classes should</span>
+<span class="sd">all reader implementations in the SeaSenseLib package. Concrete reader classes should</span>
 <span class="sd">inherit from this class and implement the methods for reading and processing data</span>
 <span class="sd">from specific file formats (e.g., CNV, TOB, NetCDF, CSV, RBR, Nortek).</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -101,13 +101,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
-<span class="n">MODULE_NAME</span> <span class="o">=</span> <span class="s1">&#39;ctd_tools&#39;</span>
+<span class="n">MODULE_NAME</span> <span class="o">=</span> <span class="s1">&#39;seasenselib&#39;</span>
 
 
 <div class="viewcode-block" id="AbstractReader">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractReader</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Abstract super class for reading sensor data. </span>
 
@@ -451,7 +451,7 @@
         <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="AbstractReader._perform_default_postprocessing">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader._perform_default_postprocessing">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader._perform_default_postprocessing">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_perform_default_postprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform default post-processing on the xarray Dataset.</span>
@@ -494,14 +494,14 @@
 
 
 <div class="viewcode-block" id="AbstractReader.get_data">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader.get_data">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader.get_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the processed data as an xarray Dataset. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="AbstractReader.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -523,7 +523,7 @@
 
 
 <div class="viewcode-block" id="AbstractReader.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -545,7 +545,7 @@
 
 
 <div class="viewcode-block" id="AbstractReader.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.base.AbstractReader.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.base.AbstractReader.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>

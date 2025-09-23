@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ctd_tools.readers.csv_reader &mdash; ctd_tools v0.0.0 documentation</title>
+  <title>seasenselib.readers.csv_reader &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
@@ -32,7 +32,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            ctd_tools
+            seasenselib
               <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
@@ -45,7 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -54,7 +54,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
 </ul>
 
@@ -64,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">ctd_tools</a>
+          <a href="../../../index.html">seasenselib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,7 +73,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">ctd_tools.readers.csv_reader</li>
+      <li class="breadcrumb-item active">seasenselib.readers.csv_reader</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,7 +82,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for ctd_tools.readers.csv_reader</h1><div class="highlight"><pre>
+  <h1>Source code for seasenselib.readers.csv_reader</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for reading CTD data from CSV files into xarray Datasets.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -92,12 +92,12 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
 
 
 <div class="viewcode-block" id="CsvReader">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.CsvReader">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.CsvReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CsvReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads CTD data from a CSV file into a xarray Dataset.</span>
 
@@ -129,7 +129,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CsvReader.__init__">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.CsvReader.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.CsvReader.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span></div>
@@ -179,21 +179,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="CsvReader.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.CsvReader.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.CsvReader.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;csv&#39;</span></div>
 
     
 <div class="viewcode-block" id="CsvReader.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.CsvReader.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.CsvReader.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;CSV&#39;</span></div>
 
 
 <div class="viewcode-block" id="CsvReader.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.CsvReader.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.CsvReader.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;.csv&#39;</span></div>

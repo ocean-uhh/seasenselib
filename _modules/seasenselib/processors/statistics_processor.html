@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ctd_tools.processors.statistics_processor &mdash; ctd_tools v0.0.0 documentation</title>
+  <title>seasenselib.processors.statistics_processor &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
@@ -32,7 +32,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            ctd_tools
+            seasenselib
               <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
@@ -45,7 +45,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -54,7 +54,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
 </ul>
 
@@ -64,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">ctd_tools</a>
+          <a href="../../../index.html">seasenselib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,7 +73,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">ctd_tools.processors.statistics_processor</li>
+      <li class="breadcrumb-item active">seasenselib.processors.statistics_processor</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,7 +82,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for ctd_tools.processors.statistics_processor</h1><div class="highlight"><pre>
+  <h1>Source code for seasenselib.processors.statistics_processor</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for calculating statistics and performing calculations on sensor data.</span>
 
@@ -92,11 +92,11 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractProcessor</span>
 
 <div class="viewcode-block" id="StatisticsProcessor">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StatisticsProcessor</span><span class="p">(</span><span class="n">AbstractProcessor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate statistical metrics on sensor data.</span>
 <span class="sd">    </span>
@@ -145,7 +145,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">parameter</span> <span class="o">=</span> <span class="n">parameter</span>
 
 <div class="viewcode-block" id="StatisticsProcessor.process">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.process">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.process">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the dataset to calculate all statistics.</span>
 <span class="sd">        </span>
@@ -158,7 +158,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.max">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.max">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.max">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the maximum value.</span>
 <span class="sd">        </span>
@@ -181,7 +181,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.min">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.min">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.min">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the minimum value.</span>
 <span class="sd">        </span>
@@ -204,7 +204,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.mean">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.mean">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.mean">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the arithmetic mean.</span>
 <span class="sd">        </span>
@@ -227,7 +227,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.median">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.median">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.median">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the median value.</span>
 <span class="sd">        </span>
@@ -250,7 +250,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.std">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.std">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.std">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the standard deviation.</span>
 <span class="sd">        </span>
@@ -273,7 +273,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.var">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.var">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.var">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the variance.</span>
 <span class="sd">        </span>
@@ -296,7 +296,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.quantile">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.quantile">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.quantile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">quantile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate quantiles.</span>
 <span class="sd">        </span>
@@ -321,7 +321,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.count_valid">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.count_valid">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.count_valid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">count_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Count valid (non-NaN) values.</span>
 <span class="sd">        </span>
@@ -344,7 +344,7 @@
 
 
 <div class="viewcode-block" id="StatisticsProcessor.get_all_statistics">
-<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.processors.StatisticsProcessor.get_all_statistics">[docs]</a>
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.StatisticsProcessor.get_all_statistics">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate all available statistics.</span>
 <span class="sd">        </span>

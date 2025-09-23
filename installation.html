@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; ctd_tools v0.0.0 documentation</title>
+  <title>Installation &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="User Guide" href="user_guide.html" />
-    <link rel="prev" title="About CTD Tools" href="about.html" /> 
+    <link rel="prev" title="About SeaSenseLib" href="about.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,7 +35,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            ctd_tools
+            seasenselib
               <img src="_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
@@ -48,7 +48,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-from-pypi">Install from PyPI</a></li>
@@ -65,7 +65,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ctdtools.html">API Reference</a></li>
 </ul>
 
@@ -75,7 +75,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">ctd_tools</a>
+          <a href="index.html">seasenselib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -97,7 +97,7 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
-<p>CTD Tools requires Python 3.7 or later and depends on several scientific Python packages:</p>
+<p>SeaSenseLib requires Python 3.7 or later and depends on several scientific Python packages:</p>
 <ul class="simple">
 <li><p><strong>Core dependencies</strong>: xarray, pandas, numpy, matplotlib</p></li>
 <li><p><strong>File format support</strong>: netcdf4, pycnv, pyrsktools</p></li>
@@ -106,19 +106,19 @@
 </section>
 <section id="install-from-pypi">
 <h2>Install from PyPI<a class="headerlink" href="#install-from-pypi" title="Link to this heading"></a></h2>
-<p>The easiest way to install CTD Tools is using pip:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>ctd-tools
+<p>The easiest way to install SeaSenseLib is using pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>seasenselib
 </pre></div>
 </div>
-<p>This will install CTD Tools and all required dependencies.</p>
+<p>This will install SeaSenseLib and all required dependencies.</p>
 </section>
 <section id="development-installation">
 <h2>Development Installation<a class="headerlink" href="#development-installation" title="Link to this heading"></a></h2>
 <p>If you want to contribute to the project or modify the code, follow these steps:</p>
 <ol class="arabic">
 <li><p><strong>Clone the repository:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ocean-uhh/ctd-tools.git
-<span class="nb">cd</span><span class="w"> </span>ctd-tools
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ocean-uhh/seasenselib.git
+<span class="nb">cd</span><span class="w"> </span>seasenselib
 </pre></div>
 </div>
 </li>
@@ -144,7 +144,7 @@ venv\Scripts\activate.bat
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
 </pre></div>
 </div>
-<p>This installs CTD Tools in “editable” mode along with development dependencies like pytest and sphinx.</p>
+<p>This installs SeaSenseLib in “editable” mode along with development dependencies like pytest and sphinx.</p>
 </li>
 </ol>
 </section>
@@ -167,14 +167,14 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <h2>Verify Installation<a class="headerlink" href="#verify-installation" title="Link to this heading"></a></h2>
 <p>Test that the installation works correctly:</p>
 <p><strong>Test the command-line interface:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ctd-tools<span class="w"> </span>--help
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seasenselib<span class="w"> </span>--help
 </pre></div>
 </div>
 <p>This should display the available commands and options.</p>
 <p><strong>Test the Python library:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CTD Tools installed successfully!&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SeaSenseLib installed successfully!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Run the test suite (development installation only):</strong></p>
@@ -209,7 +209,7 @@ python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </
 <p><strong>Getting Help:</strong></p>
 <p>If you encounter installation issues:</p>
 <ul class="simple">
-<li><p>Check the <a class="reference external" href="https://github.com/ocean-uhh/ctd-tools/issues">GitHub Issues</a> for similar problems</p></li>
+<li><p>Check the <a class="reference external" href="https://github.com/ocean-uhh/seasenselib/issues">GitHub Issues</a> for similar problems</p></li>
 <li><p>Create a new issue with details about your system and the error message</p></li>
 <li><p>Include the output of <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">--version</span></code></p></li>
 </ul>
@@ -220,7 +220,7 @@ python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="about.html" class="btn btn-neutral float-left" title="About CTD Tools" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="about.html" class="btn btn-neutral float-left" title="About SeaSenseLib" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="user_guide.html" class="btn btn-neutral float-right" title="User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
