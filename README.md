@@ -150,7 +150,7 @@ Start here to set up your local development environment: clone the repository, c
 1. **Clone the repo**  
 
    ```bash
-   git clone https://github.com/ifmeo-hamburg/ctd-tools.git
+   git clone https://github.com/ocean-uhh/ctd-tools.git
    cd ctd-tools
    ```
 

@@ -10,7 +10,7 @@ CTD Tools: Methods for working with oceanographic sensor data
 
 `ctd-tools` is a library to process data from oceanographic sensor formats.
 
-For recommendations or bug reports, please visit https://github.com/ifmeo-hamburg/ctd-tools/issues/new
+For recommendations or bug reports, please visit https://github.com/ocean-uhh/ctd-tools/issues/new
 
 
 .. toctree::
@@ -23,7 +23,7 @@ For recommendations or bug reports, please visit https://github.com/ifmeo-hambur
    :maxdepth: 2
    :caption: Help and reference
 
-   GitHub Repo <http://github.com/ifmeo-hamburg/ctd-tools>
+   GitHub Repo <http://github.com/ocean-uhh/ctd-tools>
    ctdtools
 
 .. toctree::
