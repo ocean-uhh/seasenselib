@@ -30,7 +30,7 @@ jobs:
         pip install pytest
         pip install -r requirements.txt
 
-    - name: Install CTD Tools in development mode
+    - name: Install SeaSenseLib in development mode
       run: |
         pip install -e .
 

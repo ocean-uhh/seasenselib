@@ -15,7 +15,7 @@ print(sys.path)
 year = datetime.datetime.now(tz=datetime.timezone.utc).date().year
 
 # General information about the project.
-project = 'ctd_tools'
+project = 'seasenselib'
 author = 'Yves Sorge'
 copyright = f"{year}, {author}"
 release = 'v0.0.0'

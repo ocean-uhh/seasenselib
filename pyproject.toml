@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 
-name = "ctd-tools"
+name = "seasenselib"
 version = "0.2.0"
 description = "Read, convert, and plot oceanographic sensor data from moored instruments."
 readme = "README.md"
@@ -76,12 +76,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage    = "https://ocean-uhh.github.io/ctd-tools/"
-Source_Code = "https://github.com/ocean-uhh/ctd-tools"
-Download    = "https://pypi.org/project/ctd-tools/"
+Homepage    = "https://ocean-uhh.github.io/seasenselib/"
+Source_Code = "https://github.com/ocean-uhh/seasenselib"
+Download    = "https://pypi.org/project/seasenselib/"
 
 [project.scripts]
-ctd-tools = "ctd_tools.__main__:main"
+seasenselib = "seasenselib.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-CTD Tools requires Python 3.7 or later and depends on several scientific Python packages:
+SeaSenseLib requires Python 3.7 or later and depends on several scientific Python packages:
 
 * **Core dependencies**: xarray, pandas, numpy, matplotlib
 * **File format support**: netcdf4, pycnv, pyrsktools
@@ -13,13 +13,13 @@ CTD Tools requires Python 3.7 or later and depends on several scientific Python 
 Install from PyPI
 -----------------
 
-The easiest way to install CTD Tools is using pip:
+The easiest way to install SeaSenseLib is using pip:
 
 .. code-block:: bash
 
-   pip install ctd-tools
+   pip install seasenselib
 
-This will install CTD Tools and all required dependencies.
+This will install SeaSenseLib and all required dependencies.
 
 Development Installation
 ------------------------
@@ -30,8 +30,8 @@ If you want to contribute to the project or modify the code, follow these steps:
 
    .. code-block:: bash
 
-      git clone https://github.com/ocean-uhh/ctd-tools.git
-      cd ctd-tools
+      git clone https://github.com/ocean-uhh/seasenselib.git
+      cd seasenselib
 
 2. **Create and activate a virtual environment:**
 
@@ -63,7 +63,7 @@ If you want to contribute to the project or modify the code, follow these steps:
       pip install --upgrade pip setuptools wheel
       pip install -e ".[dev]"
 
-   This installs CTD Tools in "editable" mode along with development dependencies like pytest and sphinx.
+   This installs SeaSenseLib in "editable" mode along with development dependencies like pytest and sphinx.
 
 Alternative Installation Methods
 --------------------------------
@@ -95,7 +95,7 @@ Test that the installation works correctly:
 
 .. code-block:: bash
 
-   ctd-tools --help
+   seasenselib --help
 
 This should display the available commands and options.
 
@@ -103,9 +103,9 @@ This should display the available commands and options.
 
 .. code-block:: python
 
-   import ctd_tools
-   from ctd_tools.readers import SbeCnvReader
-   print("CTD Tools installed successfully!")
+   import seasenselib
+   from seasenselib.readers import SbeCnvReader
+   print("SeaSenseLib installed successfully!")
 
 **Run the test suite (development installation only):**
 
@@ -145,6 +145,6 @@ Troubleshooting
 
 If you encounter installation issues:
 
-* Check the `GitHub Issues <https://github.com/ocean-uhh/ctd-tools/issues>`_ for similar problems
+* Check the `GitHub Issues <https://github.com/ocean-uhh/seasenselib/issues>`_ for similar problems
 * Create a new issue with details about your system and the error message
 * Include the output of ``pip list`` and ``python --version``

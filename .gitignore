@@ -42,4 +42,4 @@ target/
 # Package builder
 dist/
 build/
-ctd_tools.egg-info/
+seasenselib.egg-info/

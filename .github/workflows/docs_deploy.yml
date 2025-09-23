@@ -32,7 +32,7 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
   
-    - name: Install ctd_tools
+    - name: Install seasenselib
       shell: bash -l {0}
       run: |
         python -m pip install -e . --no-deps --force-reinstall
