@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Guide &mdash; ctd_tools v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8b92e751"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="ctdtools.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ctd_tools
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#readers-overview">Readers Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#writers-overview">Writers Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotters-overview">Plotters Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-processing">Data Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-usage">Command Line Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-examples">Working with Examples</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ctdtools.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ctd_tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/user_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
+<p>This guide provides detailed information about using CTD Tools for oceanographic data processing.</p>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<p>Here’s a simple example to get you started with CTD Tools:</p>
+<p><strong>Using the Library in Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span><span class="p">,</span> <span class="n">NetCdfReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotter</span>
+
+<span class="c1"># Read CTD data from CNV file</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;sea-practical-2023.cnv&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c1"># Write dataset to netCDF file</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;sea-practical-2023.nc&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot temperature time series</span>
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">parameter_name</span><span class="o">=</span><span class="s1">&#39;temperature&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Using the Command Line:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert a CNV file to NetCDF</span>
+ctd-tools<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc
+
+<span class="c1"># Show file summary</span>
+ctd-tools<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>input.cnv
+
+<span class="c1"># Plot a T-S diagram</span>
+ctd-tools<span class="w"> </span>plot-ts<span class="w"> </span>-i<span class="w"> </span>output.nc
+
+<span class="c1"># Plot a vertical profile</span>
+ctd-tools<span class="w"> </span>plot-profile<span class="w"> </span>-i<span class="w"> </span>output.nc
+
+<span class="c1"># Plot temperature time series</span>
+ctd-tools<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>output.nc<span class="w"> </span>-p<span class="w"> </span>temperature
+</pre></div>
+</div>
+</section>
+<section id="readers-overview">
+<h2>Readers Overview<a class="headerlink" href="#readers-overview" title="Link to this heading"></a></h2>
+<p>CTD Tools supports reading data from various oceanographic instruments and file formats. Each reader converts instrument-specific data into standardized xarray Datasets for consistent data processing.</p>
+<p><strong>Seabird CTD Instruments</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SbeCnvReader</span></code> handles Seabird CNV files, which are commonly used for CTD profile data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span>
+
+<span class="c1"># Read a CNV file</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;profile_001.cnv&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c1"># Access data variables</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span>
+<span class="n">salinity</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;salinity&#39;</span><span class="p">]</span>
+<span class="n">pressure</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Parameter Mapping</strong></p>
+<p>Different instruments may use different column names for the same parameters. Use parameter mapping to standardize names:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># CLI mapping example</span>
+ctd-tools<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc<span class="w"> </span>-m<span class="w"> </span><span class="nv">temperature</span><span class="o">=</span>tv290C<span class="w"> </span><span class="nv">pressure</span><span class="o">=</span>prdM<span class="w"> </span><span class="nv">salinity</span><span class="o">=</span>sal00
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python mapping example</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;input.cnv&quot;</span><span class="p">,</span> <span class="n">parameter_mapping</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;tv290C&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;prdM&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;salinity&#39;</span><span class="p">:</span> <span class="s1">&#39;sal00&#39;</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p><strong>RBR Instruments</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">RbrRskReader</span></code> family handles RBR RSK files from moored instruments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RbrRskReader</span><span class="p">,</span> <span class="n">RbrRskAutoReader</span>
+
+<span class="c1"># Auto-detect RSK format version</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskAutoReader</span><span class="p">(</span><span class="s2">&quot;mooring_data.rsk&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c1"># Or use specific version</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskReader</span><span class="p">(</span><span class="s2">&quot;mooring_data.rsk&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>NetCDF and CSV Files</strong></p>
+<p>For standard formats, use the general readers:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfReader</span><span class="p">,</span> <span class="n">CsvReader</span>
+
+<span class="c1"># Read NetCDF files</span>
+<span class="n">nc_reader</span> <span class="o">=</span> <span class="n">NetCdfReader</span><span class="p">(</span><span class="s2">&quot;data.nc&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">nc_reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c1"># Read CSV files</span>
+<span class="n">csv_reader</span> <span class="o">=</span> <span class="n">CsvReader</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">csv_reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="writers-overview">
+<h2>Writers Overview<a class="headerlink" href="#writers-overview" title="Link to this heading"></a></h2>
+<p>CTD Tools can export processed data to various formats for further analysis or sharing.</p>
+<p><strong>NetCDF Export</strong></p>
+<p>NetCDF is the recommended format for oceanographic data as it preserves metadata and follows CF conventions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfWriter</span>
+
+<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.nc&quot;</span><span class="p">)</span>
+
+<span class="c1"># With custom attributes</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">global_attributes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;CTD Profile Station 001&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;institution&#39;</span><span class="p">:</span> <span class="s1">&#39;University of Hamburg&#39;</span>
+<span class="p">})</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.nc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>CSV Export</strong></p>
+<p>Export to CSV for use in spreadsheet applications:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CsvWriter</span>
+
+<span class="n">writer</span> <span class="o">=</span> <span class="n">CsvWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Excel Export</strong></p>
+<p>Create Excel files with multiple sheets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExcelWriter</span>
+
+<span class="n">writer</span> <span class="o">=</span> <span class="n">ExcelWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.xlsx&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plotters-overview">
+<h2>Plotters Overview<a class="headerlink" href="#plotters-overview" title="Link to this heading"></a></h2>
+<p>CTD Tools provides specialized plotting tools for oceanographic data visualization.</p>
+<p><strong>Temperature-Salinity Diagrams</strong></p>
+<p>T-S diagrams show the relationship between temperature and salinity with density isolines:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TsDiagramPlotter</span>
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">TsDiagramPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Station 001 T-S Diagram&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save to file</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;ts_diagram.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Vertical Profiles</strong></p>
+<p>Display CTD casts as vertical profiles:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilePlotter</span>
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">ProfilePlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile&quot;</span><span class="p">)</span>
+
+<span class="c1"># Customize parameters</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>Time Series</strong></p>
+<p>Plot parameter evolution over time for moored data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotter</span>
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Temperature Time Series&quot;</span><span class="p">)</span>
+
+<span class="c1"># Multiple parameters with dual axis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotterMulti</span>
+
+<span class="n">multi_plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotterMulti</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">multi_plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">],</span> <span class="n">dual_axis</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="data-processing">
+<h2>Data Processing<a class="headerlink" href="#data-processing" title="Link to this heading"></a></h2>
+<p><strong>Subsetting Data</strong></p>
+<p>Extract specific time periods or depth ranges:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubsetProcessor</span>
+
+<span class="c1"># Time subset</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">SubsetProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">subset</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">subset_time</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-31&#39;</span><span class="p">)</span>
+
+<span class="c1"># Depth subset</span>
+<span class="n">depth_subset</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">subset_depth</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># 10-100m depth</span>
+</pre></div>
+</div>
+<p><strong>Resampling</strong></p>
+<p>Change the temporal resolution of time series data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResampleProcessor</span>
+
+<span class="n">processor</span> <span class="o">=</span> <span class="n">ResampleProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">hourly_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;1H&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Statistics</strong></p>
+<p>Calculate statistics for your data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">StatisticsProcessor</span>
+
+<span class="n">processor</span> <span class="o">=</span> <span class="n">StatisticsProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">calculate_statistics</span><span class="p">([</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="command-line-usage">
+<h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Link to this heading"></a></h2>
+<p>CTD Tools provides a comprehensive command-line interface for common tasks:</p>
+<p><strong>Format Information</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List supported formats</span>
+ctd-tools<span class="w"> </span>formats
+</pre></div>
+</div>
+<p><strong>Data Conversion</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert CNV to NetCDF</span>
+ctd-tools<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc
+
+<span class="c1"># Convert with parameter mapping</span>
+ctd-tools<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc<span class="w"> </span>-m<span class="w"> </span><span class="nv">temperature</span><span class="o">=</span>tv290C<span class="w"> </span><span class="nv">pressure</span><span class="o">=</span>prdM
+
+<span class="c1"># Convert to CSV</span>
+ctd-tools<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.nc<span class="w"> </span>-o<span class="w"> </span>output.csv
+</pre></div>
+</div>
+<p><strong>Data Inspection</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show file summary</span>
+ctd-tools<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>data.nc
+
+<span class="c1"># Show specific format</span>
+ctd-tools<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>data.cnv
+</pre></div>
+</div>
+<p><strong>Plotting</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create T-S diagram</span>
+ctd-tools<span class="w"> </span>plot-ts<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>ts_diagram.png
+
+<span class="c1"># Create vertical profile</span>
+ctd-tools<span class="w"> </span>plot-profile<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>profile.png
+
+<span class="c1"># Create time series</span>
+ctd-tools<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-p<span class="w"> </span>temperature<span class="w"> </span>-o<span class="w"> </span>temp_series.png
+
+<span class="c1"># Multiple parameters with dual axis</span>
+ctd-tools<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-p<span class="w"> </span>temperature<span class="w"> </span>salinity<span class="w"> </span>--dual-axis
+</pre></div>
+</div>
+</section>
+<section id="working-with-examples">
+<h2>Working with Examples<a class="headerlink" href="#working-with-examples" title="Link to this heading"></a></h2>
+<p>The CTD Tools repository includes example data files in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory. These files demonstrate typical use cases:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sea-practical-2023.cnv</span></code>: Vertical CTD profile data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">denmark-strait-ds-m1-17.cnv</span></code>: Time series from moored instrument</p></li>
+</ul>
+<p>Use these files to test functionality and learn the data processing workflow.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ctdtools.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

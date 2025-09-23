@@ -2,11 +2,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:parser: myst_parser.sphinx_ # this is the markdown parser
 
-=============================================================
-CTD Tools: Methods for working with oceanographic sensor data
-=============================================================
+Welcome to CTD Tools documentation!
+====================================
 
 `ctd-tools` is a library to process data from oceanographic sensor formats.
 
@@ -15,9 +13,18 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/ct
 
 .. toctree::
    :maxdepth: 2
-   :caption: Overview
+   :caption: Getting started
 
-   overview
+   about
+   installation
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: User guide
+
+   user_guide
+
 
 .. toctree::
    :maxdepth: 2
@@ -26,10 +33,10 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/ct
    GitHub Repo <http://github.com/ocean-uhh/ctd-tools>
    ctdtools
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Indices and tables
 
-   genindex
-   modindex
-   search
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -1,0 +1,729 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctd_tools.readers.sbe_cnv_reader &mdash; ctd_tools v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ctd_tools
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About CTD Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/ctd-tools">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ctd_tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ctd_tools.readers.sbe_cnv_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ctd_tools.readers.sbe_cnv_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for reading CTD data from SBE CNV files.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycnv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ctd_tools.readers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ctd_tools.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+
+
+<div class="viewcode-block" id="SbeCnvReader">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.SbeCnvReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SbeCnvReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads sensor data from a SeaBird CNV file into a xarray Dataset. </span>
+
+<span class="sd">    This class is used to read SeaBird CNV files, which are commonly used for storing</span>
+<span class="sd">    sensor data. The provided data is expected to be in a CNV format, and this reader</span>
+<span class="sd">    is designed to parse that format correctly.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data to be read from the CNV file.</span>
+<span class="sd">    input_file : str</span>
+<span class="sd">        The path to the input CNV file containing the sensor data.</span>
+<span class="sd">    mapping : dict</span>
+<span class="sd">        A mapping dictionary for renaming variables or attributes in the dataset.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">    -------</span>
+<span class="sd">    __init__(input_file, mapping = {}):</span>
+<span class="sd">        Initializes the CnvReader with the input file and optional mapping.</span>
+<span class="sd">    __read():</span>
+<span class="sd">        Reads the CNV file and processes the data into an xarray Dataset.</span>
+<span class="sd">    __get_scan_interval_in_seconds(string):</span>
+<span class="sd">        Extracts the scan interval in seconds from the CNV file header.</span>
+<span class="sd">    __get_bad_flag(string):</span>
+<span class="sd">        Extracts the bad flag from the CNV file header.</span>
+<span class="sd">    file_type: str</span>
+<span class="sd">        The type of the file being read, which is &#39;SBE CNV&#39;.</span>
+<span class="sd">    _file_extension: str</span>
+<span class="sd">        The file extension for this reader, which is &#39;.cnv&#39;.</span>
+<span class="sd">    get_data():</span>
+<span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
+<span class="sd">    get_file_type():</span>
+<span class="sd">        Returns the type of the file being read, which is &#39;SBE CNV&#39;.</span>
+<span class="sd">    get_file_extension():</span>
+<span class="sd">        Returns the file extension for this reader, which is &#39;.cnv&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_scan_interval_in_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^# interval = seconds: ([\d.]+)$&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">seconds</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_bad_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^# bad_flag = (.+)$&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">bad_flag</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">bad_flag</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_start_time_from_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract start_time from CNV header.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        header_string : str</span>
+<span class="sd">            The header string from the CNV file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.Timestamp | None</span>
+<span class="sd">            The extracted start time or None if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^# start_time = ([A-Za-z]</span><span class="si">{3}</span><span class="s1"> \d{1,2} \d</span><span class="si">{4}</span><span class="s1"> \d</span><span class="si">{2}</span><span class="s1">:\d</span><span class="si">{2}</span><span class="s1">:\d</span><span class="si">{2}</span><span class="s1">)&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">header_string</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">time_str</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Parse the time string like &quot;Aug 01 2025 10:10:08&quot;</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">time_str</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%b </span><span class="si">%d</span><span class="s1"> %Y %H:%M:%S&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__normalize_time_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_coords</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize time coordinates to ensure consistent format.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">time_coords</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_coords</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">time_coords</span>
+        
+        <span class="c1"># Convert to pandas datetime if it&#39;s not already</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time_coords_normalized</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">time_coords</span><span class="p">)</span>
+            <span class="c1">#print(f&quot;Normalized time_coords type: {type(time_coords_normalized)}&quot;)</span>
+            <span class="c1">#print(f&quot;Normalized time_coords dtype: {time_coords_normalized.dtype}&quot;)</span>
+            <span class="c1">#if len(time_coords_normalized) &gt; 0:</span>
+                <span class="c1">#print(f&quot;Normalized time_coords[0]: {time_coords_normalized[0]}&quot;)</span>
+            
+            <span class="c1"># Convert DatetimeIndex to numpy array for xarray compatibility</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_coords_normalized</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">):</span>
+                <span class="n">time_coords_normalized</span> <span class="o">=</span> <span class="n">time_coords_normalized</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+                <span class="c1">#print(f&quot;Converted to numpy array: {type(time_coords_normalized)}&quot;)</span>
+                <span class="c1">#print(f&quot;Numpy array dtype: {time_coords_normalized.dtype}&quot;)</span>
+            
+            <span class="k">return</span> <span class="n">time_coords_normalized</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error normalizing time_coords: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">time_coords</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__calculate_time_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xarray_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">cnv</span><span class="p">:</span> <span class="n">pycnv</span><span class="o">.</span><span class="n">pycnv</span><span class="p">,</span> <span class="n">max_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate time coordinates from various time formats in CNV data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xarray_data : dict</span>
+<span class="sd">            Dictionary containing sensor data.</span>
+<span class="sd">        cnv : pycnv.pycnv</span>
+<span class="sd">            CNV object containing metadata.</span>
+<span class="sd">        max_count : int</span>
+<span class="sd">            Maximum number of data points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray | None</span>
+<span class="sd">            Time coordinates as datetime values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Try to extract start_time from header instead of using cnv.date</span>
+        <span class="n">start_time_from_header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_start_time_from_header</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start_time_from_header</span><span class="p">:</span>
+            <span class="n">offset_datetime</span> <span class="o">=</span> <span class="n">start_time_from_header</span>
+            <span class="c1">#print(f&quot;Using header start_time: {offset_datetime}&quot;)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback to cnv.date</span>
+            <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">offset_datetime</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Final fallback - use January 1st of current year</span>
+                <span class="n">current_year</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span>
+                <span class="n">offset_datetime</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_year</span><span class="si">}</span><span class="s2">-01-01 00:00:00&quot;</span><span class="p">)</span>
+            <span class="c1">#print(f&quot;Using cnv.date fallback: {offset_datetime}&quot;)</span>
+
+        <span class="c1"># Define the time coordinates as an array of datetime values</span>
+        <span class="n">time_coords</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Initialize to avoid unbound variable error</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_S</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_offset_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">,</span> <span class="n">offset_datetime</span><span class="p">)</span> \
+                                   <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_S</span><span class="p">]])</span>
+        <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_J</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+            <span class="n">year_startdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">offset_datetime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_julian_to_gregorian</span><span class="p">(</span><span class="n">jday</span><span class="p">,</span> <span class="n">year_startdate</span><span class="p">)</span> \
+                                    <span class="k">for</span> <span class="n">jday</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_J</span><span class="p">]])</span>
+        <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_Q</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_jan_2000_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> \
+                                    <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_Q</span><span class="p">]])</span>
+        <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_N</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_jan_1970_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> \
+                                    <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_N</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timedelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_scan_interval_in_seconds</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">timedelta</span><span class="p">:</span>
+                <span class="n">time_coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">offset_datetime</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">i</span><span class="o">*</span><span class="n">timedelta</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_count</span><span class="p">)][:]</span>
+
+        <span class="c1"># Normalize time coordinates to ensure consistent format</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__normalize_time_coords</span><span class="p">(</span><span class="n">time_coords</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__assign_cnv_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">xarray_labels</span><span class="p">,</span> <span class="n">xarray_units</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">,</span> <span class="n">cnv</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign CNV-specific metadata while preserving CF-compliant units when CNV units are missing.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ds</span>
+<span class="sd">            xarray Dataset to add metadata to.</span>
+<span class="sd">        xarray_labels</span>
+<span class="sd">            Dictionary containing CNV channel labels/names.</span>
+<span class="sd">        xarray_units</span>
+<span class="sd">            Dictionary containing CNV channel units.</span>
+<span class="sd">        channel_names</span>
+<span class="sd">            List of original channel names from CNV.</span>
+<span class="sd">        cnv</span>
+<span class="sd">            CNV object containing header information.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xarray.Dataset </span>
+<span class="sd">            Dataset with CNV metadata assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="c1"># Find the original CNV channel name that corresponds to this variable</span>
+            <span class="n">original_channel</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="c1"># Check if this variable name directly matches a channel name</span>
+            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">channel_names</span><span class="p">:</span>
+                <span class="n">original_channel</span> <span class="o">=</span> <span class="n">var_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For renamed variables, try to find the original channel</span>
+                <span class="c1"># This is a bit tricky after postprocessing, so we check both directions</span>
+                <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channel_names</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">var_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">original_channel</span> <span class="o">=</span> <span class="n">channel</span>
+                        <span class="k">break</span>
+            
+            <span class="k">if</span> <span class="n">original_channel</span><span class="p">:</span>
+                <span class="c1"># Store original CNV name and label</span>
+                <span class="k">if</span> <span class="n">original_channel</span> <span class="ow">in</span> <span class="n">xarray_labels</span><span class="p">:</span>
+                    <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_original_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_channel</span>
+                    <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_original_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xarray_labels</span><span class="p">[</span><span class="n">original_channel</span><span class="p">]</span>
+                    <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_original_unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xarray_units</span><span class="p">[</span><span class="n">original_channel</span><span class="p">]</span>
+
+                <span class="c1"># Handle units: CNV units take precedence if they exist</span>
+                <span class="k">if</span> <span class="n">original_channel</span> <span class="ow">in</span> <span class="n">xarray_units</span> <span class="ow">and</span> <span class="n">xarray_units</span><span class="p">[</span><span class="n">original_channel</span><span class="p">]:</span>
+                    <span class="n">cnv_unit</span> <span class="o">=</span> <span class="n">xarray_units</span><span class="p">[</span><span class="n">original_channel</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">cnv_unit</span><span class="p">:</span>  <span class="c1"># Only use non-empty units</span>
+                        <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv_unit</span>
+        
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__assign_cnv_global_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">cnv</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign CNV-specific global attributes to the xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ds</span>
+<span class="sd">            xarray Dataset to add global attributes to.</span>
+<span class="sd">        cnv</span>
+<span class="sd">            CNV object containing metadata from pycnv.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xarray.Dataset</span>
+<span class="sd">            Dataset with CNV global attributes assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Extract metadata from CNV header if available</span>
+        <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
+            <span class="c1"># Extract SBE model via regex. Example: &quot;* Sea-Bird SBE 9plus Data File:&quot;</span>
+            <span class="n">sbe_model_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\* Sea-Bird SBE *(?P&lt;value&gt;\d.*?) +Data File:&quot;</span><span class="p">,</span> 
+                                      <span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sbe_model_match</span><span class="p">:</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_sbe_model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SBE &quot;</span> <span class="o">+</span> <span class="n">sbe_model_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Extract software version via regex. Example: &quot;* Software Version Seasave V 7.26.7.121&quot;</span>
+            <span class="n">software_version_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\* Software Version (?P&lt;value&gt;.+?)(?:\s*$)&quot;</span><span class="p">,</span> 
+                                             <span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">software_version_match</span><span class="p">:</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_software_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">software_version_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        
+        <span class="c1"># Assign date/time attributes</span>
+        <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">date</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_start_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">upload_date</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_upload_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">upload_date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">nmea_date</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_nmea_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">nmea_date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Assign scan interval if available</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cnv</span><span class="p">,</span> <span class="s1">&#39;interval_s&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cnv</span><span class="o">.</span><span class="n">interval_s</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_interval_seconds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">interval_s</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback: try to extract from header</span>
+            <span class="n">interval_from_header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_scan_interval_in_seconds</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">interval_from_header</span><span class="p">:</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;cnv_interval_seconds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval_from_header</span>
+        
+        <span class="c1"># Assign list of sensor information</span>
+        <span class="n">sensor_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_sensor_metadata_from_xml</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">channel_num</span><span class="p">,</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="n">sensor_metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">entry_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;cnv_sensor_</span><span class="si">{</span><span class="n">channel_num</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="c1"># Create list of sensor information for a sensor without empty entries</span>
+            <span class="n">combined_sensor_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">entry_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined_sensor_metadata</span>
+
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__extract_sensor_metadata_from_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnv_header</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract sensor metadata from XML-style sensor entries in CNV header.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cnv_header</span>
+<span class="sd">            CNV header string containing XML sensor information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary mapping channel numbers to sensor metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+        
+        <span class="n">sensor_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Extract the XML sensor block from the CNV header</span>
+            <span class="n">xml_start</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;# &lt;Sensors count=&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">xml_start</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sensor_metadata</span>
+            
+            <span class="c1"># Find the end of the XML block (look for closing &lt;/Sensors&gt;)</span>
+            <span class="n">xml_end</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;# &lt;/Sensors&gt;&#39;</span><span class="p">,</span> <span class="n">xml_start</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">xml_end</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># If no closing tag found, try to find where XML ends</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">xml_start</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">xml_lines</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;&lt;&#39;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="s1">&#39;&gt;&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">):</span>
+                        <span class="n">xml_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Remove &#39;# &#39; prefix</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="n">xml_content</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xml_lines</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xml_block</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">xml_start</span><span class="p">:</span><span class="n">xml_end</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="s1">&#39;# &lt;/Sensors&gt;&#39;</span><span class="p">)]</span>
+                <span class="c1"># Remove &#39;# &#39; prefix from each line</span>
+                <span class="n">xml_lines</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">xml_block</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# &#39;</span><span class="p">):</span>
+                        <span class="n">xml_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+                <span class="n">xml_content</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xml_lines</span><span class="p">)</span>
+            
+            <span class="c1"># Parse the XML</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">xml_content</span><span class="p">)</span>
+            
+            <span class="c1"># Extract sensor information</span>
+            <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;sensor&#39;</span><span class="p">):</span>
+                <span class="n">channel_attr</span> <span class="o">=</span> <span class="n">sensor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Channel&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">channel_attr</span><span class="p">:</span>
+                    <span class="n">channel_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">channel_attr</span><span class="p">)</span>
+                    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="n">channel_num</span><span class="p">}</span>
+                    
+                    <span class="c1"># Find sensor type and extract information</span>
+                    <span class="k">for</span> <span class="n">sensor_element</span> <span class="ow">in</span> <span class="n">sensor</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">sensor_element</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Sensor&#39;</span><span class="p">):</span>
+                            <span class="n">sensor_type</span> <span class="o">=</span> <span class="n">sensor_element</span><span class="o">.</span><span class="n">tag</span>
+                            <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sensor_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_type</span>
+                            
+                            <span class="c1"># Extract SerialNumber</span>
+                            <span class="n">serial_elem</span> <span class="o">=</span> <span class="n">sensor_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;SerialNumber&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">serial_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">serial_elem</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;serial_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serial_elem</span><span class="o">.</span><span class="n">text</span>
+                            
+                            <span class="c1"># Extract CalibrationDate</span>
+                            <span class="n">cal_date_elem</span> <span class="o">=</span> <span class="n">sensor_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;CalibrationDate&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">cal_date_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cal_date_elem</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;calibration_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cal_date_elem</span><span class="o">.</span><span class="n">text</span>
+                            
+                            <span class="c1"># Extract SensorID if available</span>
+                            <span class="n">sensor_id</span> <span class="o">=</span> <span class="n">sensor_element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SensorID&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">sensor_id</span><span class="p">:</span>
+                                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sensor_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_id</span>
+                    
+                    <span class="n">sensor_metadata</span><span class="p">[</span><span class="n">channel_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+        
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># If XML parsing fails, fall back to regex extraction</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;XML parsing failed, trying regex fallback: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_sensor_metadata_from_regex</span><span class="p">(</span><span class="n">cnv_header</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">sensor_metadata</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__extract_sensor_metadata_from_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cnv_header</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fallback method to extract sensor metadata using regex when XML parsing fails.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cnv_header</span>
+<span class="sd">            CNV header string.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary mapping channel numbers to sensor metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sensor_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Look for sensor channel patterns</span>
+        <span class="n">sensor_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;#\s*&lt;sensor Channel=&quot;(\d+)&quot;\s*&gt;&#39;</span>
+        <span class="n">sensor_matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">sensor_pattern</span><span class="p">,</span> <span class="n">cnv_header</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">sensor_matches</span><span class="p">:</span>
+            <span class="n">channel_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="n">channel_num</span><span class="p">}</span>
+            
+            <span class="c1"># Find the content for this sensor (until next sensor or end)</span>
+            <span class="n">start_pos</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+            <span class="n">next_sensor</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;sensor Channel=&quot;(\d+)&quot;\s*&gt;&#39;</span><span class="p">,</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:])</span>
+            <span class="k">if</span> <span class="n">next_sensor</span><span class="p">:</span>
+                <span class="n">end_pos</span> <span class="o">=</span> <span class="n">start_pos</span> <span class="o">+</span> <span class="n">next_sensor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                <span class="n">sensor_content</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Look for closing sensor tag or end of sensors block</span>
+                <span class="n">end_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;/sensor&gt;|#\s*&lt;/Sensors&gt;&#39;</span><span class="p">,</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:])</span>
+                <span class="k">if</span> <span class="n">end_match</span><span class="p">:</span>
+                    <span class="n">end_pos</span> <span class="o">=</span> <span class="n">start_pos</span> <span class="o">+</span> <span class="n">end_match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                    <span class="n">sensor_content</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sensor_content</span> <span class="o">=</span> <span class="n">cnv_header</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:]</span>
+            
+            <span class="c1"># Extract comment information</span>
+            <span class="n">comment_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;!--\s*([^&gt;]+?)\s*--&gt;&#39;</span><span class="p">,</span> <span class="n">sensor_content</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comment_match</span><span class="p">:</span>
+                <span class="n">comment_text</span> <span class="o">=</span> <span class="n">comment_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sensor_comment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment_text</span>
+                
+                <span class="c1"># Parse frequency and parameter info from comment</span>
+                <span class="n">freq_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Frequency\s+(\d+)&#39;</span><span class="p">,</span> <span class="n">comment_text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">freq_match</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;frequency_channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                
+                <span class="c1"># Extract parameter type from comment (Temperature, Conductivity, etc.)</span>
+                <span class="n">param_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Frequency\s+\d+,\s*(.+)&#39;</span><span class="p">,</span> <span class="n">comment_text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">param_match</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;parameter_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            
+            <span class="c1"># Extract SerialNumber</span>
+            <span class="n">serial_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;SerialNumber&gt;([^&lt;]+)&lt;/SerialNumber&gt;&#39;</span><span class="p">,</span> <span class="n">sensor_content</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">serial_match</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;serial_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serial_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1"># Extract CalibrationDate</span>
+            <span class="n">cal_date_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;CalibrationDate&gt;([^&lt;]+)&lt;/CalibrationDate&gt;&#39;</span><span class="p">,</span> <span class="n">sensor_content</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cal_date_match</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;calibration_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cal_date_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1"># Extract sensor type</span>
+            <span class="n">sensor_type_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;#\s*&lt;(\w+Sensor)\s+SensorID=&quot;([^&quot;]*)&quot;&#39;</span><span class="p">,</span> <span class="n">sensor_content</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sensor_type_match</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sensor_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_type_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sensor_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sensor_type_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            
+            <span class="n">sensor_metadata</span><span class="p">[</span><span class="n">channel_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+        
+        <span class="k">return</span> <span class="n">sensor_metadata</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">__calculate_depth_from_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xarray_data</span><span class="p">,</span> <span class="n">xarray_labels</span><span class="p">,</span> <span class="n">xarray_units</span><span class="p">,</span> <span class="n">cnv</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate depth from pressure data using GSW library.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xarray_data</span>
+<span class="sd">            Dictionary containing sensor data.</span>
+<span class="sd">        xarray_labels</span>
+<span class="sd">            Dictionary containing data labels.</span>
+<span class="sd">        xarray_units</span>
+<span class="sd">            Dictionary containing data units.</span>
+<span class="sd">        cnv</span>
+<span class="sd">            CNV object containing metadata.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray | None </span>
+<span class="sd">            Depth values in meters, or None if pressure not available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">depth</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">default_mappings</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+                <span class="c1"># rename key</span>
+                <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">]</span> <span class="o">=</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+                <span class="n">xarray_labels</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">]</span> <span class="o">=</span> <span class="n">xarray_labels</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+                <span class="n">xarray_units</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">]</span> <span class="o">=</span> <span class="n">xarray_units</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+                <span class="k">break</span>
+        
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">lat</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">lon</span>
+            <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">params</span><span class="o">.</span><span class="n">LATITUDE</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+                <span class="n">lat</span> <span class="o">=</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">LATITUDE</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">lon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">params</span><span class="o">.</span><span class="n">LONGITUDE</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
+                <span class="n">lon</span> <span class="o">=</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">LONGITUDE</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">conversions</span><span class="o">.</span><span class="n">z_from_p</span><span class="p">(</span><span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">],</span> <span class="n">lat</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">depth</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_bad_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Checks if the raw data contains lines fitting patterns which can&#39;t be processed by pycnv. </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file : str</span>
+<span class="sd">            Path to the CNV file to check.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if bad lines are found, False otherwise.</span>
+<span class="sd">        str | None</span>
+<span class="sd">            Error message if bad lines are found, None otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Define patterns to check for with specific error hints</span>
+        <span class="n">pattern_errors</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="sa">r</span><span class="s1">&#39;^# start_time \= [A-Za-z]</span><span class="si">{3}</span><span class="s1"> \d{1,2} \d</span><span class="si">{4}</span><span class="s1"> \d</span><span class="si">{2}</span><span class="s1">:\d</span><span class="si">{2}</span><span class="s1">:\d</span><span class="si">{2}</span><span class="s1">\s+$&#39;</span><span class="p">:</span> 
+                <span class="s2">&quot;Start time has trailing whitespace that causes pycnv parsing errors&quot;</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s1">&#39;^\* \*&#39;</span><span class="p">:</span> 
+                <span class="s2">&quot;Lines starting with multiple asterisks are malformed and cannot be processed by pycnv&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Open file and check each line for patterns</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line_num</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">error_hint</span> <span class="ow">in</span> <span class="n">pattern_errors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Line </span><span class="si">{</span><span class="n">line_num</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error_hint</span><span class="si">}</span><span class="s2">. Problematic line: </span><span class="si">{</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reads a CNV file and converts it to a xarray Dataset. &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the file contains bad lines</span>
+        <span class="n">has_bad_lines</span><span class="p">,</span> <span class="n">error_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_bad_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">has_bad_lines</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The file </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="si">}</span><span class="s2"> contains lines that cannot be processed by pycnv. </span><span class="si">{</span><span class="n">error_message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Read CNV file with pycnv reader</span>
+        <span class="n">cnv</span> <span class="o">=</span> <span class="n">pycnv</span><span class="o">.</span><span class="n">pycnv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+
+        <span class="c1"># Map column names (&#39;channel names&#39;) to standard names</span>
+        <span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">channels</span> <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">]</span>
+
+        <span class="c1"># Validate required parameters</span>
+        <span class="c1">#super()._validate_necessary_parameters(self.mapping, cnv.lat, cnv.lon, &#39;mapping data&#39;)</span>
+
+        <span class="c1"># Create dictionaries with data, names, and labels</span>
+        <span class="n">xarray_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">xarray_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">xarray_units</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">max_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">channel_name</span> <span class="ow">in</span> <span class="n">channel_names</span><span class="p">:</span>
+            <span class="c1"># Map channel names to standard names</span>
+            <span class="k">if</span> <span class="n">cnv</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">channel_name</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="n">xarray_data</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">channel_name</span><span class="p">][:]</span>
+                <span class="n">xarray_labels</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]</span>
+                <span class="n">xarray_units</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]</span>
+                <span class="n">max_count</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">channel_name</span><span class="p">]))</span>
+
+        <span class="c1"># Calculate time coordinates</span>
+        <span class="n">time_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calculate_time_coordinates</span><span class="p">(</span><span class="n">xarray_data</span><span class="p">,</span> <span class="n">cnv</span><span class="p">,</span> <span class="n">max_count</span><span class="p">)</span>
+
+        <span class="c1"># Create xarray Dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xarray_dataset_template</span><span class="p">(</span><span class="n">time_coords</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cnv</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">cnv</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
+
+        <span class="c1"># Assign data to xarray Dataset</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="c1"># Assign CNV-specific global attributes</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__assign_cnv_global_attributes</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">cnv</span><span class="p">)</span>
+
+        <span class="c1"># Assign CNV-specific metadata (preserves CNV units, adds original names/labels)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__assign_cnv_metadata</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">xarray_labels</span><span class="p">,</span> <span class="n">xarray_units</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">,</span> <span class="n">cnv</span><span class="p">)</span>
+
+        <span class="c1"># Rename to standard names</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_default_postprocessing</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+        <span class="c1"># If &quot;depth&quot; not in ds, create depth variable</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">]</span> <span class="o">=</span> <span class="p">([</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calculate_depth_from_pressure</span><span class="p">(</span><span class="n">xarray_data</span><span class="p">,</span> <span class="n">xarray_labels</span><span class="p">,</span> <span class="n">xarray_units</span><span class="p">,</span> <span class="n">cnv</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">assign_metadata</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">)</span>
+
+        <span class="c1"># Derive oceanographic parameters (density, potential temperature)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derive_oceanographic_parameters</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+        <span class="c1"># Check for bad flag</span>
+        <span class="n">bad_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_bad_flag</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bad_flag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">!=</span> <span class="n">bad_flag</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+        <span class="c1"># Store processed data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
+
+<div class="viewcode-block" id="SbeCnvReader.format_key">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.SbeCnvReader.format_key">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;sbe-cnv&#39;</span></div>
+
+
+<div class="viewcode-block" id="SbeCnvReader.format_name">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.SbeCnvReader.format_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;SeaBird CNV&#39;</span></div>
+
+
+<div class="viewcode-block" id="SbeCnvReader.file_extension">
+<a class="viewcode-back" href="../../../ctdtools.html#ctd_tools.readers.SbeCnvReader.file_extension">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;.cnv&#39;</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
