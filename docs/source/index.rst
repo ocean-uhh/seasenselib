@@ -21,6 +21,13 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/se
 
 .. toctree::
    :maxdepth: 2
+   :caption: Demo notebooks
+
+   demo-output.ipynb
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: User guide
 
    user_guide
@@ -31,7 +38,7 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/se
    :caption: Help and reference
 
    GitHub Repo <http://github.com/ocean-uhh/seasenselib>
-   ctdtools
+   api_reference
 
 
 Indices and tables

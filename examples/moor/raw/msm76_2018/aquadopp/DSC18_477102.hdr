@@ -1,0 +1,170 @@
+[D:\MSM76 vers180806\deployment 2018\recover-Rohdaten\477102.aqd]
+---------------------------------------------------------------------
+Number of measurements                20462
+Number of checksum errors             0
+Time of first measurement             12.08.2018 12:00:00
+Time of last measurement              26.08.2018 17:02:00
+
+User setup
+---------------------------------------------------------------------
+Measurement interval                  60 sec
+Sampling rate                         NORMAL
+Average interval                      10 sec
+Measurement load                      26 %
+Transmit pulse length                 0.75 m
+Blanking distance                     0.37 m
+Compass update rate                   15 sec
+Diagnostics measurements              ENABLED
+Diagnostics - Interval                432000 sec
+Diagnostics - Number of samples       5
+Diagnostics - Cell number             1
+Diagnostics - Number of pings         20
+Analog input 1                        NONE
+External input 2                      NONE
+External input 3                      NONE
+Power output                          DISABLED
+Powerlevel                            HIGH
+Coordinate system                     ENU
+Sound speed                           MEASURED
+Salinity                              35.0 ppt
+Distance between pings                10.00 m
+Number of beams                       3
+Number of pings per burst             6
+Software version                      1.35
+Deployment name                       4771
+Wrap mode                             OFF
+Deployment time                       12.08.2018 12:00:00
+Comments                              
+System1                               125
+System2                               49
+System3                               32
+System4                               437
+System5                               512
+System9                               0
+System10                              0
+System11                              0
+System12                              0
+System13                              0
+System14                              15
+System16                              1
+System17                              32
+System22                              432000
+System28                              5
+System29                              1
+System30                              20
+System31                              15618 15646 15673 15699
+System42                              0
+System43                              0
+System44                              0
+System45                              6
+Start command                         Recorder deployment
+CRC download                          ON
+
+Hardware configuration
+---------------------------------------------------------------------
+Serial number                         AQD 9449
+Hardware revision                     E
+Recorder size                         361 MByte
+Firmware version                      3.37
+Velocity range                        NORMAL
+Power output                          12V
+Sync signal data out delay            0 sec
+Sync signal power down delay          0 sec
+
+Head configuration
+---------------------------------------------------------------------
+Pressure sensor                       YES
+Compass                               YES
+Tilt sensor                           YES
+System 1                              1
+Head frequency                        2000 kHz
+Serial number                         A3L 4771
+Transformation matrix                 0.7356 -0.3677 -0.3677
+                                      0.0000 -0.6370 0.6370
+                                      0.7888 0.7888 0.7888
+Pressure sensor calibration           0 8 63010 3733
+Number of beams                       3
+System5                               65 65 65 0
+System7                               -19423 1711 11938 -344
+                                      -19619 280 11899 -166
+System8                               0 0 -1
+                                      0 1 0
+                                      1 0 0
+System9                               0 0 -1
+                                      0 -1 0
+                                      -1 0 0
+System10                              0 -1 1 0
+System11                              0 -1 -1 0
+System13                              1481 259 7128 10855
+System14                              -16801 3950 11148 -515
+                                      -17784 1203 11238 -25
+System15                              32767 476 -1145 476
+                                      30633 -135 -837 -394
+                                      31052 -53 32 -14
+                                      0 0 0 0
+System16                              0 0 0 0
+System17                              5461
+System18                              3600
+System19                              3600
+System20                              10000
+
+Data file format
+---------------------------------------------------------------------
+[D:\MSM76 vers180806\deployment 2018\recover-Rohdaten\477102.dat]
+ 1   Month                            (1-12)
+ 2   Day                              (1-31)
+ 3   Year
+ 4   Hour                             (0-23)
+ 5   Minute                           (0-59)
+ 6   Second                           (0-59)
+ 7   Error code
+ 8   Status code
+ 9   Velocity (Beam1|X|East)          (m/s)
+10   Velocity (Beam2|Y|North)         (m/s)
+11   Velocity (Beam3|Z|Up)            (m/s)
+12   Amplitude (Beam1)                (counts)
+13   Amplitude (Beam2)                (counts)
+14   Amplitude (Beam3)                (counts)
+15   Battery voltage                  (V)
+16   Soundspeed                       (m/s)
+17   Soundspeed used                  (m/s)
+18   Heading                          (degrees)
+19   Pitch                            (degrees)
+20   Roll                             (degrees)
+21   Pressure                         (dbar)
+22   Pressure                         (m)
+23   Temperature                      (degrees C)
+24   Analog input 1
+25   Analog input 2
+26   Speed                            (m/s)
+27   Direction                        (degrees)
+
+---------------------------------------------------------------------
+[D:\MSM76 vers180806\deployment 2018\recover-Rohdaten\477102.dia]
+ 1   Month                            (1-12)
+ 2   Day                              (1-31)
+ 3   Year
+ 4   Hour                             (0-23)
+ 5   Minute                           (0-59)
+ 6   Second                           (0-59)
+ 7   Error code
+ 8   Status code
+ 9   Velocity (Beam1|X|East)          (m/s)
+10   Velocity (Beam2|Y|North)         (m/s)
+11   Velocity (Beam3|Z|Up)            (m/s)
+12   Amplitude (Beam1)                (counts)
+13   Amplitude (Beam2)                (counts)
+14   Amplitude (Beam3)                (counts)
+15   Battery voltage                  (V)
+16   Soundspeed                       (m/s)
+17   Soundspeed used                  (m/s)
+18   Heading                          (degrees)
+19   Pitch                            (degrees)
+20   Roll                             (degrees)
+21   Pressure                         (dbar)
+22   Pressure                         (m)
+23   Temperature                      (degrees C)
+24   Analog input 1
+25   Analog input 2
+26   Speed                            (m/s)
+27   Direction                        (degrees)
