@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def read(filename: str, file_format: Optional[str] = None, 
-         header_file: Optional[str] = None, **kwargs) -> 'xr.Dataset':  # noqa: A002
+         header_file: Optional[str] = None, **kwargs) -> 'xr.Dataset':
     """
     Read a sensor data file and return it as an xarray Dataset.
     
