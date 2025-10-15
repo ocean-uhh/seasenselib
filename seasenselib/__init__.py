@@ -1,40 +1,70 @@
 """
 SeaSenseLib - Oceanographic Sensor Data Processing Library
 
-This package provides tools for reading, processing, and writing 
-sensor data in various formats.
+Modern Python API for reading, processing, and visualizing oceanographic sensor data.
 
-Main Components:
----------------
-- readers: Classes for reading different sensor file formats
-- writers: Classes for writing sensor data to different formats
-- plotters: Tools for visualizing sensor data
-- processors: Classes for processing sensor data
+Basic Usage:
+-----------
+```python
+import seasenselib as ssl
+ds = ssl.read('ctd_profile.cnv')
+ssl.write(ds, 'output.nc')
+ssl.plot.time_series(ds, parameters=['temperature', 'salinity'])
+```
+
+API Structure:
+-------------
+- ssl.read()       : Read sensor data files
+- ssl.write()      : Write datasets to various formats  
+- ssl.formats()      : Format discovery and constants
+- ssl.plot         : Domain-specific plotting functions
 """
 
-# Import modules lazily to improve startup performance
-# The actual imports happen when these modules are first accessed
+# Core API imports - always available
+from .api import read, write, formats
 
-import sys
+# Lazy loading for heavy modules
 from importlib import import_module
+from typing import Any
 
-# Cache for loaded modules to avoid re-importing
+# Module cache for lazy loading
 _loaded_modules = {}
 
-def __getattr__(name):
-    """Lazy loading of package modules."""
-    if name in ['readers', 'writers', 'plotters', 'processors']:
+# Version info
+__version__ = "0.3.0"
+
+def __getattr__(name: str) -> Any:
+    """
+    Lazy loading of package modules.
+    
+    This allows for fast import times while still providing access to all functionality.
+    Heavy modules (plotters, processors) are only imported when first accessed.
+    """
+    
+    # Define module mappings for lazy loading
+    _module_map = {
+        'plot': '.plotters.api',           # ssl.plot.*
+
+        # Legacy access - for backward compatibility
+        'plotters': '.plotters',
+        'processors': '.processors', 
+        'readers': '.readers',
+        'writers': '.writers'
+    }
+    
+    if name in _module_map:
         if name not in _loaded_modules:
-            # Use absolute import to avoid recursion
-            module_name = f'seasenselib.{name}'
+            module_name = f'seasenselib{_module_map[name]}'
             _loaded_modules[name] = import_module(module_name)
         return _loaded_modules[name]
     else:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
+# Define what's available at top level
 __all__ = [
-    'readers',
-    'writers',
-    'plotters',
-    'processors'
+    'read',
+    'write',
+    'formats',
+    'plot',
+    '__version__'
 ]
