@@ -5,7 +5,7 @@ A tool for reading, converting, and plotting sensor data from different oceanogr
 ## Table of Contents
 
 - [Installation](#installation)
-- [How to import SeaSenseLib](#how-to-import-seasenselib)
+- [How to Use SeaSenseLib](#how-to-use-seasenselib)
 - [CLI Usage](#cli-usage)
 - [Example data](#example-data)
   - [Converting a CNV file to netCDF](#converting-a-cnv-file-to-netcdf)
@@ -24,25 +24,70 @@ pip install seasenselib
 
 Now you're ready to use the library.
 
-## How to import SeaSenseLib
+## How to Use SeaSenseLib
 
-Example code for using the SeaSenseLib library in your project:
+SeaSenseLib is designed to make working with oceanographic data easy and intuitive, whether you're analyzing CTD profiles, processing mooring data, or creating publication-ready plots in Jupyter notebooks.
+
+### Quick Start - Basic Workflow
+
+The most common workflow: read sensor data, analyze it, create plots, and save results.
 
 ```python
-from seasenselib.readers import SbeCnvReader, NetCdfReader
-from seasenselib.writers import NetCdfWriter
-from seasenselib.plotters import TimeSeriesPlotter
+import seasenselib as ssl
+
+# 1. Read CTD data (auto-detects .cnv format)
+ds = ssl.read("profile.cnv")
+
+# 2. Quick data overview
+print(ds)
+
+# 3. Create plots
+ssl.plot.time_series(ds, parameters=['temperature', 'salinity'])
+ssl.plot.ts_diagram(ds) 
+
+# 4. Save data as netCDF
+ssl.write(ds, 'profile.nc')
+```
+
+### Working with Different Data Formats
+
+SeaSenseLib supports different oceanographic instruments. Here's how to work with different formats by specifying the format or letting it auto-detect based on file extension:
+
+```python
+import seasenselib as ssl
+
+# Seabird CTD data
+sbe_data = ssl.read("station_001.cnv", file_format='sbe-cnv')
+
+# RBR logger data  
+rbr_data = ssl.read("temperature_logger.rsk", file_format='rbr-rsk')
+
+# See all supported formats
+formats = ssl.formats()
+for fmt in formats:
+    print(f"- {fmt['key']:<20} : {fmt['name']} ")
+
+# Auto-detect format from file extension
+data = ssl.read("myfile.cnv")  # Automatically detects 'sbe-cnv'
+```
+
+### Using Reader, Writer, and Plotter Classes Directly
+
+Example code for using SeaSenseLib with explicit usage of reader, writer, and plotter classes:
+
+```python
+import seasenselib as ssl
 
 # Read CTD data from CNV file
-reader = SbeCnvReader("sea-practical-2023.cnv")
-dataset = reader.get_data()
+reader = ssl.readers.SbeCnvReader("profile.cnv")
+ds = reader.get_data()
 
 # Write dataset with CTD data to netCDF file
-writer = NetCdfWriter(dataset)
-writer.write('sea-practical-2023.nc')
+writer = ssl.writers.NetCdfWriter(ds)
+writer.write('profile.nc')
 
 # Plot CTD data
-plotter = TimeSeriesPlotter(dataset)
+plotter = ssl.plotters.TimeSeriesPlotter(ds)
 plotter.plot(parameter_name='temperature')
 ```
 
