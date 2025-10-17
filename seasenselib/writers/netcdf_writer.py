@@ -1,7 +1,6 @@
 """
 Module for writing sensor data to netCDF files.
 """
-
 from seasenselib.writers.base import AbstractWriter
 
 class NetCdfWriter(AbstractWriter):
@@ -38,7 +37,43 @@ class NetCdfWriter(AbstractWriter):
         file_name (str): 
             The name of the output netCDF file where the data will be saved.
         """
-        self.data.to_netcdf(file_name)
+
+        ds = self.data
+
+        def clean_attr_value(value):
+            """Convert attribute values to NetCDF-compatible types"""
+            if isinstance(value, dict):
+                import json
+                return json.dumps(value)
+            elif value is None:
+                return ""  # Convert None to empty string
+            elif isinstance(value, (list, tuple)) and len(value) > 0:
+                # Check if list contains non-serializable items
+                try:
+                    # Test if it's already NetCDF compatible by trying to convert to string
+                    str(value)
+                    return value
+                except (TypeError, ValueError):
+                    import json
+                    return json.dumps(list(value))
+            else:
+                return value
+
+        # Fix attributes at dataset level
+        for attr_name, attr_value in list(ds.attrs.items()):
+            ds.attrs[attr_name] = clean_attr_value(attr_value)
+
+        # Fix attributes at variable level
+        for var_name, var in ds.data_vars.items():
+            for attr_name, attr_value in list(var.attrs.items()):
+                ds[var_name].attrs[attr_name] = clean_attr_value(attr_value)
+
+        # Fix attributes at coordinate level
+        for coord_name, coord in ds.coords.items():
+            for attr_name, attr_value in list(coord.attrs.items()):
+                ds[coord_name].attrs[attr_name] = clean_attr_value(attr_value)
+
+        ds.to_netcdf(file_name)
 
     @staticmethod
     def file_extension() -> str:
