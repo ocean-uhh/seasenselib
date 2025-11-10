@@ -90,7 +90,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pyrsktools</span><span class="w"> </span><span class="kn">import</span> <span class="n">RSK</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
 
@@ -132,6 +131,8 @@
 <span class="sd">        organizes the data into a xarray Dataset. It also assigns metadata </span>
 <span class="sd">        according to the CF conventions to the dataset variables.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pyrsktools</span><span class="w"> </span><span class="kn">import</span> <span class="n">RSK</span>
 
         <span class="c1"># Open the RSK file and read the data</span>
         <span class="n">rsk</span> <span class="o">=</span> <span class="n">RSK</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
