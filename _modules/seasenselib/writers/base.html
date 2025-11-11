@@ -115,6 +115,10 @@
 <span class="sd">        Initializes the writer with the provided xarray Dataset.</span>
 <span class="sd">    file_extension: str</span>
 <span class="sd">        The default file extension for this writer (to be implemented by subclasses).</span>
+<span class="sd">    format_name() -&gt; str:</span>
+<span class="sd">        Get the format name for this writer (to be implemented by subclasses).</span>
+<span class="sd">    format_key() -&gt; str:</span>
+<span class="sd">        Get the format key for this writer (to be implemented by subclasses).</span>
 <span class="sd">    data: xr.Dataset</span>
 <span class="sd">        The xarray Dataset containing the sensor data.</span>
 <span class="sd">    data.setter(value: xr.Dataset):</span>
@@ -149,6 +153,50 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>  <span class="c1"># This will use the setter</span>
 
+<div class="viewcode-block" id="AbstractWriter.format_name">
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.format_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format name for this writer.</span>
+
+<span class="sd">        This property must be implemented by all subclasses.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The format (e.g., &#39;netCDF&#39;, &#39;CSV&#39;).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        NotImplementedError:</span>
+<span class="sd">            If the subclass does not implement this property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Writer classes must define a format name&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractWriter.format_key">
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.format_key">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format key for this writer.</span>
+
+<span class="sd">        This property must be implemented by all subclasses.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The format key (e.g., &#39;netcdf&#39;, &#39;csv&#39;).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        NotImplementedError:</span>
+<span class="sd">            If the subclass does not implement this property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Writer classes must define a format key&quot;</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="AbstractWriter.file_extension">
 <a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
@@ -157,11 +205,13 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default file extension for this writer.</span>
 <span class="sd">        </span>
 <span class="sd">        This property must be implemented by all subclasses.</span>
+<span class="sd">        The extension must be unique over all registered writers.</span>
+<span class="sd">        If the writer does not specify a unique file extension, just return `None`.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">        --------</span>
 <span class="sd">        str</span>
-<span class="sd">            The file extension (e.g., &#39;.nc&#39;, &#39;.csv&#39;, &#39;.xlsx&#39;).</span>
+<span class="sd">            The file extension (e.g., &#39;.nc&#39;, &#39;.csv&#39;).</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">        -------</span>

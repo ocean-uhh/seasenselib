@@ -552,6 +552,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file extension for this reader.</span>
 
 <span class="sd">        This property must be implemented by all subclasses.</span>
+<span class="sd">        The extension must be unique over all registered readers.</span>
+<span class="sd">        If a reader does not specify a unique file extension, just return `None`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">        --------</span>

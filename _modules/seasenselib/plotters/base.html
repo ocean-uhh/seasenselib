@@ -209,6 +209,50 @@
         <span class="k">pass</span></div>
 
 
+<div class="viewcode-block" id="AbstractPlotter.name">
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.base.AbstractPlotter.name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name for this plotter.</span>
+
+<span class="sd">        This property must be implemented by all subclasses.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The name (e.g., &#39;Time Series&#39;, &#39;T-S Diagram&#39;, &#39;Vertical Profile&#39;).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        NotImplementedError:</span>
+<span class="sd">            If the subclass does not implement this property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Writer classes must define a format name&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractPlotter.key">
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.base.AbstractPlotter.key">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the unique key for this writer.</span>
+
+<span class="sd">        This property must be implemented by all subclasses.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The key value (e.g., &#39;time-series&#39;, &#39;ts-diagram&#39;, &#39;vertical-profile&#39;).</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        NotImplementedError:</span>
+<span class="sd">            If the subclass does not implement this property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Writer classes must define a key&quot;</span><span class="p">)</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_dataset_without_nan</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns dataset with NaN values removed from time dimension.</span>
 <span class="sd">        </span>
