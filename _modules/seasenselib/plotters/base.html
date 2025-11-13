@@ -243,7 +243,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">        --------</span>
 <span class="sd">        str</span>
-<span class="sd">            The key value (e.g., &#39;time-series&#39;, &#39;ts-diagram&#39;, &#39;vertical-profile&#39;).</span>
+<span class="sd">            The key value (e.g., &#39;time-series&#39;, &#39;ts-diagram&#39;, &#39;depth-profile&#39;).</span>
 <span class="sd">        </span>
 <span class="sd">        Raises:</span>
 <span class="sd">        -------</span>
@@ -251,6 +251,21 @@
 <span class="sd">            If the subclass does not implement this property.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Writer classes must define a key&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractPlotter.add_cli_arguments">
+<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.base.AbstractPlotter.add_cli_arguments">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cli_arguments</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional hook for plotters to add their CLI arguments.</span>
+
+<span class="sd">        Plugins can override this method to register argparse options</span>
+<span class="sd">        specific to the plotter. The parser passed in will already contain</span>
+<span class="sd">        the common options (input, output, title, etc.). Implementations</span>
+<span class="sd">        should only add arguments and not parse them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Default: no extra arguments</span>
+        <span class="k">return</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_dataset_without_nan</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
