@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -96,7 +101,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <div class="viewcode-block" id="AbstractWriter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.base.AbstractWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for writing sensor data from xarray Datasets.</span>
 <span class="sd">    </span>
@@ -154,7 +159,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>  <span class="c1"># This will use the setter</span>
 
 <div class="viewcode-block" id="AbstractWriter.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.base.AbstractWriter.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -176,7 +181,7 @@
 
 
 <div class="viewcode-block" id="AbstractWriter.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.base.AbstractWriter.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -198,7 +203,7 @@
 
 
 <div class="viewcode-block" id="AbstractWriter.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.base.AbstractWriter.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -251,7 +256,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="AbstractWriter.write">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.base.AbstractWriter.write">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.base.AbstractWriter.write">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the xarray Dataset to a file.</span>

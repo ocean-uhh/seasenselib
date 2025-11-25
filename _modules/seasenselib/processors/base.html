@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -96,7 +101,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <div class="viewcode-block" id="AbstractProcessor">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.base.AbstractProcessor">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.base.AbstractProcessor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AbstractProcessor</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for processing sensor data from xarray Datasets.</span>
 <span class="sd">    </span>
@@ -134,7 +139,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
 
 <div class="viewcode-block" id="AbstractProcessor.process">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.base.AbstractProcessor.process">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.base.AbstractProcessor.process">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the dataset.</span>
@@ -151,7 +156,7 @@
 
 
 <div class="viewcode-block" id="AbstractProcessor.validate_parameter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.base.AbstractProcessor.validate_parameter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.base.AbstractProcessor.validate_parameter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that a parameter exists in the dataset.</span>
 <span class="sd">        </span>
@@ -170,7 +175,7 @@
 
 
 <div class="viewcode-block" id="AbstractProcessor.validate_coordinate">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.base.AbstractProcessor.validate_coordinate">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.base.AbstractProcessor.validate_coordinate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_coordinate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinate_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that a coordinate exists in the dataset.</span>
 <span class="sd">        </span>

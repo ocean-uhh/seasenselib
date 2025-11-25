@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -96,7 +101,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractProcessor</span>
 
 <div class="viewcode-block" id="ResampleProcessor">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResampleProcessor</span><span class="p">(</span><span class="n">AbstractProcessor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resample sensor data to different time intervals.</span>
 
@@ -136,7 +141,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_coordinate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ResampleProcessor.process">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.process">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.process">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the dataset (returns the original dataset).</span>
 <span class="sd">        </span>
@@ -152,7 +157,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample the dataset to a specified time interval.</span>
 <span class="sd">        </span>
@@ -187,7 +192,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_mean">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_mean">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_mean">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute mean values.</span>
 <span class="sd">        </span>
@@ -207,7 +212,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_median">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_median">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_median">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute median values.</span>
 <span class="sd">        </span>
@@ -227,7 +232,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_max">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_max">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_max">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute maximum values.</span>
 <span class="sd">        </span>
@@ -247,7 +252,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_min">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_min">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_min">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute minimum values.</span>
 <span class="sd">        </span>
@@ -267,7 +272,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_std">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_std">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_std">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute standard deviation.</span>
 <span class="sd">        </span>
@@ -287,7 +292,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_sum">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_sum">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_sum">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and compute sum values.</span>
 <span class="sd">        </span>
@@ -307,7 +312,7 @@
 
 
 <div class="viewcode-block" id="ResampleProcessor.resample_count">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.processors.ResampleProcessor.resample_count">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.processors.ResampleProcessor.resample_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_interval</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample and count valid values.</span>
 <span class="sd">        </span>

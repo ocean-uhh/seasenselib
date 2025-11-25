@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -98,7 +103,7 @@
 
 
 <div class="viewcode-block" id="SbeCnvReader">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.SbeCnvReader">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeCnvReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SbeCnvReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads sensor data from a SeaBird CNV file into a xarray Dataset. </span>
 
@@ -679,21 +684,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="SbeCnvReader.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.SbeCnvReader.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeCnvReader.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;sbe-cnv&#39;</span></div>
 
 
 <div class="viewcode-block" id="SbeCnvReader.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.SbeCnvReader.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeCnvReader.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;SeaBird CNV&#39;</span></div>
 
 
 <div class="viewcode-block" id="SbeCnvReader.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.readers.SbeCnvReader.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeCnvReader.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;.cnv&#39;</span></div>

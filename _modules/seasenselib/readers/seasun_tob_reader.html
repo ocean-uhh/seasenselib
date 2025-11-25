@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.readers.seasun_tob_reader &mdash; seasenselib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            seasenselib
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">seasenselib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.readers.seasun_tob_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.readers.seasun_tob_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for reading CTD data from TOB files into xarray Datasets.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+
+
+<div class="viewcode-block" id="SeasunTobReader">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SeasunTobReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads CTD data from a TOB ASCII file (Sea &amp; Sun) into a xarray Dataset. </span>
+<span class="sd">    </span>
+<span class="sd">    This class reads TOB files, extracts column names and units, and organizes the data</span>
+<span class="sd">    into an xarray Dataset. It handles the conversion of timestamps to datetime objects </span>
+<span class="sd">    and assigns metadata according to CF conventions. The TOB file format is specific to</span>
+<span class="sd">    Sea &amp; Sun CTD devices, and this reader is designed to parse that format correctly.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : xr.Dataset</span>
+<span class="sd">        The xarray Dataset containing the sensor data.</span>
+<span class="sd">    input_file : str</span>
+<span class="sd">        The path to the input TOB file containing the CTD data.</span>
+<span class="sd">    mapping : dict, optional</span>
+<span class="sd">        A dictionary mapping names used in the input file to standard names.</span>
+<span class="sd">    encoding : str, optional</span>
+<span class="sd">        The encoding used to read the TOB file, default is &#39;latin-1&#39;.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __init__(input_file, mapping = {}, encoding = &#39;latin-1&#39;):</span>
+<span class="sd">        Initializes the TobReader with the input file, optional mapping, and encoding.</span>
+<span class="sd">    __read():</span>
+<span class="sd">        Reads the TOB file, processes the data, and creates an xarray Dataset.</span>
+<span class="sd">    get_data():</span>
+<span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
+<span class="sd">    get_file_type():</span>
+<span class="sd">        Returns the type of the file being read, which is &#39;Sea &amp; Sun TOB&#39;.</span>
+<span class="sd">    get_file_extension():</span>
+<span class="sd">        Returns the file extension for this reader, which is &#39;.tob&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="s1">&#39;latin-1&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Initializes the SeasunTobReader with the input file, optional mapping, and encoding.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reads a TOB file from Sea &amp; Sun CTD into a xarray dataset. </span>
+<span class="sd">        </span>
+<span class="sd">        This method processes the TOB file, extracts column names and units,</span>
+<span class="sd">        and organizes the data into an xarray Dataset. It handles the conversion of</span>
+<span class="sd">        timestamps to datetime objects and assigns metadata according to CF conventions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
+
+        <span class="c1"># Read the file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+        <span class="c1"># Find the line with column names</span>
+        <span class="n">header_line_index</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> \
+                                  <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;; Datasets&#39;</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">header_line_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Line with column names not found in the file.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Extract column names</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">header_line_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="c1"># Extract column units</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">lines</span><span class="p">[</span><span class="n">header_line_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span> \
+            <span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="c1"># Load data into pandas DataFrame</span>
+        <span class="n">data_start_index</span> <span class="o">=</span> <span class="n">header_line_index</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
+            <span class="n">skiprows</span><span class="o">=</span><span class="n">data_start_index</span><span class="p">,</span>
+            <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">names</span><span class="o">=</span><span class="n">column_names</span><span class="p">,</span>
+            <span class="n">parse_dates</span><span class="o">=</span><span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;IntD&#39;</span><span class="p">,</span> <span class="s1">&#39;IntT&#39;</span><span class="p">]},</span>
+            <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Convert DataFrame to xarray dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">))</span>
+
+        <span class="c1"># Assign units to data fields</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_names</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># Rename fields</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span>
+            <span class="s1">&#39;SALIN&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">,</span>
+            <span class="s1">&#39;Temp&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">,</span>
+            <span class="s1">&#39;Cond&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">CONDUCTIVITY</span><span class="p">,</span>
+            <span class="s1">&#39;Press&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">,</span>
+            <span class="s1">&#39;SOUND&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">,</span>
+            <span class="s1">&#39;Vbatt&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">POWER_SUPPLY_INPUT_VOLTAGE</span><span class="p">,</span>
+            <span class="s1">&#39;SIGMA&#39;</span><span class="p">:</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Datasets&#39;</span><span class="p">:</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+        <span class="c1"># Convert pressure to depth</span>
+        <span class="n">pressure_in_dbar</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># Extract pressure values from the dataset</span>
+        <span class="n">depth_in_meters</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">z_from_p</span><span class="p">(</span><span class="n">pressure_in_dbar</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">53.8187</span><span class="p">)</span>  <span class="c1"># TODO latitude is for Cuxhaven</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;time&#39;</span><span class="p">,),</span> <span class="n">depth_in_meters</span><span class="p">)</span>  <span class="c1"># Assuming the pressure varies with time</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+
+        <span class="c1"># Ensure &#39;time&#39; coordinate is datetime type</span>
+        <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Assign meta information for all attributes of the xarray Dataset</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span> <span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="c1"># Store processed data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
+
+<div class="viewcode-block" id="SeasunTobReader.format_key">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.format_key">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;seasun-tob&#39;</span></div>
+
+
+<div class="viewcode-block" id="SeasunTobReader.format_name">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.format_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;Sea &amp; Sun TOB&#39;</span></div>
+
+
+<div class="viewcode-block" id="SeasunTobReader.file_extension">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.file_extension">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;.tob&#39;</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -97,7 +102,7 @@
 
 
 <div class="viewcode-block" id="TsDiagramPlotter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TsDiagramPlotter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TsDiagramPlotter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TsDiagramPlotter</span><span class="p">(</span><span class="n">AbstractPlotter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates T-S (Temperature-Salinity) diagrams from CTD sensor data.</span>
 <span class="sd">    </span>
@@ -121,7 +126,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TsDiagramPlotter.plot">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TsDiagramPlotter.plot">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TsDiagramPlotter.plot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;T-S Diagram&#39;</span><span class="p">,</span>
              <span class="n">dot_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">use_colormap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
              <span class="n">show_density_isolines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">colormap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;jet&#39;</span><span class="p">,</span>
@@ -264,7 +269,7 @@
                 <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TsDiagramPlotter.name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TsDiagramPlotter.name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TsDiagramPlotter.name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the human-readable format name.&quot;&quot;&quot;</span>
@@ -272,7 +277,7 @@
 
 
 <div class="viewcode-block" id="TsDiagramPlotter.key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TsDiagramPlotter.key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TsDiagramPlotter.key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the unique key for this plotter.&quot;&quot;&quot;</span>
@@ -280,7 +285,7 @@
 
 
 <div class="viewcode-block" id="TsDiagramPlotter.add_cli_arguments">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TsDiagramPlotter.add_cli_arguments">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TsDiagramPlotter.add_cli_arguments">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_cli_arguments</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register CLI arguments for the T-S diagram plotter.&quot;&quot;&quot;</span>

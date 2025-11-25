@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -99,7 +104,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesPlotter</span><span class="p">(</span><span class="n">AbstractPlotter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates time series plots for one or more parameters in the CTD dataset.</span>
 <span class="sd">    </span>
@@ -129,7 +134,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TimeSeriesPlotter.plot">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.plot">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a time series plot for multiple parameters.</span>
 <span class="sd">        </span>
@@ -381,7 +386,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
 <div class="viewcode-block" id="TimeSeriesPlotter.plot_single_parameter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.plot_single_parameter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_single_parameter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_single_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
                              <span class="n">ylim_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ylim_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">line_style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="p">):</span>
@@ -409,7 +414,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.plot_multiple_parameters">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.plot_multiple_parameters">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_multiple_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_multiple_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">dual_axis</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">left_params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">right_params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -449,7 +454,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.plot_with_auto_dual_axis">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.plot_with_auto_dual_axis">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_with_auto_dual_axis">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_with_auto_dual_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience method that automatically uses dual axis based on parameter units.</span>
@@ -470,7 +475,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.plot_normalized_comparison">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.plot_normalized_comparison">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_normalized_comparison">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_normalized_comparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                   <span class="n">colors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience method for normalized parameter comparison.</span>
@@ -494,7 +499,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the human-readable format name.&quot;&quot;&quot;</span>
@@ -502,7 +507,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the unique format identifier.&quot;&quot;&quot;</span>
@@ -510,7 +515,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesPlotter.add_cli_arguments">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.plotters.TimeSeriesPlotter.add_cli_arguments">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.plotters.TimeSeriesPlotter.add_cli_arguments">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_cli_arguments</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register CLI arguments for the multi-parameter time series plotter.&quot;&quot;&quot;</span>

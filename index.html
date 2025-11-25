@@ -18,6 +18,8 @@
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -50,6 +52,11 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
@@ -57,7 +64,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -104,6 +111,30 @@
 </ul>
 </div>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#Overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#New-API-Features">New API Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#1.-Reading-Data-from-Different-Formats">1. Reading Data from Different Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#2.-Data-Exploration-and-Quality-Assessment">2. Data Exploration and Quality Assessment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#3.-Data-Conversion-and-Export">3. Data Conversion and Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#4.-Data-Visualization">4. Data Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#5.-Further-data-tools">5. Further data tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#Next-Steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#SeaBird-MicroCAT-(CNV-Format)">SeaBird MicroCAT (CNV Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#Nortek-Aquadopp-(DAT-Format)">Nortek Aquadopp (DAT Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#RBR-TR1050-Thermistor-(MAT-Format)">RBR TR1050 Thermistor (MAT Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#RBR-Solo-T-(RSK-Format)">RBR Solo T (RSK Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#SeaSenseLib-Format-Keys">SeaSenseLib Format Keys</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a><ul>
@@ -122,11 +153,11 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ctdtools.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ctdtools.html#module-seasenselib.readers">Readers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ctdtools.html#module-seasenselib.writers">Writers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ctdtools.html#module-seasenselib.plotters">Plotters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ctdtools.html#module-seasenselib.processors">Processors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.readers">Readers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.writers">Writers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.plotters">Plotters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.processors">Processors</a></li>
 </ul>
 </li>
 </ul>

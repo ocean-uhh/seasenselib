@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moored Instruments Demo &mdash; seasenselib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8b92e751"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="user_guide.html" />
+    <link rel="prev" title="SeaSenseLib Demo Notebook" href="demo-output.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            seasenselib
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Moored Instruments Demo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#SeaBird-MicroCAT-(CNV-Format)">SeaBird MicroCAT (CNV Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Nortek-Aquadopp-(DAT-Format)">Nortek Aquadopp (DAT Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#RBR-TR1050-Thermistor-(MAT-Format)">RBR TR1050 Thermistor (MAT Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#RBR-Solo-T-(RSK-Format)">RBR Solo T (RSK Format)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#SeaSenseLib-Format-Keys">SeaSenseLib Format Keys</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">seasenselib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Moored Instruments Demo</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demo_mooring-output.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Moored-Instruments-Demo">
+<h1>Moored Instruments Demo<a class="headerlink" href="#Moored-Instruments-Demo" title="Link to this heading"></a></h1>
+<p>Demonstration of SeaSenseLib with different mooring instrument types.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;seaborn-v0_8&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="SeaBird-MicroCAT-(CNV-Format)">
+<h2>SeaBird MicroCAT (CNV Format)<a class="headerlink" href="#SeaBird-MicroCAT-(CNV-Format)" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load SeaBird MicroCAT time series data and plot salinity</span>
+<span class="n">microcat_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/denmark-strait-ds-m1-17.cnv&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">microcat_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;salinity&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;MicroCAT Salinity Time Series&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:pycnv: Opening file: ../examples/denmark-strait-ds-m1-17.cnv
+WARNING:pycnv:Could not compute datetime dates based on timeM
+WARNING:pycnv:Could not compute datetime dates based on timeS
+INFO:pycnv:Dates computed based on start_date and time_interval
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Date
+Computing date
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/demo_mooring-output_3_2.png" src="_images/demo_mooring-output_3_2.png" />
+</div>
+</div>
+</section>
+<section id="Nortek-Aquadopp-(DAT-Format)">
+<h2>Nortek Aquadopp (DAT Format)<a class="headerlink" href="#Nortek-Aquadopp-(DAT-Format)" title="Link to this heading"></a></h2>
+<p>Nortek Format Key:</p>
+<ul class="simple">
+<li><p>‘nortek-ascii’ - Nortek ASCII format reader</p></li>
+</ul>
+<p>For Nortek Aquadopps, you should use:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>aquadopp_data = ssl.read(&quot;filename.dat&quot;, file_format=&#39;nortek-ascii&#39;, header_file=&quot;filename.hdr&quot;)
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load Nortek Aquadopp velocity data and plot u,v components</span>
+<span class="n">aquadopp_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/DSC18_477102.dat&quot;</span><span class="p">,</span>
+  <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;nortek-ascii&#39;</span><span class="p">,</span> <span class="n">header_file</span><span class="o">=</span><span class="s2">&quot;../examples/DSC18_477102.hdr&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">aquadopp_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;east_velocity&#39;</span><span class="p">,</span> <span class="s1">&#39;north_velocity&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Aquadopp Velocity Components&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/demo_mooring-output_5_0.png" src="_images/demo_mooring-output_5_0.png" />
+</div>
+</div>
+</section>
+<section id="RBR-TR1050-Thermistor-(MAT-Format)">
+<h2>RBR TR1050 Thermistor (MAT Format)<a class="headerlink" href="#RBR-TR1050-Thermistor-(MAT-Format)" title="Link to this heading"></a></h2>
+<p>Other formats available include:</p>
+<ul class="simple">
+<li><p>‘rbr-rsk’ - Auto reader for RSK files</p></li>
+<li><p>‘rbr-rsk-default’ - Default RSK reader</p></li>
+<li><p>‘rbr-rsk-legacy’ - Legacy RSK reader</p></li>
+<li><p>‘rbr-matlab’ - MATLAB format reader</p></li>
+<li><p>‘rbr-matlab-legacy’ - Legacy MATLAB format reader</p></li>
+<li><p>‘rbr-matlab-rsktools’ - MATLAB RSKtools export format</p></li>
+<li><p>‘rbr-ascii’ - ASCII format reader</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load RBR TR1050 thermistor data from Ruskin MAT export and plot temperature</span>
+<span class="n">tr1050_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/DSE18_013889_20180827_1349.mat&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-matlab&#39;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">tr1050_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;RBR TR1050 Temperature&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/demo_mooring-output_7_0.png" src="_images/demo_mooring-output_7_0.png" />
+</div>
+</div>
+</section>
+<section id="RBR-Solo-T-(RSK-Format)">
+<h2>RBR Solo T (RSK Format)<a class="headerlink" href="#RBR-Solo-T-(RSK-Format)" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load RBR Solo T data from native Ruskin format and plot temperature</span>
+<span class="n">solo_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/DSE18_101647_20180827_1551.rsk&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">solo_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;RBR Solo T Temperature&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/demo_mooring-output_9_0.png" src="_images/demo_mooring-output_9_0.png" />
+</div>
+</div>
+</section>
+<section id="SeaSenseLib-Format-Keys">
+<h2>SeaSenseLib Format Keys<a class="headerlink" href="#SeaSenseLib-Format-Keys" title="Link to this heading"></a></h2>
+<p>The following format keys can be used with <code class="docutils literal notranslate"><span class="pre">ssl.read(filename,</span> <span class="pre">file_format='key')</span></code>:</p>
+<p><strong>ADCP (Acoustic Doppler Current Profiler):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'adcp-matlab-uhhds'</span></code>: ADCP MATLAB UHHDS format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'adcp-matlab-rdadcp'</span></code>: ADCP MATLAB RDADCP format</p></li>
+</ul>
+<p><strong>CSV/Generic:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'csv'</span></code>: Comma-separated values format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'netcdf'</span></code>: Network Common Data Form</p></li>
+</ul>
+<p><strong>Nortek:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'nortek-ascii'</span></code>: Nortek ASCII format (requires header file)</p></li>
+</ul>
+<p><strong>RBR (Richard Brancker Research):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-rsk'</span></code>: RBR RSK native format (auto reader)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-rsk-default'</span></code>: RBR RSK default reader</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-rsk-legacy'</span></code>: RBR RSK legacy format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-matlab'</span></code>: RBR MATLAB export format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-matlab-legacy'</span></code>: RBR MATLAB legacy format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-matlab-rsktools'</span></code>: RBR MATLAB RSKtools export</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'rbr-ascii'</span></code>: RBR ASCII format</p></li>
+</ul>
+<p><strong>RCM (Anderaa):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'rcm-matlab'</span></code>: RCM MATLAB format</p></li>
+</ul>
+<p><strong>SeaBird:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'sbe-cnv'</span></code>: SeaBird CNV format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'sbe-ascii'</span></code>: SeaBird ASCII format</p></li>
+</ul>
+<p><strong>Seasun:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'seasun-tob'</span></code>: Seasun TOB format</p></li>
+</ul>
+<p><strong>Usage Example:</strong> ```python data = ssl.read(‘filename.ext’, file_format=’format-key’) # For formats requiring header files (e.g., Nortek): data = ssl.read(‘data.dat’, file_format=’nortek-ascii’, header_file=’data.hdr’)</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="demo-output.html" class="btn btn-neutral float-left" title="SeaSenseLib Demo Notebook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="user_guide.html" class="btn btn-neutral float-right" title="User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

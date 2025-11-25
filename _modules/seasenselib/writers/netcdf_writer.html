@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -89,7 +94,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractWriter</span>
 
 <div class="viewcode-block" id="NetCdfWriter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.NetCdfWriter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NetCdfWriter</span><span class="p">(</span><span class="n">AbstractWriter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to a netCDF file. </span>
 <span class="sd">    </span>
@@ -117,7 +122,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NetCdfWriter.write">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.NetCdfWriter.write">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.write">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a netCDF file with the specified file name.</span>
 
@@ -166,7 +171,7 @@
 
 
 <div class="viewcode-block" id="NetCdfWriter.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.NetCdfWriter.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default file extension for this writer.</span>
@@ -180,7 +185,7 @@
 
 
 <div class="viewcode-block" id="NetCdfWriter.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.NetCdfWriter.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format key for this writer.</span>
@@ -194,7 +199,7 @@
 
 
 <div class="viewcode-block" id="NetCdfWriter.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.NetCdfWriter.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the human-readable format name.</span>

@@ -48,6 +48,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Moored Instruments Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
@@ -55,7 +60,7 @@
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ctdtools.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -91,7 +96,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
 <div class="viewcode-block" id="CsvWriter">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.CsvWriter">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.CsvWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CsvWriter</span><span class="p">(</span><span class="n">AbstractWriter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to a CSV file. </span>
 <span class="sd">    </span>
@@ -119,7 +124,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CsvWriter.write">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.CsvWriter.write">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.CsvWriter.write">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coordinate</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</span>
 
@@ -145,7 +150,7 @@
 
 
 <div class="viewcode-block" id="CsvWriter.file_extension">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.CsvWriter.file_extension">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.CsvWriter.file_extension">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default file extension for this writer.</span>
@@ -159,7 +164,7 @@
 
 
 <div class="viewcode-block" id="CsvWriter.format_key">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.CsvWriter.format_key">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.CsvWriter.format_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format key for this writer.</span>
@@ -173,7 +178,7 @@
 
 
 <div class="viewcode-block" id="CsvWriter.format_name">
-<a class="viewcode-back" href="../../../ctdtools.html#seasenselib.writers.CsvWriter.format_name">[docs]</a>
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.CsvWriter.format_name">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the human-readable format name.</span>

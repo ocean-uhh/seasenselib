@@ -56,6 +56,51 @@ Specific Reader Classes
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: seasenselib.readers.AdcpMatlabRdadcpReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.AdcpMatlabUhhdsReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.RbrMatlabLegacyReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.RbrMatlabReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.RbrMatlabRsktoolsReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.RbrRskLegacyReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.RcmMatlabReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.SbeAsciiReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: seasenselib.readers.SeasunTobReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Writers
 -------
 
