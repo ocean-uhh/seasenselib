@@ -51,18 +51,20 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Formats Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
@@ -92,24 +94,27 @@
              
   <section id="about-seasenselib">
 <h1>About SeaSenseLib<a class="headerlink" href="#about-seasenselib" title="Link to this heading"></a></h1>
-<p>SeaSenseLib is a Python library for reading, converting, and plotting oceanographic sensor data from various instruments and formats. The package is designed to work seamlessly with data from moored instruments and CTD profiles, supporting multiple file formats commonly used in oceanographic research.</p>
+<p>SeaSenseLib is a Python library for reading, converting, and plotting oceanographic sensor data from various instruments and formats. The package is designed to work with data from both moored instruments and CTD profiles, supporting multiple file formats commonly used in oceanographic research.</p>
 <p><strong>Key Features:</strong></p>
 <ul class="simple">
 <li><p><strong>Multiple Format Support</strong>: Read data from Seabird CNV files, RBR RSK files, NetCDF, CSV, Nortek ASCII, and more</p></li>
 <li><p><strong>Flexible Data Processing</strong>: Convert between formats, resample data, extract subsets, and calculate statistics</p></li>
-<li><p><strong>Rich Visualization</strong>: Create T-S diagrams, vertical profiles, and time series plots</p></li>
+<li><p><strong>Data Visualization</strong>: Create T-S diagrams, vertical profiles, and time series plots</p></li>
 <li><p><strong>Command-Line Interface</strong>: Easy-to-use CLI for common data processing tasks</p></li>
-<li><p><strong>Extensible Architecture</strong>: Modular design allows easy addition of new readers, writers, and plotters</p></li>
+<li><p><strong>Extensible Architecture</strong>: Modular design and plugin system allow easy addition of new functionality</p></li>
 <li><p><strong>Parameter Mapping</strong>: Handle different column naming conventions across file formats</p></li>
 </ul>
 <p><strong>Supported Instruments:</strong></p>
 <ul class="simple">
-<li><p>Seabird CTD instruments (CNV format)</p></li>
-<li><p>RBR CTD and moored instruments (RSK format)</p></li>
-<li><p>Nortek ADCP instruments (ASCII format)</p></li>
+<li><p>Seabird CTD instruments (CNV and ASCII format)</p></li>
+<li><p>RBR CTD and moored instruments (RSK, ASCII and MATLAB format)</p></li>
+<li><p>Nortek current meters (ASCII format)</p></li>
+<li><p>ADCP data (MATLAB format e.g., output from <cite>rdadcp</cite>)</p></li>
+<li><p>RCM data (MATLAB format)</p></li>
 <li><p>Sea &amp; Sun Technology instruments (TOB format)</p></li>
 <li><p>General CSV and NetCDF files</p></li>
 </ul>
+<p>See also the <a class="reference internal" href="supported_formats.html"><span class="doc">Supported File Formats</span></a> for a complete list of supported formats and instruments.</p>
 <p><strong>Project Goals:</strong></p>
 <p>SeaSenseLib aims to simplify the process of working with oceanographic sensor data by providing:</p>
 <ol class="arabic simple">

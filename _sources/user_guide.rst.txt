@@ -1,316 +1,198 @@
 User Guide
 ==========
 
-This guide provides detailed information about using SeaSenseLib for oceanographic data processing.
+SeaSenseLib provides a simple, unified API for oceanographic data processing. This guide shows you how to read, process, and visualize data from various oceanographic instruments.  This guide covers the generalised API for working with the library.  
+
+- For the legacy API, see the :ref:`developers_guide`.
+- For a complete walkthrough with examples, see the `Demo Notebook <https://ocean-uhh.github.io/seasenselib/demo-output.html>`_.
+- For a examples loading different moored instrument formats, see the `Mooring Demo Notebook <https://ocean-uhh.github.io/seasenselib/demo_mooring-output.html>`_.
+- For a list of supported formats and instruments, see :doc:`supported_formats`.
 
 Quick Start
 -----------
 
-Here's a simple example to get you started with SeaSenseLib:
-
-**Using the Library in Python:**
+**Basic Usage:**
 
 .. code-block:: python
 
-   from seasenselib.readers import SbeCnvReader, NetCdfReader
-   from seasenselib.writers import NetCdfWriter
-   from seasenselib.plotters import TimeSeriesPlotter
+   import seasenselib as ssl
 
-   # Read CTD data from CNV file
-   reader = SbeCnvReader("sea-practical-2023.cnv")
-   dataset = reader.get_data()
+   # Read any supported format
+   dataset = ssl.read("your_data_file.cnv")
 
-   # Write dataset to netCDF file
-   writer = NetCdfWriter(dataset)
-   writer.write('sea-practical-2023.nc')
+   # Create plots
+   ssl.plot('ts-diagram', dataset, title="T-S Diagram")
+   ssl.plot('depth-profile', dataset, title="CTD Profile")
 
-   # Plot temperature time series
-   plotter = TimeSeriesPlotter(dataset)
-   plotter.plot(parameter_name='temperature')
+   # Export data
+   ssl.write(dataset, 'output.nc')
 
-**Using the Command Line:**
+Reading Data
+------------
 
-.. code-block:: bash
-
-   # Convert a CNV file to NetCDF
-   seasenselib convert -i input.cnv -o output.nc
-
-   # Show file summary
-   seasenselib show -i input.cnv
-
-   # Plot a T-S diagram
-   seasenselib plot-ts -i output.nc
-
-   # Plot a vertical profile
-   seasenselib plot-profile -i output.nc
-
-   # Plot temperature time series
-   seasenselib plot-series -i output.nc -p temperature
-
-Readers Overview
-----------------
-
-SeaSenseLib supports reading data from various oceanographic instruments and file formats. Each reader converts instrument-specific data into standardized xarray Datasets for consistent data processing.
-
-**Seabird CTD Instruments**
-
-The ``SbeCnvReader`` handles Seabird CNV files, which are commonly used for CTD profile data:
+SeaSenseLib automatically detects file formats and converts data to standardized xarray Datasets:
 
 .. code-block:: python
 
-   from seasenselib.readers import SbeCnvReader
-   
-   # Read a CNV file
-   reader = SbeCnvReader("profile_001.cnv")
-   dataset = reader.get_data()
-   
-   # Access data variables
-   temperature = dataset['temperature']
-   salinity = dataset['salinity']
-   pressure = dataset['pressure']
+   import seasenselib as ssl
 
-**Parameter Mapping**
+   # Automatic format detection
+   ctd_data = ssl.read("profile.cnv")           # SeaBird CTD
+   rbr_data = ssl.read("logger.rsk")            # RBR instruments  
+   netcdf_data = ssl.read("data.nc")            # NetCDF files
 
-Different instruments may use different column names for the same parameters. Use parameter mapping to standardize names:
+   # Explicit format specification (when needed)
+   nortek_data = ssl.read("current.dat", 
+                         file_format='nortek-ascii',
+                         header_file="current.hdr")
 
-.. code-block:: bash
+**Supported Formats:**
 
-   # CLI mapping example
-   seasenselib convert -i input.cnv -o output.nc -m temperature=tv290C pressure=prdM salinity=sal00
+- **SeaBird**: CNV files from CTD casts and moorings
+- **RBR**: RSK native format and MATLAB exports
+- **Nortek**: Aquadopp current meter data
+- **NetCDF**: CF-compliant oceanographic data
+- **CSV**: Comma-separated sensor data
+- **ADCP**: MATLAB format current profiler data
 
-.. code-block:: python
+For a complete list of format keys and usage examples, see :doc:`supported_formats`.
 
-   # Python mapping example
-   reader = SbeCnvReader("input.cnv", parameter_mapping={
-       'temperature': 'tv290C',
-       'pressure': 'prdM', 
-       'salinity': 'sal00'
-   })
+Creating Plots
+--------------
 
-**RBR Instruments**
+Generate standard oceanographic visualizations with simple commands:
 
-The ``RbrRskReader`` family handles RBR RSK files from moored instruments:
+**Temperature-Salinity Diagrams:**
 
 .. code-block:: python
 
-   from seasenselib.readers import RbrRskReader, RbrRskAutoReader
-   
-   # Auto-detect RSK format version
-   reader = RbrRskAutoReader("mooring_data.rsk")
-   dataset = reader.get_data()
-   
-   # Or use specific version
-   reader = RbrRskReader("mooring_data.rsk")
-   dataset = reader.get_data()
+   ssl.plot('ts-diagram', dataset, title="Station T-S Diagram")
+   ssl.plot('ts-diagram', dataset, output_file="ts_plot.png")
 
-**NetCDF and CSV Files**
-
-For standard formats, use the general readers:
+**Vertical Profiles:**
 
 .. code-block:: python
 
-   from seasenselib.readers import NetCdfReader, CsvReader
-   
-   # Read NetCDF files
-   nc_reader = NetCdfReader("data.nc")
-   dataset = nc_reader.get_data()
-   
-   # Read CSV files
-   csv_reader = CsvReader("data.csv")
-   dataset = csv_reader.get_data()
+   ssl.plot('depth-profile', dataset, title="CTD Cast")
 
-Writers Overview
-----------------
-
-SeaSenseLib can export processed data to various formats for further analysis or sharing.
-
-**NetCDF Export**
-
-NetCDF is the recommended format for oceanographic data as it preserves metadata and follows CF conventions:
+**Time Series:**
 
 .. code-block:: python
 
-   from seasenselib.writers import NetCdfWriter
+   # Single parameter
+   ssl.plot('time-series', dataset, parameters=['temperature'])
    
-   writer = NetCdfWriter(dataset)
-   writer.write("output.nc")
-   
-   # With custom attributes
-   writer = NetCdfWriter(dataset, global_attributes={
-       'title': 'CTD Profile Station 001',
-       'institution': 'University of Hamburg'
-   })
-   writer.write("output.nc")
+   # Multiple parameters
+   ssl.plot('time-series', dataset, 
+            parameters=['temperature', 'salinity'],
+            title="Mooring Data")
 
-**CSV Export**
+Exporting Data
+--------------
 
-Export to CSV for use in spreadsheet applications:
+Save processed data in various formats:
 
 .. code-block:: python
 
-   from seasenselib.writers import CsvWriter
+   # NetCDF (recommended for oceanographic data)
+   ssl.write(dataset, 'processed_data.nc')
    
-   writer = CsvWriter(dataset)
-   writer.write("output.csv")
-
-**Excel Export**
-
-Create Excel files with multiple sheets:
-
-.. code-block:: python
-
-   from seasenselib.writers import ExcelWriter
+   # CSV for spreadsheets
+   ssl.write(dataset, 'data_export.csv')
    
-   writer = ExcelWriter(dataset)
-   writer.write("output.xlsx")
-
-Plotters Overview
------------------
-
-SeaSenseLib provides specialized plotting tools for oceanographic data visualization.
-
-**Temperature-Salinity Diagrams**
-
-T-S diagrams show the relationship between temperature and salinity with density isolines:
-
-.. code-block:: python
-
-   from seasenselib.plotters import TsDiagramPlotter
-   
-   plotter = TsDiagramPlotter(dataset)
-   plotter.plot(title="Station 001 T-S Diagram")
-   
-   # Save to file
-   plotter.plot(output_file="ts_diagram.png")
-
-**Vertical Profiles**
-
-Display CTD casts as vertical profiles:
-
-.. code-block:: python
-
-   from seasenselib.plotters import ProfilePlotter
-   
-   plotter = ProfilePlotter(dataset)
-   plotter.plot(title="CTD Profile")
-   
-   # Customize parameters
-   plotter.plot(parameters=['temperature', 'salinity', 'oxygen'])
-
-**Time Series**
-
-Plot parameter evolution over time for moored data:
-
-.. code-block:: python
-
-   from seasenselib.plotters import TimeSeriesPlotter
-   
-   plotter = TimeSeriesPlotter(dataset)
-   plotter.plot('temperature', title="Temperature Time Series")
-   
-   # Multiple parameters with dual axis
-   from seasenselib.plotters import TimeSeriesPlotterMulti
-   
-   multi_plotter = TimeSeriesPlotterMulti(dataset)
-   multi_plotter.plot(['temperature', 'salinity'], dual_axis=True)
+   # Excel format
+   ssl.write(dataset, 'report.xlsx')
 
 Data Processing
 ---------------
 
-**Subsetting Data**
-
-Extract specific time periods or depth ranges:
+SeaSenseLib includes basic processing tools:
 
 .. code-block:: python
 
-   from seasenselib.processors import SubsetProcessor
+   from seasenselib.processors import SubsetProcessor, StatisticsProcessor
+
+   # Extract data subsets
+   subset = SubsetProcessor(dataset)
+   shallow_data = subset.set_parameter_name('pressure').set_parameter_value_max(50).get_subset()
    
-   # Time subset
-   processor = SubsetProcessor(dataset)
-   subset = processor.subset_time('2023-01-01', '2023-01-31')
-   
-   # Depth subset
-   depth_subset = processor.subset_depth(10, 100)  # 10-100m depth
+   # Calculate statistics
+   stats = StatisticsProcessor(dataset, 'temperature')
+   temperature_stats = stats.get_all_statistics()
+   print(f"Mean temperature: {temperature_stats['mean']:.2f}°C")
 
-**Resampling**
+Command Line Interface
+----------------------
 
-Change the temporal resolution of time series data:
-
-.. code-block:: python
-
-   from seasenselib.processors import ResampleProcessor
-   
-   processor = ResampleProcessor(dataset)
-   hourly_data = processor.resample('1H', method='mean')
-
-**Statistics**
-
-Calculate statistics for your data:
-
-.. code-block:: python
-
-   from seasenselib.processors import StatisticsProcessor
-   
-   processor = StatisticsProcessor(dataset)
-   stats = processor.calculate_statistics(['temperature', 'salinity'])
-
-Command Line Usage
-------------------
-
-SeaSenseLib provides a comprehensive command-line interface for common tasks:
-
-**Format Information**
+Use SeaSenseLib from the command line for common workflows:
 
 .. code-block:: bash
 
-   # List supported formats
-   seasenselib formats
-
-**Data Conversion**
-
-.. code-block:: bash
-
-   # Convert CNV to NetCDF
+   # Convert data formats
    seasenselib convert -i input.cnv -o output.nc
    
-   # Convert with parameter mapping
-   seasenselib convert -i input.cnv -o output.nc -m temperature=tv290C pressure=prdM
+   # Show file information
+   seasenselib show -i data_file.cnv
    
-   # Convert to CSV
-   seasenselib convert -i input.nc -o output.csv
+   # Create plots
+   seasenselib plot ts-diagram -i data.nc -o ts_diagram.png
+   seasenselib plot depth-profile -i data.nc -o profile.png
+   seasenselib plot time-series -i data.nc -p temperature
 
-**Data Inspection**
+   # List available formats
+   seasenselib list readers
 
-.. code-block:: bash
+Working with Different Instruments
+----------------------------------
 
-   # Show file summary
-   seasenselib show -i data.nc
+**CTD Profile Data (SeaBird):**
+
+.. code-block:: python
+
+   # Read vertical cast data
+   ctd_cast = ssl.read("station001.cnv")
+   ssl.plot('depth-profile', ctd_cast, title="Station 001")
+   ssl.plot('ts-diagram', ctd_cast, title="Water Mass Analysis")
+
+**Moored Time Series (SeaBird MicroCAT):**
+
+.. code-block:: python
+
+   # Read mooring data
+   mooring = ssl.read("microcat_series.cnv") 
+   ssl.plot('time-series', mooring, 
+            parameters=['temperature', 'salinity'],
+            title="Mooring Time Series")
+
+**RBR Temperature Loggers:**
+
+.. code-block:: python
+
+   # Native RSK format
+   rbr_data = ssl.read("solo_logger.rsk")
+   ssl.plot('time-series', rbr_data, parameters=['temperature'])
    
-   # Show specific format
-   seasenselib show -i data.cnv
+   # MATLAB export
+   rbr_matlab = ssl.read("rbr_export.mat", file_format='rbr-matlab')
 
-**Plotting**
+**Current Meter Data (Nortek):**
 
-.. code-block:: bash
+.. code-block:: python
 
-   # Create T-S diagram
-   seasenselib plot-ts -i data.nc -o ts_diagram.png
-   
-   # Create vertical profile
-   seasenselib plot-profile -i data.nc -o profile.png
-   
-   # Create time series
-   seasenselib plot-series -i data.nc -p temperature -o temp_series.png
-   
-   # Multiple parameters with dual axis
-   seasenselib plot-series -i data.nc -p temperature salinity --dual-axis
+   # Requires both data and header files
+   current_data = ssl.read("aquadopp.dat",
+                          file_format='nortek-ascii', 
+                          header_file="aquadopp.hdr")
+   ssl.plot('time-series', current_data, 
+            parameters=['east_velocity', 'north_velocity'])
 
-Working with Examples
----------------------
 
-The SeaSenseLib repository includes example data files in the ``examples/`` directory. These files demonstrate typical use cases:
+Getting Help
+------------
 
-* ``sea-practical-2023.cnv``: Vertical CTD profile data
-* ``denmark-strait-ds-m1-17.cnv``: Time series from moored instrument
+- **Documentation**: Full API reference and examples at `https://ocean-uhh.github.io/seasenselib/ <https://ocean-uhh.github.io/seasenselib/>`_
+- **Command help**: ``seasenselib --help`` or ``seasenselib <command> --help``
+- **Supported formats**: ``seasenselib list readers``
+- **Issues**: Report problems at `http://github.com/ocean-uhh/seasenselib/issues <http://github.com/ocean-uhh/seasenselib/issues>`_
 
-Use these files to test functionality and learn the data processing workflow.
+For advanced usage, custom readers, or library extension, see the :doc:`developers_guide`.

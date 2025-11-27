@@ -22,8 +22,8 @@
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api_reference.html" />
-    <link rel="prev" title="Moored Instruments Demo" href="demo_mooring-output.html" /> 
+    <link rel="next" title="SeaSenseLib Demo" href="demo-output.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,27 +51,30 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#readers-overview">Readers Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#writers-overview">Writers Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plotters-overview">Plotters Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-data">Reading Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-plots">Creating Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exporting-data">Exporting Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-processing">Data Processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#command-line-usage">Command Line Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#working-with-examples">Working with Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-interface">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-different-instruments">Working with Different Instruments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Formats Demo</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
@@ -101,260 +104,174 @@
              
   <section id="user-guide">
 <h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
-<p>This guide provides detailed information about using SeaSenseLib for oceanographic data processing.</p>
+<p>SeaSenseLib provides a simple, unified API for oceanographic data processing. This guide shows you how to read, process, and visualize data from various oceanographic instruments.  This guide covers the generalised API for working with the library.</p>
+<ul class="simple">
+<li><p>For the legacy API, see the <span class="xref std std-ref">developers_guide</span>.</p></li>
+<li><p>For a complete walkthrough with examples, see the <a class="reference external" href="https://ocean-uhh.github.io/seasenselib/demo-output.html">Demo Notebook</a>.</p></li>
+<li><p>For a examples loading different moored instrument formats, see the <a class="reference external" href="https://ocean-uhh.github.io/seasenselib/demo_mooring-output.html">Mooring Demo Notebook</a>.</p></li>
+<li><p>For a list of supported formats and instruments, see <a class="reference internal" href="supported_formats.html"><span class="doc">Supported File Formats</span></a>.</p></li>
+</ul>
 <section id="quick-start">
 <h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
-<p>Here’s a simple example to get you started with SeaSenseLib:</p>
-<p><strong>Using the Library in Python:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span><span class="p">,</span> <span class="n">NetCdfReader</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfWriter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotter</span>
+<p><strong>Basic Usage:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
 
-<span class="c1"># Read CTD data from CNV file</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;sea-practical-2023.cnv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="c1"># Read any supported format</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;your_data_file.cnv&quot;</span><span class="p">)</span>
 
-<span class="c1"># Write dataset to netCDF file</span>
-<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;sea-practical-2023.nc&#39;</span><span class="p">)</span>
+<span class="c1"># Create plots</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;T-S Diagram&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;depth-profile&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile&quot;</span><span class="p">)</span>
 
-<span class="c1"># Plot temperature time series</span>
-<span class="n">plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">parameter_name</span><span class="o">=</span><span class="s1">&#39;temperature&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Using the Command Line:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert a CNV file to NetCDF</span>
-seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc
-
-<span class="c1"># Show file summary</span>
-seasenselib<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>input.cnv
-
-<span class="c1"># Plot a T-S diagram</span>
-seasenselib<span class="w"> </span>plot-ts<span class="w"> </span>-i<span class="w"> </span>output.nc
-
-<span class="c1"># Plot a vertical profile</span>
-seasenselib<span class="w"> </span>plot-profile<span class="w"> </span>-i<span class="w"> </span>output.nc
-
-<span class="c1"># Plot temperature time series</span>
-seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>output.nc<span class="w"> </span>-p<span class="w"> </span>temperature
+<span class="c1"># Export data</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;output.nc&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="readers-overview">
-<h2>Readers Overview<a class="headerlink" href="#readers-overview" title="Link to this heading"></a></h2>
-<p>SeaSenseLib supports reading data from various oceanographic instruments and file formats. Each reader converts instrument-specific data into standardized xarray Datasets for consistent data processing.</p>
-<p><strong>Seabird CTD Instruments</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">SbeCnvReader</span></code> handles Seabird CNV files, which are commonly used for CTD profile data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SbeCnvReader</span>
+<section id="reading-data">
+<h2>Reading Data<a class="headerlink" href="#reading-data" title="Link to this heading"></a></h2>
+<p>SeaSenseLib automatically detects file formats and converts data to standardized xarray Datasets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
 
-<span class="c1"># Read a CNV file</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;profile_001.cnv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="c1"># Automatic format detection</span>
+<span class="n">ctd_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;profile.cnv&quot;</span><span class="p">)</span>           <span class="c1"># SeaBird CTD</span>
+<span class="n">rbr_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;logger.rsk&quot;</span><span class="p">)</span>            <span class="c1"># RBR instruments</span>
+<span class="n">netcdf_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;data.nc&quot;</span><span class="p">)</span>            <span class="c1"># NetCDF files</span>
 
-<span class="c1"># Access data variables</span>
-<span class="n">temperature</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span>
-<span class="n">salinity</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;salinity&#39;</span><span class="p">]</span>
-<span class="n">pressure</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+<span class="c1"># Explicit format specification (when needed)</span>
+<span class="n">nortek_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;current.dat&quot;</span><span class="p">,</span>
+                      <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;nortek-ascii&#39;</span><span class="p">,</span>
+                      <span class="n">header_file</span><span class="o">=</span><span class="s2">&quot;current.hdr&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Parameter Mapping</strong></p>
-<p>Different instruments may use different column names for the same parameters. Use parameter mapping to standardize names:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># CLI mapping example</span>
-seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc<span class="w"> </span>-m<span class="w"> </span><span class="nv">temperature</span><span class="o">=</span>tv290C<span class="w"> </span><span class="nv">pressure</span><span class="o">=</span>prdM<span class="w"> </span><span class="nv">salinity</span><span class="o">=</span>sal00
+<p><strong>Supported Formats:</strong></p>
+<ul class="simple">
+<li><p><strong>SeaBird</strong>: CNV files from CTD casts and moorings</p></li>
+<li><p><strong>RBR</strong>: RSK native format and MATLAB exports</p></li>
+<li><p><strong>Nortek</strong>: Aquadopp current meter data</p></li>
+<li><p><strong>NetCDF</strong>: CF-compliant oceanographic data</p></li>
+<li><p><strong>CSV</strong>: Comma-separated sensor data</p></li>
+<li><p><strong>ADCP</strong>: MATLAB format current profiler data</p></li>
+</ul>
+<p>For a complete list of format keys and usage examples, see <a class="reference internal" href="supported_formats.html"><span class="doc">Supported File Formats</span></a>.</p>
+</section>
+<section id="creating-plots">
+<h2>Creating Plots<a class="headerlink" href="#creating-plots" title="Link to this heading"></a></h2>
+<p>Generate standard oceanographic visualizations with simple commands:</p>
+<p><strong>Temperature-Salinity Diagrams:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Station T-S Diagram&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;ts_plot.png&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python mapping example</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;input.cnv&quot;</span><span class="p">,</span> <span class="n">parameter_mapping</span><span class="o">=</span><span class="p">{</span>
-    <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="s1">&#39;tv290C&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;pressure&#39;</span><span class="p">:</span> <span class="s1">&#39;prdM&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;salinity&#39;</span><span class="p">:</span> <span class="s1">&#39;sal00&#39;</span>
-<span class="p">})</span>
+<p><strong>Vertical Profiles:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;depth-profile&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Cast&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>RBR Instruments</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">RbrRskReader</span></code> family handles RBR RSK files from moored instruments:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RbrRskReader</span><span class="p">,</span> <span class="n">RbrRskAutoReader</span>
+<p><strong>Time Series:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Single parameter</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">])</span>
 
-<span class="c1"># Auto-detect RSK format version</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskAutoReader</span><span class="p">(</span><span class="s2">&quot;mooring_data.rsk&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-
-<span class="c1"># Or use specific version</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskReader</span><span class="p">(</span><span class="s2">&quot;mooring_data.rsk&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-</pre></div>
-</div>
-<p><strong>NetCDF and CSV Files</strong></p>
-<p>For standard formats, use the general readers:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfReader</span><span class="p">,</span> <span class="n">CsvReader</span>
-
-<span class="c1"># Read NetCDF files</span>
-<span class="n">nc_reader</span> <span class="o">=</span> <span class="n">NetCdfReader</span><span class="p">(</span><span class="s2">&quot;data.nc&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">nc_reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-
-<span class="c1"># Read CSV files</span>
-<span class="n">csv_reader</span> <span class="o">=</span> <span class="n">CsvReader</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">csv_reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="c1"># Multiple parameters</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span>
+         <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">],</span>
+         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mooring Data&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="writers-overview">
-<h2>Writers Overview<a class="headerlink" href="#writers-overview" title="Link to this heading"></a></h2>
-<p>SeaSenseLib can export processed data to various formats for further analysis or sharing.</p>
-<p><strong>NetCDF Export</strong></p>
-<p>NetCDF is the recommended format for oceanographic data as it preserves metadata and follows CF conventions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCdfWriter</span>
+<section id="exporting-data">
+<h2>Exporting Data<a class="headerlink" href="#exporting-data" title="Link to this heading"></a></h2>
+<p>Save processed data in various formats:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># NetCDF (recommended for oceanographic data)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;processed_data.nc&#39;</span><span class="p">)</span>
 
-<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.nc&quot;</span><span class="p">)</span>
+<span class="c1"># CSV for spreadsheets</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;data_export.csv&#39;</span><span class="p">)</span>
 
-<span class="c1"># With custom attributes</span>
-<span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">global_attributes</span><span class="o">=</span><span class="p">{</span>
-    <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;CTD Profile Station 001&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;institution&#39;</span><span class="p">:</span> <span class="s1">&#39;University of Hamburg&#39;</span>
-<span class="p">})</span>
-<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.nc&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>CSV Export</strong></p>
-<p>Export to CSV for use in spreadsheet applications:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CsvWriter</span>
-
-<span class="n">writer</span> <span class="o">=</span> <span class="n">CsvWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Excel Export</strong></p>
-<p>Create Excel files with multiple sheets:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExcelWriter</span>
-
-<span class="n">writer</span> <span class="o">=</span> <span class="n">ExcelWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.xlsx&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="plotters-overview">
-<h2>Plotters Overview<a class="headerlink" href="#plotters-overview" title="Link to this heading"></a></h2>
-<p>SeaSenseLib provides specialized plotting tools for oceanographic data visualization.</p>
-<p><strong>Temperature-Salinity Diagrams</strong></p>
-<p>T-S diagrams show the relationship between temperature and salinity with density isolines:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TsDiagramPlotter</span>
-
-<span class="n">plotter</span> <span class="o">=</span> <span class="n">TsDiagramPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Station 001 T-S Diagram&quot;</span><span class="p">)</span>
-
-<span class="c1"># Save to file</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;ts_diagram.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Vertical Profiles</strong></p>
-<p>Display CTD casts as vertical profiles:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilePlotter</span>
-
-<span class="n">plotter</span> <span class="o">=</span> <span class="n">ProfilePlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile&quot;</span><span class="p">)</span>
-
-<span class="c1"># Customize parameters</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">])</span>
-</pre></div>
-</div>
-<p><strong>Time Series</strong></p>
-<p>Plot parameter evolution over time for moored data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotter</span>
-
-<span class="n">plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Temperature Time Series&quot;</span><span class="p">)</span>
-
-<span class="c1"># Multiple parameters with dual axis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlotterMulti</span>
-
-<span class="n">multi_plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotterMulti</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">multi_plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">],</span> <span class="n">dual_axis</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Excel format</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;report.xlsx&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="data-processing">
 <h2>Data Processing<a class="headerlink" href="#data-processing" title="Link to this heading"></a></h2>
-<p><strong>Subsetting Data</strong></p>
-<p>Extract specific time periods or depth ranges:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubsetProcessor</span>
+<p>SeaSenseLib includes basic processing tools:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubsetProcessor</span><span class="p">,</span> <span class="n">StatisticsProcessor</span>
 
-<span class="c1"># Time subset</span>
-<span class="n">processor</span> <span class="o">=</span> <span class="n">SubsetProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">subset</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">subset_time</span><span class="p">(</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-31&#39;</span><span class="p">)</span>
+<span class="c1"># Extract data subsets</span>
+<span class="n">subset</span> <span class="o">=</span> <span class="n">SubsetProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">shallow_data</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">set_parameter_name</span><span class="p">(</span><span class="s1">&#39;pressure&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_parameter_value_max</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">get_subset</span><span class="p">()</span>
 
-<span class="c1"># Depth subset</span>
-<span class="n">depth_subset</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">subset_depth</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># 10-100m depth</span>
-</pre></div>
-</div>
-<p><strong>Resampling</strong></p>
-<p>Change the temporal resolution of time series data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResampleProcessor</span>
-
-<span class="n">processor</span> <span class="o">=</span> <span class="n">ResampleProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">hourly_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;1H&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Statistics</strong></p>
-<p>Calculate statistics for your data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">StatisticsProcessor</span>
-
-<span class="n">processor</span> <span class="o">=</span> <span class="n">StatisticsProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="n">stats</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">calculate_statistics</span><span class="p">([</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">])</span>
+<span class="c1"># Calculate statistics</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">StatisticsProcessor</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">)</span>
+<span class="n">temperature_stats</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_all_statistics</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean temperature: </span><span class="si">{</span><span class="n">temperature_stats</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">°C&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="command-line-usage">
-<h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Link to this heading"></a></h2>
-<p>SeaSenseLib provides a comprehensive command-line interface for common tasks:</p>
-<p><strong>Format Information</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List supported formats</span>
-seasenselib<span class="w"> </span>formats
-</pre></div>
-</div>
-<p><strong>Data Conversion</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert CNV to NetCDF</span>
+<section id="command-line-interface">
+<h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h2>
+<p>Use SeaSenseLib from the command line for common workflows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert data formats</span>
 seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc
 
-<span class="c1"># Convert with parameter mapping</span>
-seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.cnv<span class="w"> </span>-o<span class="w"> </span>output.nc<span class="w"> </span>-m<span class="w"> </span><span class="nv">temperature</span><span class="o">=</span>tv290C<span class="w"> </span><span class="nv">pressure</span><span class="o">=</span>prdM
+<span class="c1"># Show file information</span>
+seasenselib<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>data_file.cnv
 
-<span class="c1"># Convert to CSV</span>
-seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>input.nc<span class="w"> </span>-o<span class="w"> </span>output.csv
-</pre></div>
-</div>
-<p><strong>Data Inspection</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show file summary</span>
-seasenselib<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>data.nc
+<span class="c1"># Create plots</span>
+seasenselib<span class="w"> </span>plot<span class="w"> </span>ts-diagram<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>ts_diagram.png
+seasenselib<span class="w"> </span>plot<span class="w"> </span>depth-profile<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>profile.png
+seasenselib<span class="w"> </span>plot<span class="w"> </span>time-series<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-p<span class="w"> </span>temperature
 
-<span class="c1"># Show specific format</span>
-seasenselib<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>data.cnv
-</pre></div>
-</div>
-<p><strong>Plotting</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create T-S diagram</span>
-seasenselib<span class="w"> </span>plot-ts<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>ts_diagram.png
-
-<span class="c1"># Create vertical profile</span>
-seasenselib<span class="w"> </span>plot-profile<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-o<span class="w"> </span>profile.png
-
-<span class="c1"># Create time series</span>
-seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-p<span class="w"> </span>temperature<span class="w"> </span>-o<span class="w"> </span>temp_series.png
-
-<span class="c1"># Multiple parameters with dual axis</span>
-seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span class="w"> </span>data.nc<span class="w"> </span>-p<span class="w"> </span>temperature<span class="w"> </span>salinity<span class="w"> </span>--dual-axis
+<span class="c1"># List available formats</span>
+seasenselib<span class="w"> </span>list<span class="w"> </span>readers
 </pre></div>
 </div>
 </section>
-<section id="working-with-examples">
-<h2>Working with Examples<a class="headerlink" href="#working-with-examples" title="Link to this heading"></a></h2>
-<p>The SeaSenseLib repository includes example data files in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory. These files demonstrate typical use cases:</p>
+<section id="working-with-different-instruments">
+<h2>Working with Different Instruments<a class="headerlink" href="#working-with-different-instruments" title="Link to this heading"></a></h2>
+<p><strong>CTD Profile Data (SeaBird):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read vertical cast data</span>
+<span class="n">ctd_cast</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;station001.cnv&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;depth-profile&#39;</span><span class="p">,</span> <span class="n">ctd_cast</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Station 001&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">ctd_cast</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Water Mass Analysis&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Moored Time Series (SeaBird MicroCAT):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read mooring data</span>
+<span class="n">mooring</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;microcat_series.cnv&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">mooring</span><span class="p">,</span>
+         <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">],</span>
+         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mooring Time Series&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>RBR Temperature Loggers:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Native RSK format</span>
+<span class="n">rbr_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;solo_logger.rsk&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">rbr_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">])</span>
+
+<span class="c1"># MATLAB export</span>
+<span class="n">rbr_matlab</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rbr_export.mat&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-matlab&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Current Meter Data (Nortek):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Requires both data and header files</span>
+<span class="n">current_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;aquadopp.dat&quot;</span><span class="p">,</span>
+                       <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;nortek-ascii&#39;</span><span class="p">,</span>
+                       <span class="n">header_file</span><span class="o">=</span><span class="s2">&quot;aquadopp.hdr&quot;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">current_data</span><span class="p">,</span>
+         <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;east_velocity&#39;</span><span class="p">,</span> <span class="s1">&#39;north_velocity&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">sea-practical-2023.cnv</span></code>: Vertical CTD profile data</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">denmark-strait-ds-m1-17.cnv</span></code>: Time series from moored instrument</p></li>
+<li><p><strong>Documentation</strong>: Full API reference and examples at <a class="reference external" href="https://ocean-uhh.github.io/seasenselib/">https://ocean-uhh.github.io/seasenselib/</a></p></li>
+<li><p><strong>Command help</strong>: <code class="docutils literal notranslate"><span class="pre">seasenselib</span> <span class="pre">--help</span></code> or <code class="docutils literal notranslate"><span class="pre">seasenselib</span> <span class="pre">&lt;command&gt;</span> <span class="pre">--help</span></code></p></li>
+<li><p><strong>Supported formats</strong>: <code class="docutils literal notranslate"><span class="pre">seasenselib</span> <span class="pre">list</span> <span class="pre">readers</span></code></p></li>
+<li><p><strong>Issues</strong>: Report problems at <a class="reference external" href="http://github.com/ocean-uhh/seasenselib/issues">http://github.com/ocean-uhh/seasenselib/issues</a></p></li>
 </ul>
-<p>Use these files to test functionality and learn the data processing workflow.</p>
+<p>For advanced usage, custom readers, or library extension, see the <a class="reference internal" href="developers_guide.html"><span class="doc">Developers Guide</span></a>.</p>
 </section>
 </section>
 
@@ -362,8 +279,8 @@ seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span cl
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="demo_mooring-output.html" class="btn btn-neutral float-left" title="Moored Instruments Demo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo-output.html" class="btn btn-neutral float-right" title="SeaSenseLib Demo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

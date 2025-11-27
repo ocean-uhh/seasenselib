@@ -52,18 +52,20 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Formats Demo</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
@@ -111,11 +113,27 @@
 </ul>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo Notebook</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#reading-data">Reading Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#creating-plots">Creating Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#exporting-data">Exporting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#data-processing">Data Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#command-line-interface">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#working-with-different-instruments">Working with Different Instruments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo-output.html">SeaSenseLib Demo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="demo-output.html#Overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demo-output.html#New-API-Features">New API Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo-output.html#Generalised-API-features">Generalised API features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demo-output.html#1.-Reading-Data-from-Different-Formats">1. Reading Data from Different Formats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demo-output.html#2.-Data-Exploration-and-Quality-Assessment">2. Data Exploration and Quality Assessment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demo-output.html#3.-Data-Conversion-and-Export">3. Data Conversion and Export</a></li>
@@ -124,7 +142,7 @@
 <li class="toctree-l2"><a class="reference internal" href="demo-output.html#Next-Steps">Next Steps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Formats Demo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#SeaBird-MicroCAT-(CNV-Format)">SeaBird MicroCAT (CNV Format)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#Nortek-Aquadopp-(DAT-Format)">Nortek Aquadopp (DAT Format)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="demo_mooring-output.html#RBR-TR1050-Thermistor-(MAT-Format)">RBR TR1050 Thermistor (MAT Format)</a></li>
@@ -135,24 +153,30 @@
 </ul>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#quick-start">Quick Start</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#readers-overview">Readers Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#writers-overview">Writers Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#plotters-overview">Plotters Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#data-processing">Data Processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#command-line-usage">Command Line Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#working-with-examples">Working with Examples</a></li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="supported_formats.html#format-keys-reference">Format Keys Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="supported_formats.html#usage-examples">Usage Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="supported_formats.html#format-detection-summary">Format Detection Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="supported_formats.html#when-to-use-format-keys">When to Use Format Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="supported_formats.html#checking-available-formats">Checking Available Formats</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#quick-start-simplified-api">Quick Start (Simplified API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#modern-api-vs-legacy-api">Modern API vs Legacy API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#readers-overview">Readers Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#writers-overview">Writers Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#plotters-overview">Plotters Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#data-processing">Data Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#command-line-usage">Command Line Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#format-key-reference">Format Key Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#troubleshooting-and-migration">Troubleshooting and Migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developers_guide.html#working-with-examples">Working with Examples</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.readers">Readers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api_reference.html#module-seasenselib.writers">Writers</a></li>

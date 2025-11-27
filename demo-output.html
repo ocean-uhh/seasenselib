@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SeaSenseLib Demo Notebook &mdash; seasenselib v0.0.0 documentation</title>
+  <title>SeaSenseLib Demo &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -25,8 +25,8 @@
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Moored Instruments Demo" href="demo_mooring-output.html" />
-    <link rel="prev" title="Installation" href="installation.html" /> 
+    <link rel="next" title="Formats Demo" href="demo_mooring-output.html" />
+    <link rel="prev" title="User Guide" href="user_guide.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,11 +54,15 @@
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Demo</span></p>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">SeaSenseLib Demo Notebook</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SeaSenseLib Demo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#New-API-Features">New API Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Generalised-API-features">Generalised API features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#1.-Reading-Data-from-Different-Formats">1. Reading Data from Different Formats</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#1.1-Reading-CTD-Profile-Data-(CNV-Format)">1.1 Reading CTD Profile Data (CNV Format)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#1.2-Reading-Time-Series-Data-(Moored-Instrument)">1.2 Reading Time Series Data (Moored Instrument)</a></li>
@@ -89,15 +93,13 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Moored Instruments Demo</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_mooring-output.html">Formats Demo</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
 
@@ -115,7 +117,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">SeaSenseLib Demo Notebook</li>
+      <li class="breadcrumb-item active">SeaSenseLib Demo</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/demo-output.ipynb.txt" rel="nofollow"> View page source</a>
       </li>
@@ -125,26 +127,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="SeaSenseLib-Demo-Notebook">
-<h1>SeaSenseLib Demo Notebook<a class="headerlink" href="#SeaSenseLib-Demo-Notebook" title="Link to this heading"></a></h1>
-<p>This notebook demonstrates the key capabilities of SeaSenseLib for reading, processing, and visualizing oceanographic sensor data using the <strong>modern API</strong>.</p>
+  <section id="SeaSenseLib-Demo">
+<h1>SeaSenseLib Demo<a class="headerlink" href="#SeaSenseLib-Demo" title="Link to this heading"></a></h1>
+<p>This notebook demonstrates the capabilities of SeaSenseLib for reading oceanographic instrument data from various formats, writing it to netCDF and making basic plots or statistical calculations.</p>
 <section id="Overview">
 <h2>Overview<a class="headerlink" href="#Overview" title="Link to this heading"></a></h2>
 <p>SeaSenseLib is a Python library for reading, converting, and plotting oceanographic sensor data from various instrument formats. It provides:</p>
 <ul class="simple">
-<li><p><strong>Modern API</strong> with simple <code class="docutils literal notranslate"><span class="pre">ssl.read()</span></code> and <code class="docutils literal notranslate"><span class="pre">ssl.write()</span></code> functions</p></li>
+<li><p><strong>Simple API</strong> with <code class="docutils literal notranslate"><span class="pre">ssl.read()</span></code> and <code class="docutils literal notranslate"><span class="pre">ssl.write()</span></code> functions</p></li>
 <li><p><strong>Readers</strong> for multiple formats (CNV, NetCDF, RBR, ADCP, etc.)</p></li>
 <li><p><strong>Writers</strong> for data export (NetCDF, CSV, Excel)</p></li>
 <li><p><strong>Plotters</strong> for oceanographic visualizations via <code class="docutils literal notranslate"><span class="pre">ssl.plot.*</span></code></p></li>
-<li><p><strong>Processors</strong> for data analysis and manipulation</p></li>
+<li><p><strong>Processors</strong> for basic statistical calculations or data manipulation</p></li>
 </ul>
 </section>
-<section id="New-API-Features">
-<h2>New API Features<a class="headerlink" href="#New-API-Features" title="Link to this heading"></a></h2>
-<p>The modern SeaSenseLib API simplifies common tasks:</p>
+<section id="Generalised-API-features">
+<h2>Generalised API features<a class="headerlink" href="#Generalised-API-features" title="Link to this heading"></a></h2>
+<p>The SeaSenseLib API simplifies common tasks:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
 
-<span class="c1"># Read any supported format</span>
+<span class="c1"># Read any supported format into an xarray dataset</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;sensor_data.cnv&#39;</span><span class="p">)</span>
 
 <span class="c1"># Create oceanographic plots</span>
@@ -166,10 +168,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>  <span class="c1"># Suppress warnings for cleaner output</span>
 
-<span class="c1"># Import SeaSenseLib using the new modern API</span>
+<span class="c1"># Import SeaSenseLib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
 
-<span class="c1"># For processors, we still import directly since they don&#39;t have API shortcuts yet</span>
+<span class="c1"># For processors, we directly import each processor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.processors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubsetProcessor</span><span class="p">,</span> <span class="n">StatisticsProcessor</span>
 
 <span class="c1"># Set up matplotlib for inline plotting</span>
@@ -196,19 +198,22 @@
 <p>SeaSenseLib can read data from various oceanographic instruments. Let’s start with the example data files.</p>
 <section id="1.1-Reading-CTD-Profile-Data-(CNV-Format)">
 <h3>1.1 Reading CTD Profile Data (CNV Format)<a class="headerlink" href="#1.1-Reading-CTD-Profile-Data-(CNV-Format)" title="Link to this heading"></a></h3>
-<p>First, let’s read a vertical CTD profile from a SeaBird CNV file:</p>
+<p>First, let’s read a vertical CTD profile from a SeaBird CNV file. SeaSenseLib uses the python package <code class="docutils literal notranslate"><span class="pre">pycnv</span></code> to handle Seabird files, then returns data in an <code class="docutils literal notranslate"><span class="pre">xarray</span></code> dataset.</p>
+<p><strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">pycnv</span></code> package is installed automatically as a dependency when you install SeaSenseLib via pip. You do not need to install it separately.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read CTD profile data using the new API</span>
-<span class="n">profile_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/sea-practical-2023.cnv&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read CTD profile data using `ssl.read()`</span>
+<span class="n">profile_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/MSM121_054_1db.cnv&quot;</span><span class="p">)</span> <span class="c1"># Alternative: sea-practical-2023.cnv</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CTD Profile Dataset:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensions: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">profile_data</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coordinates: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">profile_data</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Data shape: </span><span class="si">{</span><span class="n">profile_data</span><span class="o">.</span><span class="n">sizes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">profile_data</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -217,18 +222,12 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-INFO:pycnv: Opening file: ../examples/sea-practical-2023.cnv
-WARNING:pycnv:Could not parse custom header ** 20230512
-WARNING:pycnv:Could not parse custom header ** Messpraktikum 2023
-WARNING:pycnv:Could not parse custom header ** CTD 12.05 D1
-WARNING:pycnv:Could not parse custom header ** NMEA Latitude = 53 29.81 N
-WARNING:pycnv:Could not parse custom header ** NMEA Longitude = 008 10.89 E
+INFO:pycnv: Opening file: ../examples/MSM121_054_1db.cnv
 WARNING:pycnv:Could not compute datetime dates based on timeM
-WARNING:pycnv:Could not compute datetime dates based on timeS
-INFO:pycnv:Dates computed based on start_date and time_interval
+INFO:pycnv:Dates computed based on timeS
 </pre></div></div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
@@ -236,22 +235,31 @@ INFO:pycnv:Dates computed based on start_date and time_interval
 Date
 Computing date
 CTD Profile Dataset:
-Dimensions: {&#39;time&#39;: 358}
-Data variables: [&#39;conductivity&#39;, &#39;depth&#39;, &#39;flag&#39;, &#39;fluorescence&#39;, &#39;julian_days_offset&#39;, &#39;oxygen_1&#39;, &#39;oxygen_2&#39;, &#39;oxygen_3&#39;, &#39;pressure&#39;, &#39;salinity&#39;, &#39;temperature&#39;, &#39;turbidity&#39;, &#39;density&#39;, &#39;potential_temperature&#39;]
+Dimensions: {&#39;time&#39;: 3593}
+Data variables: [&#39;conductivity_1&#39;, &#39;conductivity_2&#39;, &#39;flag&#39;, &#39;oxygen_1&#39;, &#39;oxygen_2&#39;, &#39;pressure&#39;, &#39;salinity&#39;, &#39;seconds_since_jan_1_2000&#39;, &#39;temperature_1&#39;, &#39;temperature_2&#39;, &#39;timeS&#39;, &#39;depth&#39;, &#39;density&#39;, &#39;potential_temperature&#39;]
 Coordinates: [&#39;latitude&#39;, &#39;longitude&#39;, &#39;time&#39;]
 
-Data shape: Frozen({&#39;time&#39;: 358})
+Data shape: Frozen({&#39;time&#39;: 3593})
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+xarray.core.dataset.Dataset
 </pre></div></div>
 </div>
 </section>
 <section id="1.2-Reading-Time-Series-Data-(Moored-Instrument)">
 <h3>1.2 Reading Time Series Data (Moored Instrument)<a class="headerlink" href="#1.2-Reading-Time-Series-Data-(Moored-Instrument)" title="Link to this heading"></a></h3>
-<p>Now let’s read time series data from a moored instrument:</p>
+<p>Now let’s read time series data from a moored instrument, again from Seabird in native <code class="docutils literal notranslate"><span class="pre">*.cnv</span></code> format.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read time series data from moored instrument using the new API</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read time series data from moored microCAT time series</span>
 <span class="n">timeseries_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;../examples/denmark-strait-ds-m1-17.cnv&quot;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time Series Dataset:&quot;</span><span class="p">)</span>
@@ -259,7 +267,7 @@ Data shape: Frozen({&#39;time&#39;: 358})
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data variables: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">timeseries_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time range: </span><span class="si">{</span><span class="n">timeseries_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">timeseries_data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duration: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">timeseries_data</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="si">}</span><span class="s2"> measurements&quot;</span><span class="p">)</span>
-</pre></div>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -291,90 +299,585 @@ Duration: 59088 measurements
 </section>
 <section id="2.-Data-Exploration-and-Quality-Assessment">
 <h2>2. Data Exploration and Quality Assessment<a class="headerlink" href="#2.-Data-Exploration-and-Quality-Assessment" title="Link to this heading"></a></h2>
-<p>Let’s explore the data structure and assess data quality:</p>
+<p>Let’s explore the data structure and note that units have been added from the metadata in the <code class="docutils literal notranslate"><span class="pre">*.cnv</span></code> file. In the example profile data used here, there are two temperature and two conductivity channels, which are stored as variables <code class="docutils literal notranslate"><span class="pre">temperature_1</span></code> and <code class="docutils literal notranslate"><span class="pre">temperature_2</span></code>, etc. If you use your own data, the number and names of channels may differ depending on the instrument and configuration. You can update the variable name mapping in <code class="docutils literal notranslate"><span class="pre">seasenselib/parameters.py</span></code>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display detailed information about the profile dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== CTD Profile Data Details ===&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">profile_data</span><span class="p">)</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Available Parameters and Units ===&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
     <span class="n">attrs</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
     <span class="n">units</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;no units&#39;</span><span class="p">)</span>
     <span class="n">long_name</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;long_name&#39;</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">long_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-</pre></div>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== CTD Profile Data Details ===&quot;</span><span class="p">)</span>
+<span class="n">profile_data</span>
+<br/><br/></pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+
+=== Available Parameters and Units ===
+conductivity_1: Conductivity (mS/cm)
+conductivity_2: Conductivity (mS/cm)
+flag: flag (no units)
+oxygen_1: Oxygen (ml/l)
+oxygen_2: Oxygen (ml/l)
+pressure: Pressure (db)
+salinity: Salinity (PSU)
+seconds_since_jan_1_2000: seconds_since_jan_1_2000 (seconds)
+temperature_1: Temperature (ITS-90, deg C)
+temperature_2: Temperature (ITS-90, deg C)
+timeS: timeS (seconds)
+depth: Depth (meters)
+density: Density (kg m-3)
+potential_temperature: Potential Temperature θ (degC)
 === CTD Profile Data Details ===
-&lt;xarray.Dataset&gt; Size: 43kB
-Dimensions:                (time: 358)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewBox="0 0 32 32">
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewBox="0 0 32 32">
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg>
+<style>/* CSS stylesheet for displaying xarray objects in notebooks */
+
+:root {
+  --xr-font-color0: var(
+    --jp-content-font-color0,
+    var(--pst-color-text-base rgba(0, 0, 0, 1))
+  );
+  --xr-font-color2: var(
+    --jp-content-font-color2,
+    var(--pst-color-text-base, rgba(0, 0, 0, 0.54))
+  );
+  --xr-font-color3: var(
+    --jp-content-font-color3,
+    var(--pst-color-text-base, rgba(0, 0, 0, 0.38))
+  );
+  --xr-border-color: var(
+    --jp-border-color2,
+    hsl(from var(--pst-color-on-background, white) h s calc(l - 10))
+  );
+  --xr-disabled-color: var(
+    --jp-layout-color3,
+    hsl(from var(--pst-color-on-background, white) h s calc(l - 40))
+  );
+  --xr-background-color: var(
+    --jp-layout-color0,
+    var(--pst-color-on-background, white)
+  );
+  --xr-background-color-row-even: var(
+    --jp-layout-color1,
+    hsl(from var(--pst-color-on-background, white) h s calc(l - 5))
+  );
+  --xr-background-color-row-odd: var(
+    --jp-layout-color2,
+    hsl(from var(--pst-color-on-background, white) h s calc(l - 15))
+  );
+}
+
+html[theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+body.vscode-dark {
+  --xr-font-color0: var(
+    --jp-content-font-color0,
+    var(--pst-color-text-base, rgba(255, 255, 255, 1))
+  );
+  --xr-font-color2: var(
+    --jp-content-font-color2,
+    var(--pst-color-text-base, rgba(255, 255, 255, 0.54))
+  );
+  --xr-font-color3: var(
+    --jp-content-font-color3,
+    var(--pst-color-text-base, rgba(255, 255, 255, 0.38))
+  );
+  --xr-border-color: var(
+    --jp-border-color2,
+    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 10))
+  );
+  --xr-disabled-color: var(
+    --jp-layout-color3,
+    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 40))
+  );
+  --xr-background-color: var(
+    --jp-layout-color0,
+    var(--pst-color-on-background, #111111)
+  );
+  --xr-background-color-row-even: var(
+    --jp-layout-color1,
+    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 5))
+  );
+  --xr-background-color-row-odd: var(
+    --jp-layout-color2,
+    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 15))
+  );
+}
+
+.xr-wrap {
+  display: block !important;
+  min-width: 300px;
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+.xr-text-repr-fallback {
+  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
+  display: none;
+}
+
+.xr-header {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: solid 1px var(--xr-border-color);
+}
+
+.xr-header > div,
+.xr-header > ul {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.xr-obj-type,
+.xr-obj-name,
+.xr-group-name {
+  margin-left: 2px;
+  margin-right: 10px;
+}
+
+.xr-group-name::before {
+  content: "📁";
+  padding-right: 0.3em;
+}
+
+.xr-group-name,
+.xr-obj-type {
+  color: var(--xr-font-color2);
+}
+
+.xr-sections {
+  padding-left: 0 !important;
+  display: grid;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
+.xr-section-item {
+  display: contents;
+}
+
+.xr-section-item input {
+  display: inline-block;
+  opacity: 0;
+  height: 0;
+  margin: 0;
+}
+
+.xr-section-item input + label {
+  color: var(--xr-disabled-color);
+  border: 2px solid transparent !important;
+}
+
+.xr-section-item input:enabled + label {
+  cursor: pointer;
+  color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0) !important;
+}
+
+.xr-section-item input:enabled + label:hover {
+  color: var(--xr-font-color0);
+}
+
+.xr-section-summary {
+  grid-column: 1;
+  color: var(--xr-font-color2);
+  font-weight: 500;
+}
+
+.xr-section-summary > span {
+  display: inline-block;
+  padding-left: 0.5em;
+}
+
+.xr-section-summary-in:disabled + label {
+  color: var(--xr-font-color2);
+}
+
+.xr-section-summary-in + label:before {
+  display: inline-block;
+  content: "►";
+  font-size: 11px;
+  width: 15px;
+  text-align: center;
+}
+
+.xr-section-summary-in:disabled + label:before {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-summary-in:checked + label:before {
+  content: "▼";
+}
+
+.xr-section-summary-in:checked + label > span {
+  display: none;
+}
+
+.xr-section-summary,
+.xr-section-inline-details {
+  padding-top: 4px;
+}
+
+.xr-section-inline-details {
+  grid-column: 2 / -1;
+}
+
+.xr-section-details {
+  display: none;
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  margin-bottom: 5px;
+}
+
+.xr-section-summary-in:checked ~ .xr-section-details {
+  display: contents;
+}
+
+.xr-group-box {
+  display: inline-grid;
+  grid-template-columns: 0px 20px auto;
+  width: 100%;
+}
+
+.xr-group-box-vline {
+  grid-column-start: 1;
+  border-right: 0.2em solid;
+  border-color: var(--xr-border-color);
+  width: 0px;
+}
+
+.xr-group-box-hline {
+  grid-column-start: 2;
+  grid-row-start: 1;
+  height: 1em;
+  width: 20px;
+  border-bottom: 0.2em solid;
+  border-color: var(--xr-border-color);
+}
+
+.xr-group-box-contents {
+  grid-column-start: 3;
+}
+
+.xr-array-wrap {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 20px auto;
+}
+
+.xr-array-wrap > label {
+  grid-column: 1;
+  vertical-align: top;
+}
+
+.xr-preview {
+  color: var(--xr-font-color3);
+}
+
+.xr-array-preview,
+.xr-array-data {
+  padding: 0 5px !important;
+  grid-column: 2;
+}
+
+.xr-array-data,
+.xr-array-in:checked ~ .xr-array-preview {
+  display: none;
+}
+
+.xr-array-in:checked ~ .xr-array-data,
+.xr-array-preview {
+  display: inline-block;
+}
+
+.xr-dim-list {
+  display: inline-block !important;
+  list-style: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.xr-dim-list li {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+
+.xr-dim-list:before {
+  content: "(";
+}
+
+.xr-dim-list:after {
+  content: ")";
+}
+
+.xr-dim-list li:not(:last-child):after {
+  content: ",";
+  padding-right: 5px;
+}
+
+.xr-has-index {
+  font-weight: bold;
+}
+
+.xr-var-list,
+.xr-var-item {
+  display: contents;
+}
+
+.xr-var-item > div,
+.xr-var-item label,
+.xr-var-item > .xr-var-name span {
+  background-color: var(--xr-background-color-row-even);
+  border-color: var(--xr-background-color-row-odd);
+  margin-bottom: 0;
+  padding-top: 2px;
+}
+
+.xr-var-item > .xr-var-name:hover span {
+  padding-right: 5px;
+}
+
+.xr-var-list > li:nth-child(odd) > div,
+.xr-var-list > li:nth-child(odd) > label,
+.xr-var-list > li:nth-child(odd) > .xr-var-name span {
+  background-color: var(--xr-background-color-row-odd);
+  border-color: var(--xr-background-color-row-even);
+}
+
+.xr-var-name {
+  grid-column: 1;
+}
+
+.xr-var-dims {
+  grid-column: 2;
+}
+
+.xr-var-dtype {
+  grid-column: 3;
+  text-align: right;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-preview {
+  grid-column: 4;
+}
+
+.xr-index-preview {
+  grid-column: 2 / 5;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-name,
+.xr-var-dims,
+.xr-var-dtype,
+.xr-preview,
+.xr-attrs dt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.xr-var-name:hover,
+.xr-var-dims:hover,
+.xr-var-dtype:hover,
+.xr-attrs dt:hover {
+  overflow: visible;
+  width: auto;
+  z-index: 1;
+}
+
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  display: none;
+  border-top: 2px dotted var(--xr-background-color);
+  padding-bottom: 20px !important;
+  padding-top: 10px !important;
+}
+
+.xr-var-attrs-in + label,
+.xr-var-data-in + label,
+.xr-index-data-in + label {
+  padding: 0 1px;
+}
+
+.xr-var-attrs-in:checked ~ .xr-var-attrs,
+.xr-var-data-in:checked ~ .xr-var-data,
+.xr-index-data-in:checked ~ .xr-index-data {
+  display: block;
+}
+
+.xr-var-data > table {
+  float: right;
+}
+
+.xr-var-data > pre,
+.xr-index-data > pre,
+.xr-var-data > table > tbody > tr {
+  background-color: transparent !important;
+}
+
+.xr-var-name span,
+.xr-var-data,
+.xr-index-name div,
+.xr-index-data,
+.xr-attrs {
+  padding-left: 25px !important;
+}
+
+.xr-attrs,
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  grid-column: 1 / -1;
+}
+
+dl.xr-attrs {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 125px auto;
+}
+
+.xr-attrs dt,
+.xr-attrs dd {
+  padding: 0;
+  margin: 0;
+  float: left;
+  padding-right: 10px;
+  width: auto;
+}
+
+.xr-attrs dt {
+  font-weight: normal;
+  grid-column: 1;
+}
+
+.xr-attrs dt:hover span {
+  display: inline-block;
+  background: var(--xr-background-color);
+  padding-right: 10px;
+}
+
+.xr-attrs dd {
+  grid-column: 2;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.xr-icon-database,
+.xr-icon-file-text2,
+.xr-no-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1.5em !important;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+.xr-var-attrs-in:checked + label > .xr-icon-file-text2,
+.xr-var-data-in:checked + label > .xr-icon-database,
+.xr-index-data-in:checked + label > .xr-icon-database {
+  color: var(--xr-font-color0);
+  filter: drop-shadow(1px 1px 5px var(--xr-font-color2));
+  stroke-width: 0.8px;
+}
+</style><pre class='xr-text-repr-fallback'>&lt;xarray.Dataset&gt; Size: 489kB
+Dimensions:                   (time: 3593)
 Coordinates:
-  * time                   (time) datetime64[ns] 3kB 2023-05-12T10:15:11 ... ...
-    latitude               float64 8B 53.5
-    longitude              float64 8B 8.181
+  * time                      (time) datetime64[ns] 29kB 2000-01-01T12:28:34....
+    latitude                  (time) float64 29kB 49.71 49.71 ... 49.71 49.71
+    longitude                 (time) float64 29kB -45.0 -45.0 ... -45.0 -45.0
 Data variables: (12/14)
-    conductivity           (time) float64 3kB 34.62 34.62 34.62 ... 35.01 35.01
-    depth                  (time) float64 3kB 0.255 0.298 0.34 ... 11.92 11.93
-    flag                   (time) float64 3kB 0.0 0.0 ... -9.99e-29 -9.99e-29
-    fluorescence           (time) float64 3kB 5.652 5.64 5.62 ... 8.64 8.64
-    julian_days_offset     (time) float64 3kB 132.4 132.4 132.4 ... 132.4 132.4
-    oxygen_1               (time) float64 3kB 265.6 265.6 265.6 ... 265.9 265.9
-    ...                     ...
-    pressure               (time) float64 3kB 0.257 0.301 0.343 ... 12.03 12.04
-    salinity               (time) float64 3kB 28.45 28.45 28.45 ... 28.96 28.96
-    temperature            (time) float64 3kB 13.76 13.76 13.76 ... 13.54 13.54
-    turbidity              (time) float64 3kB 20.29 20.29 20.26 ... 50.95 51.08
-    density                (time) float64 3kB 1.021e+03 1.021e+03 ... 1.022e+03
-    potential_temperature  (time) float64 3kB 13.76 13.76 13.76 ... 13.54 13.54
-Attributes: (12/23)
-    latitude:                   53.496833333333335
-    longitude:                  8.1815
-    CreateTime:                 2025-11-25T07:33:42
+    conductivity_1            (time) float64 29kB 40.89 40.53 ... 32.11 32.11
+    conductivity_2            (time) float64 29kB 41.09 41.06 ... 32.11 32.11
+    flag                      (time) float64 29kB 0.0 0.0 0.0 ... 0.0 0.0 0.0
+    oxygen_1                  (time) float64 29kB 4.345 4.418 ... 6.32 6.321
+    oxygen_2                  (time) float64 29kB 4.444 4.378 ... 6.154 6.153
+    pressure                  (time) float64 29kB 7.0 8.0 ... 3.599e+03
+    ...                        ...
+    temperature_1             (time) float64 29kB 14.17 14.15 ... 1.946 1.944
+    temperature_2             (time) float64 29kB 14.17 14.17 ... 1.944 1.943
+    timeS                     (time) float64 29kB 134.5 136.7 ... 3.815e+03
+    depth                     (time) float64 29kB -6.94 -7.931 ... -3.538e+03
+    density                   (time) float64 29kB 1.025e+03 ... 1.044e+03
+    potential_temperature     (time) float64 29kB 14.17 14.15 ... 1.657 1.655
+Attributes: (12/28)
+    latitude:                   49.708333333333336
+    longitude:                  -45.00066666666667
+    CreateTime:                 2025-11-27T07:50:11
     DataType:                   TimeSeries
-    cnv_sbe_model:              SBE 19plus
-    cnv_software_version:       2.6.1.12
+    cnv_sbe_model:              SBE 9
+    cnv_software_version:       Seasave V 7.22
     ...                         ...
     processor_name:             seasenselib
     processor_version:          0.2.0
     processor_reader_class:     SbeCnvReader
     processor_python_version:   3.13.9
-    processor_input_filename:   ../examples/sea-practical-2023.cnv
-    processor_input_file_type:  SeaBird CNV
-
-=== Available Parameters and Units ===
-conductivity: Conductivity (mS/cm)
-depth: Depth (salt water, m)
-flag: flag (no units)
-fluorescence: fluorescence (mg/m^3)
-julian_days_offset: julian_days_offset (no units)
-oxygen_1: Oxygen (umol/kg)
-oxygen_2: Oxygen (umol/kg)
-oxygen_3: Oxygen (% saturation)
-pressure: Pressure (db)
-salinity: Salinity (PSU)
-temperature: Temperature (ITS-90, deg C)
-turbidity: Turbidity (NTU)
-density: Density (kg m-3)
-potential_temperature: Potential Temperature θ (degC)
-</pre></div></div>
+    processor_input_filename:   ../examples/MSM121_054_1db.cnv
+    processor_input_file_type:  SeaBird CNV</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-ff492f25-cf37-4067-b80d-81091e6f1d59' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-ff492f25-cf37-4067-b80d-81091e6f1d59' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 3593</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-ed916516-2ae6-497f-b35d-6389f6899949' class='xr-section-summary-in' type='checkbox'  checked><label for='section-ed916516-2ae6-497f-b35d-6389f6899949' class='xr-section-summary' >Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2000-01-01T12:28:34.461000 ... 2...</div><input id='attrs-2bfa3cde-9d60-40f6-b615-b1b94d76623d' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-2bfa3cde-9d60-40f6-b615-b1b94d76623d' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-413a0e2d-728a-49dc-a94e-ed7b70327063' class='xr-var-data-in' type='checkbox'><label for='data-413a0e2d-728a-49dc-a94e-ed7b70327063' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Time</dd><dt><span>standard_name :</span></dt><dd>time</dd><dt><span>coverage_content_type :</span></dt><dd>coordinate</dd></dl></div><div class='xr-var-data'><pre>array([&#x27;2000-01-01T12:28:34.461000000&#x27;, &#x27;2000-01-01T12:28:36.706000000&#x27;,
+       &#x27;2000-01-01T12:28:38.101000000&#x27;, ..., &#x27;2000-01-01T13:29:36.978000000&#x27;,
+       &#x27;2000-01-01T13:29:40.999000000&#x27;, &#x27;2000-01-01T13:29:55.453000000&#x27;],
+      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>latitude</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>49.71 49.71 49.71 ... 49.71 49.71</div><input id='attrs-94a68b61-b3db-4e30-bf13-424794e8c4fa' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-94a68b61-b3db-4e30-bf13-424794e8c4fa' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0c61a16d-21ba-4189-92e1-ad2b475aea14' class='xr-var-data-in' type='checkbox'><label for='data-0c61a16d-21ba-4189-92e1-ad2b475aea14' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>coverage_content_type :</span></dt><dd>coordinate</dd><dt><span>short_name :</span></dt><dd>lat</dd></dl></div><div class='xr-var-data'><pre>array([49.70836, 49.70836, 49.70836, ..., 49.7111 , 49.7111 , 49.71112])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>longitude</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-45.0 -45.0 -45.0 ... -45.0 -45.0</div><input id='attrs-ae7b585a-8c8d-4147-9ebf-97820920ab48' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-ae7b585a-8c8d-4147-9ebf-97820920ab48' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7b94624a-209c-4d0a-9f24-4f65c77ff8e0' class='xr-var-data-in' type='checkbox'><label for='data-7b94624a-209c-4d0a-9f24-4f65c77ff8e0' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>coverage_content_type :</span></dt><dd>coordinate</dd><dt><span>short_name :</span></dt><dd>lon</dd></dl></div><div class='xr-var-data'><pre>array([-45.00073, -45.00076, -45.00075, ..., -45.00406, -45.00406,
+       -45.00409])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-0195441b-00cc-4804-a957-9153efb65e7a' class='xr-section-summary-in' type='checkbox'  checked><label for='section-0195441b-00cc-4804-a957-9153efb65e7a' class='xr-section-summary' >Data variables: <span>(14)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>conductivity_1</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>40.89 40.53 40.19 ... 32.11 32.11</div><input id='attrs-bee26b55-c888-418c-82d2-20413acbf5ee' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-bee26b55-c888-418c-82d2-20413acbf5ee' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-49ae9201-c1f0-4b34-96a5-9e005f12a248' class='xr-var-data-in' type='checkbox'><label for='data-49ae9201-c1f0-4b34-96a5-9e005f12a248' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>c0mS/cm</dd><dt><span>cnv_original_label :</span></dt><dd>Conductivity [mS/cm]</dd><dt><span>cnv_original_unit :</span></dt><dd>mS/cm</dd><dt><span>units :</span></dt><dd>mS/cm</dd><dt><span>long_name :</span></dt><dd>Conductivity</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_electrical_conductivity</dd><dt><span>short_name :</span></dt><dd>COND</dd><dt><span>measurement_type :</span></dt><dd>Measured</dd></dl></div><div class='xr-var-data'><pre>array([40.887917, 40.529899, 40.186417, ..., 32.11024 , 32.110538,
+       32.109489])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>conductivity_2</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>41.09 41.06 41.05 ... 32.11 32.11</div><input id='attrs-92133b85-7bd9-4df9-b7f6-aa51105562cd' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-92133b85-7bd9-4df9-b7f6-aa51105562cd' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-bd061898-5a3d-49c9-9352-8f9aaea922d5' class='xr-var-data-in' type='checkbox'><label for='data-bd061898-5a3d-49c9-9352-8f9aaea922d5' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>c1mS/cm</dd><dt><span>cnv_original_label :</span></dt><dd>Conductivity, 2 [mS/cm]</dd><dt><span>cnv_original_unit :</span></dt><dd>mS/cm</dd><dt><span>units :</span></dt><dd>mS/cm</dd><dt><span>long_name :</span></dt><dd>Conductivity</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_electrical_conductivity</dd><dt><span>short_name :</span></dt><dd>COND</dd><dt><span>measurement_type :</span></dt><dd>Measured</dd></dl></div><div class='xr-var-data'><pre>array([41.094726, 41.063394, 41.053896, ..., 32.10828 , 32.10833 ,
+       32.108106])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>flag</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.0 0.0 0.0 0.0 ... 0.0 0.0 0.0 0.0</div><input id='attrs-681f6b12-59be-4976-9172-0372536ba646' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-681f6b12-59be-4976-9172-0372536ba646' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0e78b7eb-e463-49ef-98c0-2de77f28bf77' class='xr-var-data-in' type='checkbox'><label for='data-0e78b7eb-e463-49ef-98c0-2de77f28bf77' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>flag</dd><dt><span>cnv_original_label :</span></dt><dd>flag</dd><dt><span>cnv_original_unit :</span></dt><dd>None</dd></dl></div><div class='xr-var-data'><pre>array([0., 0., 0., ..., 0., 0., 0.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>oxygen_1</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>4.345 4.418 4.556 ... 6.32 6.321</div><input id='attrs-6ffeb2a5-c6ff-4bcf-bfe7-3809e8e3dd4e' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-6ffeb2a5-c6ff-4bcf-bfe7-3809e8e3dd4e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-bb9523e3-ce1b-4ba2-a0f2-63606b1f6faf' class='xr-var-data-in' type='checkbox'><label for='data-bb9523e3-ce1b-4ba2-a0f2-63606b1f6faf' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>sbeox0ML/L</dd><dt><span>cnv_original_label :</span></dt><dd>Oxygen, SBE 43 [ml/l]</dd><dt><span>cnv_original_unit :</span></dt><dd>ml/l</dd><dt><span>units :</span></dt><dd>ml/l</dd><dt><span>long_name :</span></dt><dd>Oxygen</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>volume_fraction_of_oxygen_in_sea_water</dd></dl></div><div class='xr-var-data'><pre>array([4.3448, 4.4177, 4.5557, ..., 6.3183, 6.3199, 6.3205])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>oxygen_2</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>4.444 4.378 4.32 ... 6.154 6.153</div><input id='attrs-c9686351-bcfa-44e9-9690-94e9399f3745' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-c9686351-bcfa-44e9-9690-94e9399f3745' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a490c482-10c1-4722-963a-74deeeac5ba3' class='xr-var-data-in' type='checkbox'><label for='data-a490c482-10c1-4722-963a-74deeeac5ba3' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>sbeox1ML/L</dd><dt><span>cnv_original_label :</span></dt><dd>Oxygen, SBE 43, 2 [ml/l]</dd><dt><span>cnv_original_unit :</span></dt><dd>ml/l</dd><dt><span>units :</span></dt><dd>ml/l</dd><dt><span>long_name :</span></dt><dd>Oxygen</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>volume_fraction_of_oxygen_in_sea_water</dd></dl></div><div class='xr-var-data'><pre>array([4.4442, 4.378 , 4.3196, ..., 6.1543, 6.1544, 6.1529])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>pressure</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>7.0 8.0 9.0 ... 3.598e+03 3.599e+03</div><input id='attrs-f0117384-fb97-4ce0-856b-6c48f016ff42' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-f0117384-fb97-4ce0-856b-6c48f016ff42' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d3116957-8717-4375-b02f-f16a29a8f7d2' class='xr-var-data-in' type='checkbox'><label for='data-d3116957-8717-4375-b02f-f16a29a8f7d2' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>prDM</dd><dt><span>cnv_original_label :</span></dt><dd>Pressure, Digiquartz [db]</dd><dt><span>cnv_original_unit :</span></dt><dd>db</dd><dt><span>units :</span></dt><dd>db</dd><dt><span>long_name :</span></dt><dd>Pressure</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_pressure</dd><dt><span>short_name :</span></dt><dd>WP</dd><dt><span>measurement_type :</span></dt><dd>Measured</dd></dl></div><div class='xr-var-data'><pre>array([   7.,    8.,    9., ..., 3597., 3598., 3599.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>salinity</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>34.06 34.03 34.02 ... 34.88 34.88</div><input id='attrs-fb0506b8-5e0c-49d6-bac5-8402f675e788' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-fb0506b8-5e0c-49d6-bac5-8402f675e788' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-e61b5fbc-fa0b-4b08-83f7-57b9f8897dd6' class='xr-var-data-in' type='checkbox'><label for='data-e61b5fbc-fa0b-4b08-83f7-57b9f8897dd6' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>sal11</dd><dt><span>cnv_original_label :</span></dt><dd>Salinity, Practical, 2 [PSU]</dd><dt><span>cnv_original_unit :</span></dt><dd>PSU</dd><dt><span>units :</span></dt><dd>PSU</dd><dt><span>long_name :</span></dt><dd>Salinity</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_salinity</dd><dt><span>short_name :</span></dt><dd>SAL</dd><dt><span>measurement_type :</span></dt><dd>Derived</dd></dl></div><div class='xr-var-data'><pre>array([34.057 , 34.0312, 34.0223, ..., 34.8814, 34.8813, 34.8813])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>seconds_since_jan_1_2000</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>7.501e+08 7.501e+08 ... 7.501e+08</div><input id='attrs-71b674dc-d335-42d3-8245-684d0afe5f2e' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-71b674dc-d335-42d3-8245-684d0afe5f2e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-8f4d5805-a38e-4705-afa4-ac671deba949' class='xr-var-data-in' type='checkbox'><label for='data-8f4d5805-a38e-4705-afa4-ac671deba949' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>timeQ</dd><dt><span>cnv_original_label :</span></dt><dd>Time, NMEA [seconds]</dd><dt><span>cnv_original_unit :</span></dt><dd>seconds</dd><dt><span>units :</span></dt><dd>seconds</dd></dl></div><div class='xr-var-data'><pre>array([7.50083314e+08, 7.50083317e+08, 7.50083319e+08, ...,
+       7.50086977e+08, 7.50086981e+08, 7.50086995e+08])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>temperature_1</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>14.17 14.15 14.05 ... 1.946 1.944</div><input id='attrs-384a7dc1-4b4e-4414-bb30-7e9fab30cb7f' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-384a7dc1-4b4e-4414-bb30-7e9fab30cb7f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d28ece7a-c893-444d-a14f-227135bd2fe8' class='xr-var-data-in' type='checkbox'><label for='data-d28ece7a-c893-444d-a14f-227135bd2fe8' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>t090C</dd><dt><span>cnv_original_label :</span></dt><dd>Temperature [ITS-90, deg C]</dd><dt><span>cnv_original_unit :</span></dt><dd>ITS-90, deg C</dd><dt><span>units :</span></dt><dd>ITS-90, deg C</dd><dt><span>long_name :</span></dt><dd>Temperature</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_temperature</dd><dt><span>short_name :</span></dt><dd>WT</dd><dt><span>measurement_type :</span></dt><dd>Measured</dd></dl></div><div class='xr-var-data'><pre>array([14.1738, 14.1528, 14.0536, ...,  1.9457,  1.9457,  1.9441])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>temperature_2</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>14.17 14.17 14.17 ... 1.944 1.943</div><input id='attrs-8797ca26-1391-4364-b5d4-4adc95ee7518' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-8797ca26-1391-4364-b5d4-4adc95ee7518' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-f40199cd-d7f4-4b26-bf4d-c28316369835' class='xr-var-data-in' type='checkbox'><label for='data-f40199cd-d7f4-4b26-bf4d-c28316369835' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>t190C</dd><dt><span>cnv_original_label :</span></dt><dd>Temperature, 2 [ITS-90, deg C]</dd><dt><span>cnv_original_unit :</span></dt><dd>ITS-90, deg C</dd><dt><span>units :</span></dt><dd>ITS-90, deg C</dd><dt><span>long_name :</span></dt><dd>Temperature</dd><dt><span>coverage_content_type :</span></dt><dd>physicalMeasurement</dd><dt><span>standard_name :</span></dt><dd>sea_water_temperature</dd><dt><span>short_name :</span></dt><dd>WT</dd><dt><span>measurement_type :</span></dt><dd>Measured</dd></dl></div><div class='xr-var-data'><pre>array([14.1689, 14.1684, 14.167 , ...,  1.9443,  1.9441,  1.9433])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>timeS</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>134.5 136.7 ... 3.801e+03 3.815e+03</div><input id='attrs-7cb4ce88-fdc6-4218-a24c-b9dcadc7ab6b' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-7cb4ce88-fdc6-4218-a24c-b9dcadc7ab6b' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-1e715fdb-ca65-4abf-bdc6-9fe5b63ffb6d' class='xr-var-data-in' type='checkbox'><label for='data-1e715fdb-ca65-4abf-bdc6-9fe5b63ffb6d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>cnv_original_name :</span></dt><dd>timeS</dd><dt><span>cnv_original_label :</span></dt><dd>Time, Elapsed [seconds]</dd><dt><span>cnv_original_unit :</span></dt><dd>seconds</dd><dt><span>units :</span></dt><dd>seconds</dd></dl></div><div class='xr-var-data'><pre>array([ 134.461,  136.706,  138.101, ..., 3796.978, 3800.999, 3815.453])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>depth</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-6.94 -7.931 ... -3.538e+03</div><input id='attrs-3e6f9d89-aea0-4338-9a82-55063ee6e6c0' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-3e6f9d89-aea0-4338-9a82-55063ee6e6c0' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-81ec00ec-8478-42ef-9352-e62a16eb2f05' class='xr-var-data-in' type='checkbox'><label for='data-81ec00ec-8478-42ef-9352-e62a16eb2f05' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Depth</dd><dt><span>units :</span></dt><dd>meters</dd><dt><span>positive :</span></dt><dd>up</dd><dt><span>standard_name :</span></dt><dd>depth</dd><dt><span>coverage_content_type :</span></dt><dd>coordinate</dd><dt><span>short_name :</span></dt><dd>D</dd></dl></div><div class='xr-var-data'><pre>array([   -6.94006724,    -7.93148616,    -8.92290027, ...,
+       -3536.23654077, -3537.21160171, -3538.18665835])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>density</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.025e+03 1.025e+03 ... 1.044e+03</div><input id='attrs-f949bf9c-b520-4112-bc7d-d0876c9faa3a' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-f949bf9c-b520-4112-bc7d-d0876c9faa3a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-b69b0f89-8529-4aef-8ce6-295d74fea2e3' class='xr-var-data-in' type='checkbox'><label for='data-b69b0f89-8529-4aef-8ce6-295d74fea2e3' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Density</dd><dt><span>units :</span></dt><dd>kg m-3</dd><dt><span>standard_name :</span></dt><dd>sea_water_density</dd><dt><span>measurement_type :</span></dt><dd>Derived</dd></dl></div><div class='xr-var-data'><pre>array([1025.33667913, 1025.32580942, 1025.34415183, ..., 1044.01255737,
+       1044.01681762, 1044.02143609])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>potential_temperature</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>14.17 14.15 14.05 ... 1.657 1.655</div><input id='attrs-25c483f5-a29d-4d57-89df-25ce76144ffc' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-25c483f5-a29d-4d57-89df-25ce76144ffc' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7151223c-0dc7-4e44-bebc-76cf521839c7' class='xr-var-data-in' type='checkbox'><label for='data-7151223c-0dc7-4e44-bebc-76cf521839c7' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>Potential Temperature θ</dd><dt><span>units :</span></dt><dd>degC</dd><dt><span>standard_name :</span></dt><dd>sea_water_potential_temperature</dd><dt><span>measurement_type :</span></dt><dd>Derived</dd></dl></div><div class='xr-var-data'><pre>array([14.17279617, 14.15165417, 14.05231727, ...,  1.65727091,
+        1.65716489,  1.6554999 ])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-ab91a2f4-1413-4075-8d7a-1feabbb0f505' class='xr-section-summary-in' type='checkbox'  ><label for='section-ab91a2f4-1413-4075-8d7a-1feabbb0f505' class='xr-section-summary' >Attributes: <span>(28)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>latitude :</span></dt><dd>49.708333333333336</dd><dt><span>longitude :</span></dt><dd>-45.00066666666667</dd><dt><span>CreateTime :</span></dt><dd>2025-11-27T07:50:11</dd><dt><span>DataType :</span></dt><dd>TimeSeries</dd><dt><span>cnv_sbe_model :</span></dt><dd>SBE 9</dd><dt><span>cnv_software_version :</span></dt><dd>Seasave V 7.22</dd><dt><span>cnv_start_date :</span></dt><dd>2023-10-08 12:26:20</dd><dt><span>cnv_upload_date :</span></dt><dd>2023-10-08 12:26:20</dd><dt><span>cnv_nmea_date :</span></dt><dd>2023-10-08 12:26:20</dd><dt><span>cnv_sensor_1 :</span></dt><dd>{&#x27;channel&#x27;: 1, &#x27;sensor_type&#x27;: &#x27;TemperatureSensor&#x27;, &#x27;serial_number&#x27;: &#x27;4456&#x27;, &#x27;calibration_date&#x27;: &#x27;24-Nov-22&#x27;, &#x27;sensor_id&#x27;: &#x27;55&#x27;}</dd><dt><span>cnv_sensor_2 :</span></dt><dd>{&#x27;channel&#x27;: 2, &#x27;sensor_type&#x27;: &#x27;ConductivitySensor&#x27;, &#x27;serial_number&#x27;: &#x27;2646&#x27;, &#x27;calibration_date&#x27;: &#x27;27-Oct-22&#x27;, &#x27;sensor_id&#x27;: &#x27;3&#x27;}</dd><dt><span>cnv_sensor_3 :</span></dt><dd>{&#x27;channel&#x27;: 3, &#x27;sensor_type&#x27;: &#x27;PressureSensor&#x27;, &#x27;serial_number&#x27;: &#x27;0657&#x27;, &#x27;calibration_date&#x27;: &#x27;15-Sep-22&#x27;, &#x27;sensor_id&#x27;: &#x27;45&#x27;}</dd><dt><span>cnv_sensor_4 :</span></dt><dd>{&#x27;channel&#x27;: 4, &#x27;sensor_type&#x27;: &#x27;TemperatureSensor&#x27;, &#x27;serial_number&#x27;: &#x27;4156&#x27;, &#x27;calibration_date&#x27;: &#x27;07-Oct-22&#x27;, &#x27;sensor_id&#x27;: &#x27;55&#x27;}</dd><dt><span>cnv_sensor_5 :</span></dt><dd>{&#x27;channel&#x27;: 5, &#x27;sensor_type&#x27;: &#x27;ConductivitySensor&#x27;, &#x27;serial_number&#x27;: &#x27;2643&#x27;, &#x27;calibration_date&#x27;: &#x27;27-Oct-22&#x27;, &#x27;sensor_id&#x27;: &#x27;3&#x27;}</dd><dt><span>cnv_sensor_6 :</span></dt><dd>{&#x27;channel&#x27;: 6, &#x27;sensor_type&#x27;: &#x27;OxygenSensor&#x27;, &#x27;serial_number&#x27;: &#x27;0547&#x27;, &#x27;calibration_date&#x27;: &#x27;26-Oct-22&#x27;, &#x27;sensor_id&#x27;: &#x27;38&#x27;}</dd><dt><span>cnv_sensor_7 :</span></dt><dd>{&#x27;channel&#x27;: 7}</dd><dt><span>cnv_sensor_8 :</span></dt><dd>{&#x27;channel&#x27;: 8, &#x27;sensor_type&#x27;: &#x27;AltimeterSensor&#x27;, &#x27;serial_number&#x27;: &#x27;79774&#x27;, &#x27;calibration_date&#x27;: &#x27;10/12/2021&#x27;, &#x27;sensor_id&#x27;: &#x27;0&#x27;}</dd><dt><span>cnv_sensor_9 :</span></dt><dd>{&#x27;channel&#x27;: 9}</dd><dt><span>cnv_sensor_10 :</span></dt><dd>{&#x27;channel&#x27;: 10, &#x27;sensor_type&#x27;: &#x27;OxygenSensor&#x27;, &#x27;serial_number&#x27;: &#x27;0267&#x27;, &#x27;calibration_date&#x27;: &#x27;11-Oct-22&#x27;, &#x27;sensor_id&#x27;: &#x27;38&#x27;}</dd><dt><span>cnv_sensor_11 :</span></dt><dd>{&#x27;channel&#x27;: 11}</dd><dt><span>history :</span></dt><dd>2025-11-27T07:50:11Z: created from SeaBird CNV file (../examples/MSM121_054_1db.cnv) using seasenselib v0.2.0 (SbeCnvReader class) under Python 3.13.9</dd><dt><span>Conventions :</span></dt><dd>CF-1.8</dd><dt><span>processor_name :</span></dt><dd>seasenselib</dd><dt><span>processor_version :</span></dt><dd>0.2.0</dd><dt><span>processor_reader_class :</span></dt><dd>SbeCnvReader</dd><dt><span>processor_python_version :</span></dt><dd>3.13.9</dd><dt><span>processor_input_filename :</span></dt><dd>../examples/MSM121_054_1db.cnv</dd><dt><span>processor_input_file_type :</span></dt><dd>SeaBird CNV</dd></dl></div></li></ul></div></div></div>
 </div>
 <section id="2.1-Basic-Statistics">
 <h3>2.1 Basic Statistics<a class="headerlink" href="#2.1-Basic-Statistics" title="Link to this heading"></a></h3>
+<p>Seasenselib provides a basic statistics generator <code class="docutils literal notranslate"><span class="pre">seasenselib.processors.StatisticsProcessor</span></code> for a quick look at the data.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate basic statistics for profile data</span>
-<span class="n">available_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">]]</span>
+<span class="n">available_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;temperature_1&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">]]</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== CTD Profile Statistics ===&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">available_params</span><span class="p">:</span>
@@ -401,62 +904,38 @@ potential_temperature: Potential Temperature θ (degC)
 === CTD Profile Statistics ===
 
 Pressure:
-  Mean: 6.303
-  Std:  3.491
-  Min:  0.257
-  Max:  12.037
-  Valid points: 358
+  Mean: 1803.000
+  Std:  1037.210
+  Min:  7.000
+  Max:  3599.000
+  Valid points: 3593
 
 Salinity:
-  Mean: 28.700
-  Std:  0.175
-  Min:  28.370
-  Max:  28.974
-  Valid points: 358
+  Mean: 34.865
+  Std:  0.089
+  Min:  33.994
+  Max:  34.917
+  Valid points: 3593
 
-Temperature:
-  Mean: 13.544
-  Std:  0.108
-  Min:  13.419
-  Max:  13.900
-  Valid points: 358
+Temperature_1:
+  Mean: 3.318
+  Std:  1.362
+  Min:  1.944
+  Max:  14.286
+  Valid points: 3593
 </pre></div></div>
 </div>
 </section>
 </section>
 <section id="3.-Data-Conversion-and-Export">
 <h2>3. Data Conversion and Export<a class="headerlink" href="#3.-Data-Conversion-and-Export" title="Link to this heading"></a></h2>
-<p>SeaSenseLib can export data to various formats while preserving metadata and following CF conventions:</p>
+<p>SeaSenseLib can export data to various formats while preserving metadata and following CF conventions. Note that if the demo output file already exists, <code class="docutils literal notranslate"><span class="pre">ssl</span></code> will <em>not</em> overwrite it.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert CNV to NetCDF and CSV using the new API</span>
-<span class="c1"># First, clean up complex attributes that can&#39;t be serialized to NetCDF</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
-<span class="n">clean_profile_data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">profile_data</span><span class="p">)</span>
-
-<span class="c1"># Remove or convert complex attributes</span>
-<span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">clean_profile_data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-    <span class="n">attr_value</span> <span class="o">=</span> <span class="n">clean_profile_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="c1"># Convert dict to string representation</span>
-        <span class="n">clean_profile_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
-        <span class="c1"># Remove any other complex types</span>
-        <span class="k">del</span> <span class="n">clean_profile_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
-
-<span class="c1"># Also clean variable attributes</span>
-<span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">clean_profile_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">clean_profile_data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="n">attr_value</span> <span class="o">=</span> <span class="n">clean_profile_data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">clean_profile_data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
-            <span class="k">del</span> <span class="n">clean_profile_data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
-
-<span class="c1"># Export using the new API</span>
-<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">clean_profile_data</span><span class="p">,</span> <span class="s1">&#39;demo_output_profile.nc&#39;</span><span class="p">)</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">profile_data</span><span class="p">,</span> <span class="s1">&#39;demo_output_profile.nc&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Exported to NetCDF: demo_output_profile.nc&quot;</span><span class="p">)</span>
 
 <span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">profile_data</span><span class="p">,</span> <span class="s1">&#39;demo_output_profile.csv&#39;</span><span class="p">)</span>
@@ -497,8 +976,8 @@ Temperature:
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Exported NetCDF file structure:
-Dimensions: {&#39;time&#39;: 358}
-Variables: [&#39;conductivity&#39;, &#39;depth&#39;, &#39;flag&#39;, &#39;fluorescence&#39;, &#39;julian_days_offset&#39;, &#39;oxygen_1&#39;, &#39;oxygen_2&#39;, &#39;oxygen_3&#39;, &#39;pressure&#39;, &#39;salinity&#39;, &#39;temperature&#39;, &#39;turbidity&#39;, &#39;density&#39;, &#39;potential_temperature&#39;]
+Dimensions: {&#39;time&#39;: 3593}
+Variables: [&#39;conductivity_1&#39;, &#39;conductivity_2&#39;, &#39;flag&#39;, &#39;oxygen_1&#39;, &#39;oxygen_2&#39;, &#39;pressure&#39;, &#39;salinity&#39;, &#39;seconds_since_jan_1_2000&#39;, &#39;temperature_1&#39;, &#39;temperature_2&#39;, &#39;timeS&#39;, &#39;depth&#39;, &#39;density&#39;, &#39;potential_temperature&#39;]
 Data preserved: 14 variables exported successfully
 
 ✓ NetCDF export/import successful!
@@ -508,21 +987,21 @@ Data preserved: 14 variables exported successfully
 </section>
 <section id="4.-Data-Visualization">
 <h2>4. Data Visualization<a class="headerlink" href="#4.-Data-Visualization" title="Link to this heading"></a></h2>
-<p>SeaSenseLib provides specialized plotting tools for oceanographic data visualization:</p>
+<p>SeaSenseLib provides a few plotting tools for oceanographic data visualization:</p>
 <section id="4.1-Temperature-Salinity-(T-S)-Diagram">
 <h3>4.1 Temperature-Salinity (T-S) Diagram<a class="headerlink" href="#4.1-Temperature-Salinity-(T-S)-Diagram" title="Link to this heading"></a></h3>
-<p>T-S diagrams show the relationship between temperature and salinity with density isolines:</p>
+<p>T-S diagrams show the relationship between temperature and salinity with density isolines.</p>
+<p><strong>Note:</strong> The plotting tool by default expects variables <code class="docutils literal notranslate"><span class="pre">temperature</span></code> and <code class="docutils literal notranslate"><span class="pre">salinity</span></code> which are set in <code class="docutils literal notranslate"><span class="pre">parameters.py</span></code>. If you’re working with CTD data, and you want to specify to always use <code class="docutils literal notranslate"><span class="pre">temperature_1</span></code>, then this can be updated in <code class="docutils literal notranslate"><span class="pre">parameters.py</span></code>. For the purpose of this demonstration, we’ll create new variable <code class="docutils literal notranslate"><span class="pre">temperature</span></code>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create T-S diagram using the new API</span>
-<span class="k">if</span> <span class="s1">&#39;temperature&#39;</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span> <span class="ow">and</span> <span class="s1">&#39;salinity&#39;</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-    <span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile T-S Diagram&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ T-S diagram created&quot;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Temperature and/or salinity not available for T-S diagram&quot;</span><span class="p">)</span>
-</pre></div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add variable &#39;temperature&#39;</span>
+<span class="n">profile_data</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s1">&#39;temperature_1&#39;</span><span class="p">]</span>
+
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;ts-diagram&#39;</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile T-S Diagram&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ T-S diagram created&quot;</span><span class="p">)</span>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -577,13 +1056,9 @@ Data preserved: 14 variables exported successfully
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Single parameter time series - using direct plotter since API has a bug</span>
-<span class="k">if</span> <span class="s1">&#39;temperature&#39;</span> <span class="ow">in</span> <span class="n">timeseries_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-    <span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile T-S Diagram&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Temperature time series created&quot;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Temperature data not available for time series&quot;</span><span class="p">)</span>
-</pre></div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">timeseries_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Temperature Time Series&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Temperature time series created&quot;</span><span class="p">)</span>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -605,11 +1080,12 @@ Data preserved: 14 variables exported successfully
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multi-parameter time series - using direct plotter</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multi-parameter time series</span>
+<span class="c1"># You can plot multiple parameters at once, but this plotter uses the same y-axis limits for all parameters.</span>
 <span class="n">available_ts_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">timeseries_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">]</span>
 
 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_ts_params</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-    <span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">available_ts_params</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile T-S Diagram&quot;</span><span class="p">)</span>
+    <span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;time-series&#39;</span><span class="p">,</span> <span class="n">timeseries_data</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">available_ts_params</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CTD Profile T-S Diagram&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Multi-parameter time series created for: </span><span class="si">{</span><span class="n">available_ts_params</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Insufficient parameters for multi-plot. Available: </span><span class="si">{</span><span class="n">available_ts_params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -662,9 +1138,9 @@ Data preserved: 14 variables exported successfully
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Original data points: 358
-Shallow subset (0-50 dbar): 358
-Pressure range in subset: 0.3 - 12.0 dbar
+Original data points: 3593
+Shallow subset (0-50 dbar): 44
+Pressure range in subset: 7.0 - 50.0 dbar
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -734,11 +1210,11 @@ Time range in subset: 2017-09-12T09:40:29.000000000 to 2017-09-15T19:44:29.00000
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 === Temperature Statistics Comparison ===
-Full profile - Mean: 13.544°C, Range: 13.419 - 13.900°C
-Shallow (0-50m) - Mean: 13.544°C, Range: 13.419 - 13.900°C
+Full profile - Mean: 3.318°C, Range: 1.944 - 14.286°C
+Shallow (0-50m) - Mean: 13.701°C, Range: 9.430 - 14.286°C
 
-Temperature difference (shallow - full): 0.000°C
-→ Shallow waters are cooler
+Temperature difference (shallow - full): 10.382°C
+→ Shallow waters are warmer (typical thermocline pattern)
 </pre></div></div>
 </div>
 </section>
@@ -776,8 +1252,8 @@ seasenselib<span class="w"> </span>plot<span class="w"> </span>time-series<span 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="demo_mooring-output.html" class="btn btn-neutral float-right" title="Moored Instruments Demo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="user_guide.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo_mooring-output.html" class="btn btn-neutral float-right" title="Formats Demo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

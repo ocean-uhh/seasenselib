@@ -18,27 +18,26 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/se
    about
    installation
 
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Demo
-
-   demo-output.ipynb
-   demo_mooring-output.ipynb
-
-
 .. toctree::
    :maxdepth: 2
    :caption: User guide
 
    user_guide
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Demo notebooks
+
+   demo-output.ipynb
+   demo_mooring-output.ipynb
 
 .. toctree::
    :maxdepth: 2
    :caption: Help and reference
 
    GitHub Repo <http://github.com/ocean-uhh/seasenselib>
+   supported_formats
+   developers_guide
    api_reference
 
 
