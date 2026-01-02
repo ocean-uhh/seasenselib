@@ -122,12 +122,15 @@
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ---------- </span>
-<span class="sd">    input_file : str</span>
+<span class="sd">    input_file : str (read-only property)</span>
 <span class="sd">        The path to the input file containing sensor data.</span>
-<span class="sd">    data : xr.Dataset | None</span>
-<span class="sd">        The processed sensor data as a xarray Dataset, or None if not yet processed.</span>
-<span class="sd">    mapping : dict, optional</span>
+<span class="sd">    input_header_file : str | None (read-only property)</span>
+<span class="sd">        The path to separate header file, or None if not applicable.</span>
+<span class="sd">    mapping : dict (read-only property)</span>
 <span class="sd">        A dictionary mapping names used in the input file to standard names.</span>
+<span class="sd">    data : xr.Dataset | None (read-only property)</span>
+<span class="sd">        The processed sensor data as a xarray Dataset, or None if not yet processed.</span>
+<span class="sd">        This is a read-only property. Use :meth:`get_data()` for backward compatibility.</span>
 <span class="sd">    perform_default_postprocessing : bool</span>
 <span class="sd">        Whether to perform default post-processing on the data.</span>
 <span class="sd">    rename_variables : bool</span>
@@ -147,25 +150,14 @@
 <span class="sd">    _perform_default_postprocessing(ds: xr.Dataset) -&gt; xr.Dataset</span>
 <span class="sd">            Performs default post-processing on the xarray Dataset.</span>
 <span class="sd">    get_data() -&gt; xr.Dataset | None</span>
-<span class="sd">            Returns the processed data as an xarray Dataset.</span>
+<span class="sd">            Returns the processed data as an xarray Dataset (deprecated, use `data` property).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Attribute which indicates whether to perform default post-processing</span>
-    <span class="n">perform_default_postprocessing</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="c1"># Attribute to indicate whether to rename xarray variables to standard names</span>
-    <span class="n">rename_variables</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="c1"># Attribute to indicate whether to assign CF metadata to xarray variables</span>
-    <span class="n">assign_metadata</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="c1"># Attribute to indicate whether to sort xarray variables by name</span>
-    <span class="n">sort_variables</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">input_header_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">perform_default_postprocessing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">rename_variables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">assign_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sort_variables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+                 <span class="n">assign_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sort_variables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the AbstractReader with the input file and optional mapping.</span>
 
 <span class="sd">        This constructor sets the input file, initializes the data attribute to None,</span>
@@ -179,6 +171,8 @@
 <span class="sd">            The path to the input file containing sensor data.</span>
 <span class="sd">        mapping : dict, optional</span>
 <span class="sd">            A dictionary mapping names used in the input file to standard names.</span>
+<span class="sd">        input_header_file : str, optional</span>
+<span class="sd">            The path to separate header file, or None if not applicable.</span>
 <span class="sd">        perform_default_postprocessing : bool, optional</span>
 <span class="sd">            Whether to perform default post-processing on the data. Default is True.</span>
 <span class="sd">        rename_variables : bool, optional</span>
@@ -187,16 +181,54 @@
 <span class="sd">            Whether to assign CF metadata to xarray variables. Default is True.</span>
 <span class="sd">        sort_variables : bool, optional</span>
 <span class="sd">            Whether to sort xarray variables by name. Default is True.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional reader-specific parameters. These are accepted but not used</span>
+<span class="sd">            by the base class, allowing subclasses to define their own parameters</span>
+<span class="sd">            without modifying the base class signature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span> <span class="o">=</span> <span class="n">input_file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_header_file</span> <span class="o">=</span> <span class="n">input_header_file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span> <span class="k">if</span> <span class="n">mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">perform_default_postprocessing</span> <span class="o">=</span> <span class="n">perform_default_postprocessing</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rename_variables</span> <span class="o">=</span> <span class="n">rename_variables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assign_metadata</span> <span class="o">=</span> <span class="n">assign_metadata</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sort_variables</span> <span class="o">=</span> <span class="n">sort_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span> <span class="o">=</span> <span class="n">input_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_header_file</span> <span class="o">=</span> <span class="n">input_header_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="o">=</span> <span class="n">mapping</span> <span class="k">if</span> <span class="n">mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_perform_postprocessing</span> <span class="o">=</span> <span class="n">perform_default_postprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_rename_variables</span> <span class="o">=</span> <span class="n">rename_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_assign_metadata</span> <span class="o">=</span> <span class="n">assign_metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_sort_variables</span> <span class="o">=</span> <span class="n">sort_variables</span>
+        <span class="c1"># **kwargs is intentionally not stored - subclasses handle their own parameters</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">input_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input file path (read-only).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Path to the input data file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">input_header_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input header file path (read-only).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str | None</span>
+<span class="sd">            Path to the separate header file, or None if not applicable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_header_file</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the variable name mapping (read-only).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary mapping custom variable names to standard names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_julian_to_gregorian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">julian_days</span><span class="p">,</span> <span class="n">start_date</span><span class="p">):</span>
         <span class="n">full_days</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">julian_days</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Julian days start at 1, not 0</span>
@@ -331,7 +363,7 @@
                 <span class="n">ds</span><span class="p">[</span><span class="n">temperature_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
                 <span class="n">ds</span><span class="p">[</span><span class="n">pressure_var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
             
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">assign_metadata</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_assign_metadata</span><span class="p">:</span>
                 <span class="c1"># Assign metadata for derived parameters</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">DENSITY</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">POTENTIAL_TEMPERATURE</span><span class="p">)</span>
@@ -433,7 +465,7 @@
         <span class="n">module_version</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">MODULE_NAME</span><span class="p">)</span>
         <span class="n">module_reader_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="n">python_version</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span>
-        <span class="n">input_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span>
         <span class="n">input_file_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_name</span><span class="p">()</span>
         <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ&quot;</span><span class="p">)</span>
 
@@ -476,17 +508,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Apply custom mapping of variable names if provided</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
                     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">value</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
 
         <span class="c1"># Rename variables according to default mappings</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename_variables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_rename_variables</span><span class="p">:</span>
             <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_xarray_parameters</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Assign metadata for all attributes of the xarray Dataset</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">assign_metadata</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_assign_metadata</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
@@ -494,24 +526,55 @@
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_default_global_attributes</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Sort variables and coordinates by name</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sort_variables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sort_variables</span><span class="p">:</span>
             <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort_xarray_variables</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ds</span>   </div>
+        <span class="k">return</span> <span class="n">ds</span></div>
 
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the processed sensor data as an xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        This property provides read-only access to the data that was read</span>
+<span class="sd">        from the input file and processed by the reader.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset | None</span>
+<span class="sd">            The processed sensor data, or None if not yet read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
 <div class="viewcode-block" id="AbstractReader.get_data">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.get_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the processed data as an xarray Dataset. &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the processed data as an xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        .. deprecated:: 1.5</span>
+<span class="sd">            Use the :attr:`data` property instead: ``reader.data``</span>
+<span class="sd">            This method will be removed in version 2.0.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset | None</span>
+<span class="sd">            The processed sensor data, or None if not yet read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;get_data() is deprecated and will be removed in version 2.0. &quot;</span>
+            <span class="s2">&quot;Use the &#39;data&#39; property instead: reader.data&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="AbstractReader.format_name">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.format_name">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format name for this reader.</span>
 
 <span class="sd">        This property must be implemented by all subclasses.</span>
@@ -531,9 +594,9 @@
 
 <div class="viewcode-block" id="AbstractReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.format_key">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the format key for this reader.</span>
 
 <span class="sd">        This property must be implemented by all subclasses.</span>
@@ -553,9 +616,9 @@
 
 <div class="viewcode-block" id="AbstractReader.file_extension">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.file_extension">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file extension for this reader.</span>
 
 <span class="sd">        This property must be implemented by all subclasses.</span>
@@ -584,7 +647,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

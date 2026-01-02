@@ -107,9 +107,32 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">SbeAsciiReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads CTD data from a SeaBird ASCII file into an xarray Dataset.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">input_file</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SbeAsciiReader.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_file : str</span>
+<span class="sd">            Path to the ASCII file.</span>
+<span class="sd">        mapping : dict, optional</span>
+<span class="sd">            Variable name mapping dictionary.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional base class parameters:</span>
+<span class="sd">            </span>
+<span class="sd">            - input_header_file : str | None</span>
+<span class="sd">                Path to separate header file (if applicable).</span>
+<span class="sd">            - perform_default_postprocessing : bool, default=True</span>
+<span class="sd">                Whether to perform default post-processing.</span>
+<span class="sd">            - rename_variables : bool, default=True</span>
+<span class="sd">                Whether to rename variables to standard names.</span>
+<span class="sd">            - assign_metadata : bool, default=True</span>
+<span class="sd">                Whether to assign CF-compliant metadata.</span>
+<span class="sd">            - sort_variables : bool, default=True</span>
+<span class="sd">                Whether to sort variables alphabetically.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__extract_sample_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
@@ -218,32 +241,26 @@
         <span class="n">sample_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_sample_interval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
         <span class="n">instrument_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__extract_instrument_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_xarray_dataset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">sample_interval</span><span class="p">,</span> <span class="n">instrument_type</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
-
-<div class="viewcode-block" id="SbeAsciiReader.get_data">
-<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeAsciiReader.get_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="SbeAsciiReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeAsciiReader.format_key">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;sbe-ascii&#39;</span></div>
 
 
 <div class="viewcode-block" id="SbeAsciiReader.format_name">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeAsciiReader.format_name">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;SeaBird ASCII&#39;</span></div>
 
 
 <div class="viewcode-block" id="SbeAsciiReader.file_extension">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeAsciiReader.file_extension">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
@@ -256,7 +273,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

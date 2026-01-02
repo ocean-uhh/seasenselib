@@ -133,17 +133,44 @@
 <span class="sd">        Converts the DataFrame to an xarray Dataset, renaming columns and assigning units.</span>
 <span class="sd">    __read():</span>
 <span class="sd">        Reads the .dat and .hdr files, processes the data, and creates an xarray Dataset.</span>
-<span class="sd">    get_data():</span>
+<span class="sd">    </span>
+<span class="sd">    Properties</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : xr.Dataset (read-only)</span>
 <span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
+<span class="sd">        For backward compatibility, get_data() method is also available but deprecated.</span>
+<span class="sd">    </span>
 <span class="sd">    file_type : str</span>
 <span class="sd">        A string indicating the type of file being read, in this case, &#39;Nortek ASCII&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat_file_path</span><span class="p">,</span> <span class="n">header_file_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the NortekAsciiReader with the paths to the .dat and .hdr files.&quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_header_file</span><span class="o">=</span><span class="n">header_file_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dat_file_path</span> <span class="o">=</span> <span class="n">dat_file_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">header_file_path</span> <span class="o">=</span> <span class="n">header_file_path</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">header_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize NortekAsciiReader.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dat_file_path : str</span>
+<span class="sd">            Path to the .dat file.</span>
+<span class="sd">        header_file_path : str</span>
+<span class="sd">            Path to the .hdr file.</span>
+<span class="sd">        mapping : dict, optional</span>
+<span class="sd">            Variable name mapping dictionary.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional base class parameters:</span>
+<span class="sd">            </span>
+<span class="sd">            - perform_default_postprocessing : bool, default=True</span>
+<span class="sd">                Whether to perform default post-processing.</span>
+<span class="sd">            - rename_variables : bool, default=True</span>
+<span class="sd">                Whether to rename variables to standard names.</span>
+<span class="sd">            - assign_metadata : bool, default=True</span>
+<span class="sd">                Whether to assign CF-compliant metadata.</span>
+<span class="sd">            - sort_variables : bool, default=True</span>
+<span class="sd">                Whether to sort variables alphabetically.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">input_header_file</span><span class="o">=</span><span class="n">header_file_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdr_file_path</span><span class="p">):</span>
@@ -228,29 +255,29 @@
         <span class="k">return</span> <span class="n">ds</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header_file_path</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_header_file</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="NortekAsciiReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.format_key">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;nortek-ascii&#39;</span></div>
 
 
 <div class="viewcode-block" id="NortekAsciiReader.format_name">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.format_name">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;Nortek ASCII&#39;</span></div>
 
 
 <div class="viewcode-block" id="NortekAsciiReader.file_extension">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.file_extension">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
@@ -263,7 +290,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

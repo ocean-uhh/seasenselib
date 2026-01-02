@@ -129,22 +129,40 @@
 <span class="sd">        Reads RBR data from a .dat file, extracting the datetime and data columns.</span>
 <span class="sd">    __read():</span>
 <span class="sd">        Reads the RBR ASCII data file, processes the data, and creates an xarray Dataset.</span>
-<span class="sd">    get_data():</span>
+<span class="sd">    </span>
+<span class="sd">    Properties</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : xr.Dataset (read-only)</span>
 <span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
+<span class="sd">        For backward compatibility, get_data() method is also available but deprecated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span> <span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the RbrAsciiReader with the input file and optional mapping.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize RbrAsciiReader.</span>
+<span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        input_file : str</span>
 <span class="sd">            The path to the input file containing the RBR ASCII data.</span>
 <span class="sd">        mapping : dict, optional</span>
 <span class="sd">            A dictionary mapping names used in the input file to standard names.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional base class parameters:</span>
+<span class="sd">            </span>
+<span class="sd">            - input_header_file : str | None</span>
+<span class="sd">                Path to separate header file (if applicable).</span>
+<span class="sd">            - perform_default_postprocessing : bool, default=True</span>
+<span class="sd">                Whether to perform default post-processing.</span>
+<span class="sd">            - rename_variables : bool, default=True</span>
+<span class="sd">                Whether to rename variables to standard names.</span>
+<span class="sd">            - assign_metadata : bool, default=True</span>
+<span class="sd">                Whether to assign CF-compliant metadata.</span>
+<span class="sd">            - sort_variables : bool, default=True</span>
+<span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Initialize the base class with the input file and mapping</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__create_xarray_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
@@ -193,7 +211,7 @@
         <span class="n">header</span> <span class="o">=</span> <span class="n">header_line</span>  <span class="c1"># Assuming now &#39;Datetime&#39; is handled in the next step</span>
 
         <span class="c1"># Now read the actual data, skipping rows up to and including the header line</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> \
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> \
                            <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">start_data_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Concatenate &#39;Date&#39; and &#39;Time&#39; columns to create a &#39;Datetime&#39;</span>
@@ -210,26 +228,26 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="RbrAsciiReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrAsciiReader.format_key">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;rbr-ascii&#39;</span></div>
 
 
 <div class="viewcode-block" id="RbrAsciiReader.format_name">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrAsciiReader.format_name">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;RBR ASCII&#39;</span></div>
 
 
 <div class="viewcode-block" id="RbrAsciiReader.file_extension">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrAsciiReader.file_extension">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
@@ -242,7 +260,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

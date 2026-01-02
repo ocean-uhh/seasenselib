@@ -72,7 +72,7 @@ SeaSenseLib offers two approaches: a modern unified API for simplicity and a leg
    
    # Explicit class instantiation and control
    reader = RbrRskReader('mooring_data.rsk')
-   dataset = reader.get_data()
+   dataset = reader.data
    
    plotter = TimeSeriesPlotter(dataset)
    plotter.plot(['temperature'], output_file='temp_series.png')
@@ -122,11 +122,11 @@ For users needing fine control over the reading process:
    
    # Direct class instantiation
    reader = SbeCnvReader("profile_001.cnv")
-   dataset = reader.get_data()
+   dataset = reader.data
    
    # Access reader-specific methods
    reader = RbrRskAutoReader("mooring_data.rsk")
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **SeaBird CTD Instruments**
 
@@ -153,11 +153,11 @@ The ``SbeCnvReader`` handles SeaBird CNV files, commonly used for CTD profile da
    
    # CNV format reader
    reader = SbeCnvReader("profile_001.cnv")
-   dataset = reader.get_data()
+   dataset = reader.data
    
    # ASCII format reader
    reader = SbeAsciiReader("sbe_data.asc")
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **RBR Instruments**
 
@@ -184,11 +184,11 @@ The ``RbrRskReader`` family handles RBR RSK files from moored instruments:
    
    # Auto-detect RSK format version
    reader = RbrRskAutoReader("solo_temp.rsk")
-   dataset = reader.get_data()
+   dataset = reader.data
    
    # MATLAB format reader
    reader = RbrMatlabReader("rbr_export.mat")
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **Nortek Aquadopp Instruments**
 
@@ -211,7 +211,7 @@ The ``RbrRskReader`` family handles RBR RSK files from moored instruments:
    
    # Explicit file specification
    reader = NortekAsciiReader("aquadopp.dat", "aquadopp.hdr")
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **Standard Formats**
 
@@ -237,11 +237,11 @@ For standard formats, use the general readers:
    
    # NetCDF reader
    reader = NetCdfReader("ocean_data.nc")
-   dataset = reader.get_data()
+   dataset = reader.data
    
    # CSV reader  
    reader = CsvReader("sensor_data.csv")
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **Parameter Mapping**
 
@@ -642,7 +642,7 @@ The legacy API provides access to all reader/writer/plotter options:
    # Access reader-specific validation methods
    reader = SbeCnvReader("data.cnv")
    reader.validate_format()  # Reader-specific method
-   dataset = reader.get_data()
+   dataset = reader.data
 
 **Migration from Legacy to Modern API**
 
@@ -654,7 +654,7 @@ The legacy API provides access to all reader/writer/plotter options:
    from seasenselib.plotters import TsDiagramPlotter
    
    reader = SbeCnvReader("data.cnv")
-   dataset = reader.get_data()
+   dataset = reader.data
    writer = NetCdfWriter(dataset)
    writer.write("output.nc")
    plotter = TsDiagramPlotter(dataset)

@@ -98,7 +98,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
 
@@ -127,8 +126,13 @@
 <span class="sd">        Initializes the CsvReader with the input file and optional mapping.</span>
 <span class="sd">    __read()</span>
 <span class="sd">        Reads the CSV file and processes the data into an xarray Dataset.</span>
-<span class="sd">    get_data()</span>
+<span class="sd">    </span>
+<span class="sd">    Properties</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : xr.Dataset (read-only)</span>
 <span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
+<span class="sd">        For backward compatibility, get_data() method is also available but deprecated.</span>
+<span class="sd">    </span>
 <span class="sd">    get_file_type()</span>
 <span class="sd">        Returns the type of the file being read, which is &#39;CSV&#39;.</span>
 <span class="sd">    get_file_extension()</span>
@@ -137,8 +141,32 @@
 
 <div class="viewcode-block" id="CsvReader.__init__">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.CsvReader.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize CsvReader.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_file : str</span>
+<span class="sd">            Path to the CSV file.</span>
+<span class="sd">        mapping : dict, optional</span>
+<span class="sd">            Variable name mapping dictionary.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional base class parameters:</span>
+<span class="sd">            </span>
+<span class="sd">            - input_header_file : str | None</span>
+<span class="sd">                Path to separate header file (if applicable).</span>
+<span class="sd">            - perform_default_postprocessing : bool, default=True</span>
+<span class="sd">                Whether to perform default post-processing.</span>
+<span class="sd">            - rename_variables : bool, default=True</span>
+<span class="sd">                Whether to rename variables to standard names.</span>
+<span class="sd">            - assign_metadata : bool, default=True</span>
+<span class="sd">                Whether to assign CF-compliant metadata.</span>
+<span class="sd">            - sort_variables : bool, default=True</span>
+<span class="sd">                Whether to sort variables alphabetically.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span></div>
 
 
@@ -183,26 +211,26 @@
                 <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span> <span class="n">ds</span><span class="p">,</span> <span class="n">key</span> <span class="p">)</span>
     
             <span class="c1"># Store processed data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">ds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="CsvReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.CsvReader.format_key">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;csv&#39;</span></div>
 
     
 <div class="viewcode-block" id="CsvReader.format_name">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.CsvReader.format_name">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;CSV&#39;</span></div>
 
 
 <div class="viewcode-block" id="CsvReader.file_extension">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.CsvReader.file_extension">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;.csv&#39;</span></div>
 </div>
 
@@ -215,7 +243,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

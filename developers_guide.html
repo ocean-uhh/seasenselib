@@ -163,7 +163,7 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># Explicit class instantiation and control</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskReader</span><span class="p">(</span><span class="s1">&#39;mooring_data.rsk&#39;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 
 <span class="n">plotter</span> <span class="o">=</span> <span class="n">TimeSeriesPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
 <span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span> <span class="n">output_file</span><span class="o">=</span><span class="s1">&#39;temp_series.png&#39;</span><span class="p">)</span>
@@ -205,11 +205,11 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># Direct class instantiation</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;profile_001.cnv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 
 <span class="c1"># Access reader-specific methods</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskAutoReader</span><span class="p">(</span><span class="s2">&quot;mooring_data.rsk&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>SeaBird CTD Instruments</strong></p>
@@ -230,11 +230,11 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># CNV format reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;profile_001.cnv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 
 <span class="c1"># ASCII format reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">SbeAsciiReader</span><span class="p">(</span><span class="s2">&quot;sbe_data.asc&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>RBR Instruments</strong></p>
@@ -255,11 +255,11 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># Auto-detect RSK format version</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskAutoReader</span><span class="p">(</span><span class="s2">&quot;solo_temp.rsk&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 
 <span class="c1"># MATLAB format reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrMatlabReader</span><span class="p">(</span><span class="s2">&quot;rbr_export.mat&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>Nortek Aquadopp Instruments</strong></p>
@@ -277,7 +277,7 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># Explicit file specification</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">NortekAsciiReader</span><span class="p">(</span><span class="s2">&quot;aquadopp.dat&quot;</span><span class="p">,</span> <span class="s2">&quot;aquadopp.hdr&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>Standard Formats</strong></p>
@@ -297,11 +297,11 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># NetCDF reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">NetCdfReader</span><span class="p">(</span><span class="s2">&quot;ocean_data.nc&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 
 <span class="c1"># CSV reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">CsvReader</span><span class="p">(</span><span class="s2">&quot;sensor_data.csv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>Parameter Mapping</strong></p>
@@ -619,7 +619,7 @@ seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span cl
 <span class="c1"># Access reader-specific validation methods</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;data.cnv&quot;</span><span class="p">)</span>
 <span class="n">reader</span><span class="o">.</span><span class="n">validate_format</span><span class="p">()</span>  <span class="c1"># Reader-specific method</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>Migration from Legacy to Modern API</strong></p>
@@ -629,7 +629,7 @@ seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span cl
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">TsDiagramPlotter</span>
 
 <span class="n">reader</span> <span class="o">=</span> <span class="n">SbeCnvReader</span><span class="p">(</span><span class="s2">&quot;data.cnv&quot;</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 <span class="n">writer</span> <span class="o">=</span> <span class="n">NetCdfWriter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
 <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;output.nc&quot;</span><span class="p">)</span>
 <span class="n">plotter</span> <span class="o">=</span> <span class="n">TsDiagramPlotter</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
@@ -672,7 +672,7 @@ seasenselib<span class="w"> </span>plot-series<span class="w"> </span>-i<span cl
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Yves Sorge.</p>
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
