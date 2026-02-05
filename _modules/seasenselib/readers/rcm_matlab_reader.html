@@ -7,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>seasenselib.readers.rcm_matlab_reader &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -130,9 +130,14 @@
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat_file_path</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return valid file extensions for MATLAB files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;.mat&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat_file_path</span><span class="p">):</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.io</span>
 
         <span class="c1"># read adcp file </span>
@@ -161,7 +166,7 @@
 
         <span class="k">return</span> <span class="n">df</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__create_xarray_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_xarray_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;create xarray dataset from pandas dataframe&quot;&quot;&quot;</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -212,10 +217,10 @@
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span> <span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ds</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load data from the MATLAB file and return an xarray Dataset.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RcmMatlabReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RcmMatlabReader.format_key">[docs]</a>

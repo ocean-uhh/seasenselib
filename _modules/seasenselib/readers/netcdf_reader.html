@@ -7,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>seasenselib.readers.netcdf_reader &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -119,7 +119,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    __init__(input_file):</span>
 <span class="sd">        Initializes the NetCdfReader with the input file.</span>
-<span class="sd">    __read():</span>
+<span class="sd">    _load_data():</span>
 <span class="sd">        Reads the netCDF file and processes the data into an xarray Dataset.</span>
 <span class="sd">    </span>
 <span class="sd">    Properties</span>
@@ -160,16 +160,28 @@
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads the netCDF file and processes the data into an xarray Dataset.&quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return valid file extensions for netCDF files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;.nc&#39;</span><span class="p">,</span> <span class="s1">&#39;.nc4&#39;</span><span class="p">,</span> <span class="s1">&#39;.netcdf&#39;</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the netCDF file and return an xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            The loaded dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Read from netCDF file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
 
         <span class="c1"># Validation</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_necessary_parameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;netCDF file&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_necessary_parameters</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;netCDF file&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="NetCdfReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NetCdfReader.format_key">[docs]</a>

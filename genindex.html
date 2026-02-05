@@ -7,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Index &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=8b92e751"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -116,15 +116,21 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.readers.CsvReader.__init__">__init__() (seasenselib.readers.CsvReader method)</a>
+      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.__enter__">__enter__() (seasenselib.readers.base.AbstractReader method)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.readers.CsvReader.__read">__read() (seasenselib.readers.CsvReader method)</a>
+      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.__exit__">__exit__() (seasenselib.readers.base.AbstractReader method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.readers.CsvReader.__init__">__init__() (seasenselib.readers.CsvReader method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader._perform_default_postprocessing">_perform_default_postprocessing() (seasenselib.readers.base.AbstractReader method)</a>
+      <li><a href="api_reference.html#seasenselib.readers.CsvReader._load_data">_load_data() (seasenselib.readers.CsvReader method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#seasenselib.readers.RbrRskAutoReader._load_data">(seasenselib.readers.RbrRskAutoReader method)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.readers.RbrRskAutoReader._select_and_read">_select_and_read() (seasenselib.readers.RbrRskAutoReader method)</a>
+      </ul></li>
+      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader._perform_default_postprocessing">_perform_default_postprocessing() (seasenselib.readers.base.AbstractReader method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -191,7 +197,7 @@
 </li>
         <li><a href="api_reference.html#seasenselib.readers.RbrAsciiReader.data">(seasenselib.readers.RbrAsciiReader attribute)</a>
 </li>
-        <li><a href="api_reference.html#id33">(seasenselib.readers.RbrRskAutoReader attribute)</a>, <a href="api_reference.html#seasenselib.readers.RbrRskAutoReader.data">[1]</a>
+        <li><a href="api_reference.html#id36">(seasenselib.readers.RbrRskAutoReader attribute)</a>, <a href="api_reference.html#seasenselib.readers.RbrRskAutoReader.data">[1]</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.RbrRskLegacyReader.data">(seasenselib.readers.RbrRskLegacyReader attribute)</a>
 </li>
@@ -418,6 +424,12 @@
         <li><a href="api_reference.html#id7">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.is_loaded">is_loaded (seasenselib.readers.base.AbstractReader attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#id8">(seasenselib.readers.base.AbstractReader property)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -441,7 +453,7 @@
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.mapping">mapping (seasenselib.readers.base.AbstractReader attribute)</a>
 
       <ul>
-        <li><a href="api_reference.html#id8">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#id9">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.CsvReader.mapping">(seasenselib.readers.CsvReader attribute)</a>
 </li>
@@ -458,14 +470,20 @@
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.mapping">(seasenselib.readers.SeasunTobReader attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.max">max() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.mean">mean() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.median">median() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.metadata">metadata (seasenselib.readers.base.AbstractReader attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#id10">(seasenselib.readers.base.AbstractReader property)</a>
+</li>
+      </ul></li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.min">min() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
       <li>
@@ -580,6 +598,8 @@
       <li><a href="api_reference.html#seasenselib.readers.RbrRskReader">RbrRskReader (class in seasenselib.readers)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.readers.RcmMatlabReader">RcmMatlabReader (class in seasenselib.readers)</a>
+</li>
+      <li><a href="api_reference.html#id11">reload() (seasenselib.readers.base.AbstractReader method)</a>, <a href="api_reference.html#seasenselib.readers.base.AbstractReader.reload">[1]</a>
 </li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.rename_variables">rename_variables (seasenselib.readers.base.AbstractReader attribute)</a>
 </li>

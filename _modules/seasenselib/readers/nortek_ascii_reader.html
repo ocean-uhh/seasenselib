@@ -7,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>seasenselib.readers.nortek_ascii_reader &mdash; seasenselib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -125,13 +125,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    __init__(dat_file_path, header_file_path):</span>
 <span class="sd">        Initializes the NortekAsciiReader with the paths to the .dat and .hdr files.</span>
-<span class="sd">    __read_header(hdr_file_path):</span>
-<span class="sd">        Reads the .hdr file to extract column names and units.</span>
-<span class="sd">    __parse_data(dat_file_path, headers):</span>
-<span class="sd">        Parses the .dat file using the headers information to create a DataFrame.</span>
-<span class="sd">    __create_xarray_dataset(df, headers):</span>
-<span class="sd">        Converts the DataFrame to an xarray Dataset, renaming columns and assigning units.</span>
-<span class="sd">    __read():</span>
+<span class="sd">    _load_data():</span>
 <span class="sd">        Reads the .dat and .hdr files, processes the data, and creates an xarray Dataset.</span>
 <span class="sd">    </span>
 <span class="sd">    Properties</span>
@@ -171,9 +165,19 @@
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">input_header_file</span><span class="o">=</span><span class="n">header_file_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdr_file_path</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return valid file extensions for Nortek ASCII data files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.asc&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_extension_validation_strict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ASCII formats can have various extensions, so warn only.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdr_file_path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads the .hdr file to extract column names and units.&quot;&quot;&quot;</span>
         <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">hdr_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -206,7 +210,7 @@
                         <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">col_number</span><span class="p">,</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">headers</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat_file_path</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat_file_path</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the .dat file using headers information.&quot;&quot;&quot;</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">]</span>  <span class="c1"># Extract just the names from headers</span>
 
@@ -224,7 +228,8 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">unique_columns</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__create_xarray_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_xarray_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts the DataFrame to an xarray Dataset, renaming columns and assigning units.&quot;&quot;&quot;</span>
         <span class="c1"># Convert columns to datetime</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">,</span> <span class="s1">&#39;Minute&#39;</span><span class="p">,</span> <span class="s1">&#39;Second&#39;</span><span class="p">]])</span>
 
@@ -254,11 +259,18 @@
 
         <span class="k">return</span> <span class="n">ds</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_header_file</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">ds</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the Nortek ASCII data and return an xarray Dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            The loaded dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_header_file</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="NortekAsciiReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.format_key">[docs]</a>
