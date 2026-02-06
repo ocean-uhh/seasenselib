@@ -90,8 +90,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for seasenselib.readers.sbe_cnv_reader</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Module for reading CTD data from SBE CNV files.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Module for reading CTD data from SBE CNV files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -116,7 +115,7 @@
 
 <span class="sd">    The reader includes automatic fixing capabilities for common issues:</span>
 <span class="sd">    - File sanitization: Fixes trailing whitespace and malformed lines that cause pycnv errors</span>
-<span class="sd">    - Coordinate defaults: Uses 45° latitude when missing (common for moored instruments)</span>
+<span class="sd">    - Coordinate defaults: Uses 45 degrees latitude when missing (common for moored instruments)</span>
 <span class="sd">    </span>
 <span class="sd">    These behaviors can be controlled via the sanitize_input and fix_missing_coords parameters.</span>
 
@@ -174,7 +173,7 @@
 <span class="sd">            may fail to load. CLI flag: --no-sanitize</span>
 <span class="sd">        fix_missing_coords : bool, default=True</span>
 <span class="sd">            Whether to automatically use default values for missing coordinates</span>
-<span class="sd">            (e.g., 45° latitude for depth calculation). When False, missing</span>
+<span class="sd">            (e.g., 45 degrees latitude for depth calculation). When False, missing</span>
 <span class="sd">            coordinates will result in NaN values. CLI flag: --no-fix-coords</span>
 <span class="sd">        mapping : dict, optional</span>
 <span class="sd">            Variable name mapping dictionary.</span>
@@ -284,6 +283,8 @@
 <span class="sd">        numpy.ndarray | None</span>
 <span class="sd">            Time coordinates as datetime values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeConverter</span>
         
         <span class="c1"># Try to extract start_time from header instead of using cnv.date</span>
         <span class="n">start_time_from_header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_start_time_from_header</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
@@ -305,17 +306,17 @@
         
         <span class="c1"># Check for time variables (params match raw CNV names after mapping)</span>
         <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_S</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
-            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_offset_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">,</span> <span class="n">offset_datetime</span><span class="p">)</span> \
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">TimeConverter</span><span class="o">.</span><span class="n">elapsed_seconds_since_offset_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">,</span> <span class="n">offset_datetime</span><span class="p">)</span> 
                                    <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_S</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_J</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
             <span class="n">year_startdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">offset_datetime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_julian_to_gregorian</span><span class="p">(</span><span class="n">jday</span><span class="p">,</span> <span class="n">year_startdate</span><span class="p">)</span> \
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">TimeConverter</span><span class="o">.</span><span class="n">julian_to_gregorian</span><span class="p">(</span><span class="n">jday</span><span class="p">,</span> <span class="n">year_startdate</span><span class="p">)</span> 
                                     <span class="k">for</span> <span class="n">jday</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_J</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_Q</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
-            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_jan_2000_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> \
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">TimeConverter</span><span class="o">.</span><span class="n">elapsed_seconds_since_jan_2000_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> 
                                     <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_Q</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME_N</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">:</span>
-            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_elapsed_seconds_since_jan_1970_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> \
+            <span class="n">time_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">TimeConverter</span><span class="o">.</span><span class="n">elapsed_seconds_since_jan_1970_to_datetime</span><span class="p">(</span><span class="n">elapsed_seconds</span><span class="p">)</span> 
                                     <span class="k">for</span> <span class="n">elapsed_seconds</span> <span class="ow">in</span> <span class="n">xarray_data</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME_N</span><span class="p">]])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">timedelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_scan_interval_in_seconds</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
@@ -618,9 +619,9 @@
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        If latitude is not available from CNV metadata or data columns, a default</span>
-<span class="sd">        value of 45° is used. This is standard practice in oceanography for cases</span>
-<span class="sd">        like moored instruments. The depth error from using 45° instead of actual</span>
-<span class="sd">        latitude is typically &lt; 0.3m at typical CTD depths (&lt; 0.5m at 100 dbar).</span>
+<span class="sd">        value of 45 degrees is used. This is standard practice in oceanography for cases</span>
+<span class="sd">        like moored instruments. The depth error from using 45 degrees instead of actual</span>
+<span class="sd">        latitude is typically less than 0.3m at typical CTD depths (less than 0.5m at 100 dbar).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
@@ -650,7 +651,7 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_missing_coords</span><span class="p">:</span>
                     <span class="n">lat</span> <span class="o">=</span> <span class="mf">45.0</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Latitude not found in CNV file &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;Using default latitude of </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">° for depth calculation. &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;Using default latitude of </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2"> degrees for depth calculation. &quot;</span>
                           <span class="sa">f</span><span class="s2">&quot;This is common for moored instruments and typically introduces &lt; 0.3m error. &quot;</span>
                           <span class="sa">f</span><span class="s2">&quot;Set fix_missing_coords=False to disable this behavior.&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
