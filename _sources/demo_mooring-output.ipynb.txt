@@ -16,10 +16,10 @@
    "id": "cell-1",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-02-06T07:49:44.863316Z",
-     "iopub.status.busy": "2026-02-06T07:49:44.863114Z",
-     "iopub.status.idle": "2026-02-06T07:49:45.165561Z",
-     "shell.execute_reply": "2026-02-06T07:49:45.164647Z"
+     "iopub.execute_input": "2026-02-06T10:54:36.011022Z",
+     "iopub.status.busy": "2026-02-06T10:54:36.010858Z",
+     "iopub.status.idle": "2026-02-06T10:54:36.303587Z",
+     "shell.execute_reply": "2026-02-06T10:54:36.302849Z"
     }
    },
    "outputs": [],
@@ -47,10 +47,10 @@
    "id": "cell-3",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-02-06T07:49:45.167427Z",
-     "iopub.status.busy": "2026-02-06T07:49:45.167167Z",
-     "iopub.status.idle": "2026-02-06T07:49:46.427905Z",
-     "shell.execute_reply": "2026-02-06T07:49:46.427125Z"
+     "iopub.execute_input": "2026-02-06T10:54:36.305536Z",
+     "iopub.status.busy": "2026-02-06T10:54:36.305180Z",
+     "iopub.status.idle": "2026-02-06T10:54:37.552422Z",
+     "shell.execute_reply": "2026-02-06T10:54:37.551675Z"
     }
    },
    "outputs": [
@@ -128,10 +128,10 @@
    "id": "cell-5",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-02-06T07:49:46.429774Z",
-     "iopub.status.busy": "2026-02-06T07:49:46.429518Z",
-     "iopub.status.idle": "2026-02-06T07:49:46.755988Z",
-     "shell.execute_reply": "2026-02-06T07:49:46.755072Z"
+     "iopub.execute_input": "2026-02-06T10:54:37.554268Z",
+     "iopub.status.busy": "2026-02-06T10:54:37.554027Z",
+     "iopub.status.idle": "2026-02-06T10:54:37.860390Z",
+     "shell.execute_reply": "2026-02-06T10:54:37.859519Z"
     }
    },
    "outputs": [
@@ -155,7 +155,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "1b81d646",
+   "id": "0ad0658e",
    "metadata": {},
    "source": [
     "## RBR TR1050 Thermistor (MAT Format)\n",
@@ -176,10 +176,10 @@
    "id": "cell-7",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-02-06T07:49:46.757664Z",
-     "iopub.status.busy": "2026-02-06T07:49:46.757485Z",
-     "iopub.status.idle": "2026-02-06T07:49:59.434408Z",
-     "shell.execute_reply": "2026-02-06T07:49:59.433547Z"
+     "iopub.execute_input": "2026-02-06T10:54:37.862038Z",
+     "iopub.status.busy": "2026-02-06T10:54:37.861866Z",
+     "iopub.status.idle": "2026-02-06T10:54:50.453421Z",
+     "shell.execute_reply": "2026-02-06T10:54:50.452555Z"
     }
    },
    "outputs": [
@@ -214,10 +214,10 @@
    "id": "cell-9",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-02-06T07:49:59.436438Z",
-     "iopub.status.busy": "2026-02-06T07:49:59.436235Z",
-     "iopub.status.idle": "2026-02-06T07:49:59.764008Z",
-     "shell.execute_reply": "2026-02-06T07:49:59.763290Z"
+     "iopub.execute_input": "2026-02-06T10:54:50.455074Z",
+     "iopub.status.busy": "2026-02-06T10:54:50.454911Z",
+     "iopub.status.idle": "2026-02-06T10:54:50.781614Z",
+     "shell.execute_reply": "2026-02-06T10:54:50.780987Z"
     }
    },
    "outputs": [
