@@ -46,3 +46,7 @@ seasenselib.egg-info/
 
 # Large data files (hosted externally)
 examples/moor/raw/msm76_2018/adcp/DS0218_RDI_000_24289.mat
+
+# Temporary reference files
+report.py
+generate_reports.py

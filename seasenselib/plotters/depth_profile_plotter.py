@@ -51,19 +51,59 @@ class DepthProfilePlotter(AbstractPlotter):
         ValueError:
             If required variables (temperature, salinity, depth) are missing.
         """
-        # Validate required variables
-        required_vars = [params.TEMPERATURE, params.SALINITY, params.DEPTH]
-        self._validate_required_variables(required_vars)
-
         plt = self._get_plt()
 
         # Get dataset without NaN values
         ds = self._get_dataset_without_nan()
 
+        # Auto-detect variable names based on parameters
+        # For temperature: prefer exact match, then _1 suffix, then any that starts with it
+        temp_var = None
+        if params.TEMPERATURE in ds.data_vars:
+            temp_var = params.TEMPERATURE
+        elif f"{params.TEMPERATURE}_1" in ds.data_vars:
+            temp_var = f"{params.TEMPERATURE}_1"
+        else:
+            # Find any variable that starts with temperature
+            temp_candidates = [v for v in ds.data_vars if v.startswith(params.TEMPERATURE)]
+            if temp_candidates:
+                # Prefer temperature_1 over other variants
+                temp_var = sorted(temp_candidates)[0]
+        
+        # For salinity: prefer exact match, then _1 suffix, then any that starts with it
+        sal_var = None
+        if params.SALINITY in ds.data_vars:
+            sal_var = params.SALINITY
+        elif f"{params.SALINITY}_1" in ds.data_vars:
+            sal_var = f"{params.SALINITY}_1"
+        else:
+            sal_candidates = [v for v in ds.data_vars if v.startswith(params.SALINITY)]
+            if sal_candidates:
+                sal_var = sorted(sal_candidates)[0]
+        
+        # For depth: prefer exact match
+        depth_var = None
+        if params.DEPTH in ds.data_vars:
+            depth_var = params.DEPTH
+        elif f"{params.DEPTH}_1" in ds.data_vars:
+            depth_var = f"{params.DEPTH}_1"
+        else:
+            depth_candidates = [v for v in ds.data_vars if v.startswith(params.DEPTH)]
+            if depth_candidates:
+                depth_var = sorted(depth_candidates)[0]
+        
+        # Validate that we found all required variables
+        if not temp_var:
+            raise ValueError(f"No temperature variable found (looking for '{params.TEMPERATURE}*')")
+        if not sal_var:
+            raise ValueError(f"No salinity variable found (looking for '{params.SALINITY}*')")
+        if not depth_var:
+            raise ValueError(f"No depth variable found (looking for '{params.DEPTH}*')")
+        
         # Extract temperature, salinity, and depth variables from the dataset
-        temperature = ds[params.TEMPERATURE]
-        salinity = ds[params.SALINITY]
-        depth = ds[params.DEPTH]
+        temperature = ds[temp_var]
+        salinity = ds[sal_var]
+        depth = ds[depth_var]
 
         # Figure out if depth contains only positive or negative values
         depth_min = depth.min()

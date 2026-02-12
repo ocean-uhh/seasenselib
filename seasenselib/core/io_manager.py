@@ -94,7 +94,7 @@ class DataIOManager:
 
         return data
 
-    def write_data(self, data: Any, output_file: str, format_hint: Optional[str] = None) -> None:
+    def write_data(self, data: Any, output_file: str, format_hint: Optional[str] = None, **kwargs) -> None:
         """
         Write data to output file.
         
@@ -106,6 +106,8 @@ class DataIOManager:
             Path to the output file
         format_hint : str, optional
             Format hint to override auto-detection (e.g., 'netcdf', 'csv', 'excel')
+        **kwargs
+            Writer-specific parameters passed through to the writer
             
         Raises:
         -------
@@ -120,7 +122,7 @@ class DataIOManager:
 
         # Create writer and write data
         writer = self.writer_factory.create_writer(format_key, data)
-        writer.write(output_file)
+        writer.write(output_file, **kwargs)
 
     def _ensure_output_directory(self, output_file: str) -> None:
         """Create output directory if it doesn't exist."""
