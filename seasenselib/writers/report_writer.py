@@ -7,13 +7,12 @@ applied to oceanographic datasets.
 """
 
 from __future__ import annotations
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
 from pathlib import Path
 import logging
 import numpy as np
 import pandas as pd
-import xarray as xr
 
 from .base import AbstractWriter
 
@@ -110,8 +109,7 @@ class ReportWriter(AbstractWriter):
 
     def _generate_rst_report(self, title: Optional[str] = None,
                             include_plot: bool = False,
-                            plot_output_dir: Optional[str] = None,
-                            **kwargs) -> str:
+                            plot_output_dir: Optional[str] = None) -> str:
         """Generate the RST report content."""
         
         # Determine report title
@@ -167,7 +165,7 @@ class ReportWriter(AbstractWriter):
         lines.extend(self._generate_processing_section(pipeline_info))
         
         # Metadata section
-        lines.extend(self._generate_metadata_section(pipeline_info))
+        lines.extend(self._generate_metadata_section())
         
 
         
@@ -543,7 +541,6 @@ class ReportWriter(AbstractWriter):
         coord_data = []
         for coord_name in sorted(self.data.coords):
             coord_stats = statistics['coordinates'][coord_name]
-            coord_var = self.data[coord_name]
             
             # Format min/max values
             min_val = coord_stats.get('min', 'N/A')
@@ -639,7 +636,7 @@ class ReportWriter(AbstractWriter):
         
         return lines
 
-    def _generate_metadata_section(self, pipeline_info: Dict[str, Any]) -> List[str]:
+    def _generate_metadata_section(self) -> List[str]:
         """Generate metadata section."""
         lines = [
             'Global Metadata',
@@ -704,7 +701,7 @@ class ReportWriter(AbstractWriter):
                                     value_str = str(value)
                                 else:
                                     value_str = f'[JSON data, {len(value_str):,} characters]'
-                            except:
+                            except Exception:
                                 value_str = f'[Complex data structure, {len(value_str):,} characters]'
                         else:
                             # Generic long string
@@ -733,7 +730,6 @@ class ReportWriter(AbstractWriter):
             # Import SeaSenseLib plotters
             from seasenselib.plotters.time_series_plotter import TimeSeriesPlotter
             from seasenselib.plotters.depth_profile_plotter import DepthProfilePlotter
-            import seasenselib.parameters as params
             logger.info("Successfully imported plotters")
             
             # Find suitable variables for plotting
@@ -1048,7 +1044,7 @@ class ReportWriter(AbstractWriter):
         
         if hours < 1:
             return f"{int(median_diff.total_seconds()//60)}min"
-        elif hours < 12:
+        elif 1 <= hours < 10:
             return f"{hours:.1f}H"
         elif 10 <= hours <= 14:
             return "12H"

@@ -14,8 +14,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent

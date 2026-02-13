@@ -14,13 +14,12 @@ most core modules (autodiscovery, factories, readers, writers).
 import unittest
 import tempfile
 import os
-from pathlib import Path
 import xarray as xr
 import numpy as np
 import pandas as pd
 
 import seasenselib as ssl
-from seasenselib.core.exceptions import ReaderError, WriterError, FormatDetectionError
+from seasenselib.core.exceptions import ReaderError, FormatDetectionError
 
 
 class TestSeaSenseLibAPI(unittest.TestCase):

@@ -6,7 +6,7 @@ Orchestrates variable name mapping strategies into the canonical data model.
 
 from __future__ import annotations
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from ..base import Stage, StageContext
 from .handlers.mapping_runner import MappingRunner

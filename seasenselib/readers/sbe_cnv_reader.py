@@ -637,8 +637,6 @@ class SbeCnvReader(AbstractReader):
         ):
             # pycnv still imports pkg_resources (deprecated). Provide a minimal shim so
             # imports succeed on environments without setuptools (e.g., Python 3.13).
-            import sys
-            import types
             from importlib import resources as _resources
 
             def _as_package_name(pkg) -> str:
