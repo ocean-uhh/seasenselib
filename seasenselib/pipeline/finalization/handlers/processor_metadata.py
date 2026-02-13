@@ -77,9 +77,48 @@ class ProcessorMetadata:
         if self.include_os:
             set_attr("processor_os", f"{platform.system()} {platform.release()}")
 
+        # After processor metadata is added, parse sensor information
+        self._add_sensor_variables(ds, context)
+        
         context.dataset = ds
         logger.debug("Added processor metadata attributes")
         return context
+
+    def _add_sensor_variables(self, ds, context: StageContext) -> None:
+        """Add sensor variables after processor metadata is available."""
+        from .raw_metadata import RawMetadata
+        
+        # Get raw metadata container from dataset attributes
+        raw_metadata_json = ds.attrs.get("raw_metadata")
+        if not raw_metadata_json:
+            return
+            
+        try:
+            import json
+            raw_container = json.loads(raw_metadata_json)
+        except (json.JSONDecodeError, TypeError):
+            logger.debug("Could not parse raw_metadata for sensor processing")
+            return
+            
+        # Create a RawMetadata instance to use its sensor parsing methods
+        raw_metadata_handler = RawMetadata()
+        
+        # Process sensor variables based on processor module key (now available)
+        processor_key = ds.attrs.get("processor_module_key", "")
+        raw_format = raw_container.get("raw_format", "")
+        
+        logger.debug(f"Sensor parsing: raw_format='{raw_format}', processor_key='{processor_key}'")
+        
+        # Handle SeaBird data  
+        if "cnv" in raw_format.lower():
+            logger.debug("Processing SeaBird sensors")
+            raw_metadata_handler._process_seabird_sensors(ds, raw_container)
+        # Handle RBR data
+        elif "rbr" in processor_key.lower():
+            logger.debug("Processing RBR sensors")  
+            raw_metadata_handler._process_rbr_sensors(ds, raw_container)
+        else:
+            logger.debug(f"No sensor processing for format '{raw_format}' with processor '{processor_key}'")
 
 
 __all__ = ["ProcessorMetadata"]

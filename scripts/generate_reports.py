@@ -57,8 +57,22 @@ def generate_single_report(
     
     # Process the file with SeaSenseLib pipeline (capture metadata for variable mappings)
     try:
+        # Auto-detect header file and format for Aquadopp/Nortek ASCII files
+        header_file = None
+        file_format = None
+        if input_path.suffix.lower() == '.dat':
+            # Look for corresponding .hdr file with same name
+            potential_header = input_path.with_suffix('.hdr')
+            if potential_header.exists():
+                header_file = str(potential_header)
+                file_format = 'nortek-ascii'  # Explicitly set format for Nortek ASCII
+                print(f"  Found header file: {potential_header.name}")
+                print(f"  Using format: {file_format}")
+        
         dataset, metadata = ssl.read(
             str(input_path),
+            header_file=header_file,
+            file_format=file_format,
             pipeline_profile=pipeline_profile,
             return_metadata=True
         )

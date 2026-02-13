@@ -766,7 +766,7 @@ class ReportWriter(AbstractWriter):
                 reader_class = pipeline_info.get('reader_class', '')
             else:
                 reader_class = self.data.attrs.get('reader_class', '')
-            is_sbe_cnv = 'SbeCnvReader' in reader_class
+            is_sbe_cnv = reader_class and 'SbeCnvReader' in reader_class
             logger.info(f"reader_class={reader_class}, is_sbe_cnv={is_sbe_cnv}")
             
             # PLOT TYPE SELECTION LOGIC
@@ -877,7 +877,16 @@ class ReportWriter(AbstractWriter):
                     dual_axis = True
                 else:
                     # Single parameter or mixed parameters
-                    priority_vars = ['temperature', 'salinity', 'conductivity', 'pressure', 'density']
+                    # Check if this is velocity data (Aquadopp/Nortek instruments)
+                    has_velocity = any('velocity' in v.lower() for v in plottable_vars)
+                    has_direction = any('direction' in v.lower() for v in plottable_vars)
+                    
+                    if has_velocity or has_direction:
+                        # Prioritize velocity variables for Aquadopp/ADCP data
+                        priority_vars = ['north_velocity', 'east_velocity', 'up_velocity', 'speed', 'direction', 'temperature', 'pressure']
+                    else:
+                        # Standard oceanographic variables priority
+                        priority_vars = ['temperature', 'salinity', 'conductivity', 'pressure', 'density']
                     for priority in priority_vars:
                         matching = [v for v in plottable_vars if priority in v.lower()]
                         if matching:

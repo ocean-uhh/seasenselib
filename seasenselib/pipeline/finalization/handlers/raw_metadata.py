@@ -132,15 +132,15 @@ class RawMetadata:
                     default=self._json_default,
                 )
 
-        # Create sensor variables for SeaBird instruments
-        self._add_seabird_sensor_variables(ds, raw_container)
+        # Note: Sensor variables are now created in processor_metadata handler
+        # after processor_module_key is available
 
         context.dataset = ds
         logger.debug("Added RAW metadata attributes")
         return context
 
-    def _add_seabird_sensor_variables(self, ds, raw_container: Dict[str, Any]) -> None:
-        """Add SeaBird sensor variables with calibration metadata."""
+    def _add_sensor_variables(self, ds, raw_container: Dict[str, Any]) -> None:
+        """Add sensor variables with calibration metadata for SeaBird and RBR instruments."""
         try:
             import numpy as np
             import xarray as xr
@@ -148,11 +148,29 @@ class RawMetadata:
             logger.debug("Cannot create sensor variables: numpy/xarray not available")
             return
 
-        # Only process SeaBird data
+        # Process SeaBird and RBR data based on processor module key
         raw_format = raw_container.get("raw_format", "")
-        if not raw_format or "cnv" not in raw_format.lower():
+        processor_key = ds.attrs.get("processor_module_key", "")
+        
+        logger.debug(f"Sensor parsing: raw_format='{raw_format}', processor_key='{processor_key}'")
+        
+        if not raw_format:
+            logger.debug("No raw_format found, skipping sensor parsing")
             return
-
+        
+        # Handle SeaBird data  
+        if "cnv" in raw_format.lower():
+            logger.debug("Processing SeaBird sensors")
+            self._process_seabird_sensors(ds, raw_container)
+        # Handle RBR data
+        elif "rbr" in processor_key.lower():
+            logger.debug("Processing RBR sensors")
+            self._process_rbr_sensors(ds, raw_container)
+        else:
+            logger.debug(f"No sensor processing for format '{raw_format}' with processor '{processor_key}'")
+            
+    def _process_seabird_sensors(self, ds, raw_container: dict) -> None:
+        """Process SeaBird sensor metadata."""
         # Try to parse SeaBird metadata - first try SBE 9 format (individual sensors)
         sbe9_data = parse_sbe9_sensors(raw_container)
         sensors = sbe9_data.get('sensors', [])
@@ -174,6 +192,110 @@ class RawMetadata:
             if parsed_metadata:
                 logger.debug("Using SBE 37/MicroCat format")
                 self._create_sbe37_sensor_variable(ds, parsed_metadata)
+
+    def _process_rbr_sensors(self, ds, raw_container: dict) -> None:
+        """Process RBR sensor metadata and create sensor variables."""
+        try:
+            # Extract global attributes from RBR metadata
+            other_attrs = raw_container.get("blocks", {}).get("other", {}).get("global_attributes", {})
+            
+            # Extract instrument information
+            instrument_model = other_attrs.get("instrument_model", "")
+            instrument_serial = other_attrs.get("instrument_serial", "")
+            
+            # Only process if we have valid RBR instrument data
+            if not instrument_model or not instrument_serial:
+                logger.debug("Missing RBR instrument model or serial number")
+                return
+                
+            # Determine if this is a temperature sensor (RBRsolo or has temperature variable)
+            is_temperature_sensor = (
+                "rbrsolo" in instrument_model.lower() or
+                any("temperature" in var_name.lower() for var_name in ds.data_vars)
+            )
+            
+            if is_temperature_sensor:
+                logger.debug(f"Found RBR temperature sensor: {instrument_model} serial {instrument_serial}")
+                sensor_var_name = self._create_rbr_sensor_variable(ds, other_attrs, "TEMPERATURE", instrument_serial)
+                if sensor_var_name:
+                    # Link temperature variable to sensor
+                    self._link_rbr_temperature_to_sensor(ds, sensor_var_name)
+                
+        except Exception as e:
+            logger.debug(f"Failed to process RBR sensor metadata: {e}")
+
+    def _create_rbr_sensor_variable(self, ds, metadata: dict, sensor_type: str, serial_number: str) -> None:
+        """Create sensor variable for RBR instruments."""
+        try:
+            import numpy as np
+            import xarray as xr
+        except ImportError:
+            logger.debug("Cannot create RBR sensor variables: numpy/xarray not available")
+            return
+            
+        # Create sensor variable name
+        sensor_var_name = f"SENSOR_TEMP_{serial_number}"
+        
+        # Don't overwrite existing variables
+        if sensor_var_name in ds.data_vars:
+            return
+            
+        # Create empty, dimensionless variable
+        sensor_var = xr.DataArray(
+            data=np.array(0),  # Scalar value
+            dims=[],  # No dimensions
+            name=sensor_var_name
+        )
+        
+        # Build attributes with RBR-specific information
+        instrument_model = metadata.get("instrument_model", "RBRsolo")
+        firmware_version = metadata.get("instrument_firmware_version", "")
+        rsk_version = metadata.get("rsk_version", "")
+        
+        sensor_attrs = {
+            "long_name": f"RBR Solo T Temperature logger sensor metadata",
+            "description": f"Sensor metadata for TEMPERATURE sensor serial {serial_number}",
+            "sensor_type": sensor_type,
+            "sensor_serial_number": str(serial_number),
+            "sensor_model": "RBR Solo T Temperature logger",
+            "sensor_maker": "RBR",
+            "instrument_model": instrument_model,
+            "cf_role": "sensor_id",
+            "coverage_content_type": "auxiliaryInformation",
+            "ancillary_variables": sensor_var_name,
+            # Add NERC vocabulary URIs
+            "sensor_maker_vocabulary": "http://vocab.nerc.ac.uk/collection/L35/current/MAN0049/",
+            "sensor_model_vocabulary": "https://vocab.nerc.ac.uk/collection/L22/current/TOOL1024/",
+        }
+        
+        # Add firmware information if available
+        if firmware_version:
+            sensor_attrs["instrument_firmware_version"] = firmware_version
+        if rsk_version:
+            sensor_attrs["rsk_version"] = rsk_version
+            
+        sensor_var.attrs = sensor_attrs
+        ds[sensor_var_name] = sensor_var
+        logger.debug(f"Added RBR sensor variable: {sensor_var_name}")
+        return sensor_var_name
+
+    def _link_rbr_temperature_to_sensor(self, ds, sensor_var_name: str) -> None:
+        """Link RBR temperature variables to their sensor metadata."""
+        # Find temperature variable(s) and link them to the sensor
+        for var_name in ds.data_vars:
+            if var_name.startswith('temperature'):  # temperature, temperature_1, etc.
+                if var_name == sensor_var_name:  # Skip the sensor variable itself
+                    continue
+                    
+                # Add sensor reference to the temperature variable's description
+                current_desc = ds[var_name].attrs.get('description', ds[var_name].attrs.get('long_name', ''))
+                if current_desc and f'({sensor_var_name})' not in current_desc:
+                    ds[var_name].attrs['description'] = f"{current_desc} ({sensor_var_name})"
+                elif not current_desc:
+                    ds[var_name].attrs['description'] = f"Temperature ({sensor_var_name})"
+                    
+                logger.debug(f"Linked {var_name} to sensor {sensor_var_name}")
+                break  # RBR instruments typically have only one temperature sensor
 
     def _create_sbe9_sensor_variables(self, ds, sensors: list) -> None:
         """Create individual sensor variables for SBE 9 CTD sensors."""

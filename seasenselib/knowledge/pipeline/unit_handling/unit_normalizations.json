@@ -1,6 +1,7 @@
 {
   "deg C": "degC",
-  "degC": "degC",
+  "degC": "degC", 
+  "°C": "degC",
   "degrees_Celsius": "degC",
   "degree_C": "degC",
   "ITS-90, deg C": "degC",
