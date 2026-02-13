@@ -36,6 +36,7 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/se
    :caption: Example Reports
 
    reports/MSM121_054_1db_report
+   reports/denmark-strait-ds-m1-17_report
 
 
 .. toctree::

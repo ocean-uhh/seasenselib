@@ -159,6 +159,9 @@ class ReportWriter(AbstractWriter):
 
         # Variable information
         lines.extend(self._generate_variable_section(statistics, pipeline_info))
+
+        # Sensor variables information
+        lines.extend(self._generate_sensor_variables_section())
                 
         # Processing protocol
         lines.extend(self._generate_processing_section(pipeline_info))
@@ -320,7 +323,11 @@ class ReportWriter(AbstractWriter):
             if orig != std:  # Only show actual renames
                 reverse_mapping[std] = orig
         
-        for var_name in sorted(self.data.data_vars):
+        for var_name in self.data.data_vars: # Do we want to sort this?
+            # Skip sensor variables - they go in their own section
+            if var_name.startswith('SENSOR_'):
+                continue
+                
             var_stats = statistics['variables'][var_name]
             
             # Format display name
@@ -332,10 +339,20 @@ class ReportWriter(AbstractWriter):
             # Format description
             long_name = var_stats['long_name']
             description = self.data[var_name].attrs.get('description', '')
+            
+            # Check if this variable has a linked sensor (for measured variables only)
+            sensor_link = self.data[var_name].attrs.get('sensor', '')
+            sensor_suffix = ""
+            if sensor_link:
+                # Only add sensor info for original measured variables (not derived ones)
+                measurement_type = self.data[var_name].attrs.get('measurement_type', '')
+                if measurement_type == 'Measured':
+                    sensor_suffix = f" ({sensor_link})"
+            
             if description and description != long_name:
-                display_description = f"**{long_name}**: {description}"
+                display_description = f"**{long_name}**: {description}{sensor_suffix}"
             else:
-                display_description = long_name
+                display_description = f"{long_name}{sensor_suffix}"
             
             # Min/max values
             min_val = var_stats.get('min', 'N/A')
@@ -361,6 +378,154 @@ class ReportWriter(AbstractWriter):
             lines.extend(self._dataframe_to_rst_table(df))
         else:
             lines.append('No variables available.')
+        
+        lines.append('')
+        return lines
+
+    def _generate_sensor_variables_section(self) -> List[str]:
+        """Generate sensor variables section with metadata table."""
+        lines = [
+            'Sensor Variables',
+            '^' * 16,
+            '',
+            'The following table shows sensor metadata variables that contain',
+            'instrument information and calibration details.',
+            ''
+        ]
+        
+        # Find all sensor variables
+        sensor_vars = [var_name for var_name in sorted(self.data.data_vars) 
+                      if var_name.startswith('SENSOR_')]
+        
+        if not sensor_vars:
+            lines.extend(['No sensor variables found.', ''])
+            return lines
+        
+        # Create sensor variable table data
+        sensor_data = []
+        for var_name in sensor_vars:
+            var = self.data[var_name]
+            attrs = var.attrs
+            
+            # Extract information with fallbacks
+            serial_number = attrs.get('sensor_serial_number', 'N/A')
+            calib_date = attrs.get('sensor_calibration_date', 'N/A')
+            if calib_date != 'N/A' and calib_date.endswith('T00:00:00Z'):
+                # Format date more cleanly
+                calib_date = calib_date[:10]  # Just the date part
+            
+            # Combine details into bulleted list
+            details_entries = []
+            
+            # Add long_name if present
+            long_name = attrs.get('long_name', '')
+            if long_name:
+                details_entries.append(f"long_name = {long_name}")
+            
+            # Add sensor_model if present
+            sensor_model = attrs.get('sensor_model', '')
+            if sensor_model:
+                details_entries.append(f"sensor_model = {sensor_model}")
+            
+            # Add sensor_maker if present
+            sensor_maker = attrs.get('sensor_maker', '')
+            if sensor_maker:
+                details_entries.append(f"sensor_maker = {sensor_maker}")
+            
+            # Add serial number and calibration date  
+            if serial_number != 'N/A':
+                details_entries.append(f"serial_number = {serial_number}")
+            if calib_date != 'N/A':
+                details_entries.append(f"calibration_date = {calib_date}")
+            
+            # Add channel information if available
+            sensor_channel = attrs.get('sensor_channel', '')
+            if sensor_channel:
+                details_entries.append(f"channel = {sensor_channel}")
+            
+            # Format as RST bulleted list for table cell
+            if details_entries:
+                formatted_details = []
+                for i, entry in enumerate(details_entries):
+                    if i == 0:
+                        formatted_details.append(f"- {entry}")
+                    else:
+                        # Subsequent lines need 7 spaces for proper RST table cell alignment
+                        formatted_details.append(f"       - {entry}")
+                details_display = "\n".join(formatted_details)
+            else:
+                details_display = 'N/A'
+            
+            # Extract all three vocabulary URIs
+            vocab_entries = []
+            
+            # Sensor type vocabulary
+            sensor_type_vocab = attrs.get('sensor_type_vocabulary', '')
+            if sensor_type_vocab:
+                vocab_entries.append(f"• **Type**: {sensor_type_vocab}")
+            
+            # Sensor model vocabulary
+            sensor_model_vocab = attrs.get('sensor_model_vocabulary', '')
+            if sensor_model_vocab:
+                vocab_entries.append(f"• **Model**: {sensor_model_vocab}")
+                
+            # Sensor maker vocabulary
+            sensor_maker_vocab = attrs.get('sensor_maker_vocabulary', '')
+            if sensor_maker_vocab:
+                vocab_entries.append(f"• **Maker**: {sensor_maker_vocab}")
+            
+            # Format as RST nested list for table cell - proper table cell indentation
+            if vocab_entries:
+                formatted_vocabs = []
+                for i, vocab in enumerate(vocab_entries):
+                    clean_vocab = vocab.replace('• ', '')
+                    if i == 0:
+                        # First item starts with "- "
+                        formatted_vocabs.append(f"- {clean_vocab}")
+                    else:
+                        # Subsequent lines need 7 spaces for proper RST table cell alignment
+                        formatted_vocabs.append(f"       - {clean_vocab}")
+                vocab_display = "\n".join(formatted_vocabs)
+            else:
+                vocab_display = 'N/A'
+            
+            # Extract calibration coefficients
+            calib_coeffs = []
+            for attr_name, attr_value in attrs.items():
+                if attr_name.endswith('_calibration_coefficients'):
+                    # Extract sensor type from attribute name
+                    sensor_type = attr_name.replace('_calibration_coefficients', '')
+                    
+                    # Keep full coefficient strings for display
+                    calib_coeffs.append(f"• **{sensor_type}**: {attr_value}")
+            
+            # Format calibration coefficients as bulleted list or N/A
+            if calib_coeffs:
+                # Format as RST nested list for table cell - proper table cell indentation
+                formatted_coeffs = []
+                for i, coeff in enumerate(calib_coeffs):
+                    clean_coeff = coeff.replace('• ', '')
+                    if i == 0:
+                        # First item: "- **Sensor**: coeffs"
+                        formatted_coeffs.append(f"- {clean_coeff}")
+                    else:
+                        # Subsequent lines need 7 spaces for proper RST table cell alignment
+                        formatted_coeffs.append(f"       - {clean_coeff}")
+                calib_display = "\n".join(formatted_coeffs)
+            else:
+                calib_display = 'N/A'
+            
+            sensor_data.append({
+                'Variable': f"**{var_name}**",
+                'Details': details_display,
+                'Vocabulary': vocab_display,
+                'Calibration Coefficients': calib_display
+            })
+        
+        # Convert to RST table
+        if sensor_data:
+            df = pd.DataFrame(sensor_data)
+            lines.extend(self._dataframe_to_rst_table(df))
         
         lines.append('')
         return lines
@@ -490,8 +655,10 @@ class ReportWriter(AbstractWriter):
             'applied_variable_mapping', 'stages_applied', 'handlers_applied',
             'derived_parameters', 'unit_conversions'  # Already shown in processing section
         }
+        excluded_keys = {}
         
-        for key in sorted(metadata.keys()):
+        # Preserve the order from the dataset (which has been sorted canonically)
+        for key in metadata.keys():
             if key not in excluded_keys:
                 value = metadata[key]
                 formatted_key = key.replace('_', ' ').title()
@@ -534,6 +701,7 @@ class ReportWriter(AbstractWriter):
                                 if isinstance(data, dict):
                                     keys = list(data.keys())[:5]
                                     value_str = f'[JSON structure with keys: {keys}...]'
+                                    value_str = str(value)
                                 else:
                                     value_str = f'[JSON data, {len(value_str):,} characters]'
                             except:
@@ -602,7 +770,44 @@ class ReportWriter(AbstractWriter):
             logger.info(f"reader_class={reader_class}, is_sbe_cnv={is_sbe_cnv}")
             
             # PLOT TYPE SELECTION LOGIC
-            # Use depth profile if: fast sampling (<1min) AND SbeCnvReader AND has required variable types
+            # Check if this is a MicroCat sensor (SBE 37 series)
+            is_microcat = False
+            
+            # Check sensor variables for SBE 37 model indicators
+            sensor_vars = [var_name for var_name in self.data.data_vars if var_name.startswith('SENSOR_')]
+            for sensor_var in sensor_vars:
+                sensor_attrs = self.data[sensor_var].attrs
+                sensor_model = sensor_attrs.get('sensor_model', '')
+                long_name = sensor_attrs.get('long_name', '')
+                if 'SBE 37' in sensor_model or 'SBE37' in sensor_model or 'SBE37' in long_name:
+                    is_microcat = True
+                    logger.info(f"Detected MicroCat sensor from {sensor_var}: {sensor_model}")
+                    break
+            
+            # Also check global attributes for SBE model
+            if not is_microcat:
+                sbe_model = self.data.attrs.get('cnv_sbe_model', '')
+                if 'SBE 37' in sbe_model or 'SBE37' in sbe_model:
+                    is_microcat = True
+                    logger.info(f"Detected MicroCat from cnv_sbe_model: {sbe_model}")
+            
+            # Also check raw metadata structure for SBE model
+            if not is_microcat:
+                raw_metadata = self.data.attrs.get('raw_metadata')
+                if isinstance(raw_metadata, dict):
+                    # Check if raw_metadata is a dictionary (JSON structure)
+                    other_attrs = raw_metadata.get('other', {}).get('global_attributes', {})
+                    sbe_model = other_attrs.get('cnv_sbe_model', '')
+                    if 'SBE 37' in sbe_model or 'SBE37' in sbe_model:
+                        is_microcat = True
+                        logger.info(f"Detected MicroCat from raw_metadata cnv_sbe_model: {sbe_model}")
+                elif isinstance(raw_metadata, str):
+                    # Check if raw_metadata is a string and contains SBE37 references
+                    if 'SBE37' in raw_metadata:
+                        is_microcat = True
+                        logger.info(f"Detected MicroCat from raw_metadata string content")
+            
+            # Use depth profile if: fast sampling (<1min) AND SbeCnvReader AND has required variable types AND NOT MicroCat
             # Check for temperature_1, salinity, and depth (allowing for numbered variants)
             has_temp = any(v.startswith('temperature_') or v == 'temperature' for v in self.data.data_vars)
             has_sal = 'salinity' in self.data.data_vars
@@ -612,9 +817,10 @@ class ReportWriter(AbstractWriter):
             use_depth_profile = (
                 sampling_freq_minutes < 1 and 
                 is_sbe_cnv and 
-                has_depth_vars
+                has_depth_vars and
+                not is_microcat  # Force time series for MicroCat sensors
             )
-            logger.info(f"Plot type selection: sampling_freq_minutes={sampling_freq_minutes}, has_depth_vars={has_depth_vars}, use_depth_profile={use_depth_profile}")
+            logger.info(f"Plot type selection: sampling_freq_minutes={sampling_freq_minutes}, has_depth_vars={has_depth_vars}, is_microcat={is_microcat}, use_depth_profile={use_depth_profile}")
             
             # Extract source filename for plot naming
             if hasattr(self, '_processing_metadata') and self._processing_metadata:
@@ -667,7 +873,7 @@ class ReportWriter(AbstractWriter):
                 if temp_vars and sal_vars:
                     # Multi-parameter plot with temp + salinity (dual axis)
                     vars_to_plot = [temp_vars[0], sal_vars[0]]
-                    plot_filename = f"{source_name}_temp_sal_timeseries.png"
+                    plot_filename = f"{source_name}_timeseries.png"
                     dual_axis = True
                 else:
                     # Single parameter or mixed parameters
@@ -890,7 +1096,10 @@ class ReportWriter(AbstractWriter):
             for col in df.columns:
                 cell_value = str(row[col])
                 # Keep RST formatting, escape backticks only
-                cell_value = cell_value.replace('`', '\\`').replace('\n', ' ')
+                cell_value = cell_value.replace('`', '\\`')
+                # Preserve newlines for columns with RST list formatting
+                if col not in ['Calibration Coefficients', 'Vocabulary', 'Details']:
+                    cell_value = cell_value.replace('\n', ' ')
                 cell_values.append(cell_value)
             
             data_row = '   * - ' + '\n     - '.join(cell_values)

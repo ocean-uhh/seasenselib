@@ -13,6 +13,7 @@ LONGITUDE = 'longitude'
 DENSITY = 'density'
 POTENTIAL_TEMPERATURE = 'potential_temperature'
 CONSERVATIVE_TEMPERATURE = 'conservative_temperature'
+ABSOLUTE_SALINITY = 'absolute_salinity'
 SPEED_OF_SOUND = 'speed_of_sound'
 TIME_J = 'timeJ'  # Julian days offset
 TIME_Q = 'timeQ'  # Seconds since January 1, 2000
