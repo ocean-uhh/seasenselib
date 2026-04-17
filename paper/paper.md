@@ -1,5 +1,5 @@
 ---
-title: 'SeaSenseLib: An extensible library for processing oceanographic sensor data'
+title: 'SeaSenseLib: An Extensible Library for Processing Oceanographic Sensor Data'
 tags:
   - python
   - oceanography
@@ -32,7 +32,7 @@ bibliography: paper.bib
 `SeaSenseLib` is a Python library for reading, standardizing, and exporting heterogenous raw oceanographic sensor formats. It converts format-specific inputs into CF/ACDD-compliant netCDF files with canonical variable names, normalized units and preserved raw metadata. Processing is deterministic and deliberately avoids scientific interpretation or quality control, ensuring reproducible, researcher-controlled downstream analysis. `SeaSenseLib` provides a unified I/O layer, a configurable pipeline model for data standardization, optional plotting functions, and an extensible plugin system for adding new readers, writers and processing components without modifying the core library. 
 
 
-# Statement of need
+# Statement of Need
 
 Oceanographic research relies heavily on in-situ observations from CTD instruments, moored platforms, and other systems. These instruments often record data in manufacturer- or instrument-specific formats (e.g., Sea-Bird `.cnv`, RBR `.rsk`) with inconsistent variable names, partially standardized units, and heterogeneous metadata quality. As a result, researchers frequently maintain self-developed scripts tailored to individual datasets, which increases maintenance burden, reduces reproducibility, and complicates sharing as well as long-term reuse. 
 
@@ -47,12 +47,12 @@ Various open-source tools already support specific components of the oceanograph
 
 `stglib` [@TODO:2026] is a widely used Python toolkit with broad instrument support and established processing scripts for oceanographic time-series products, including QA/QC controls and wave-related outputs. Architecturally, this solution integrates raw-format conversion with substantial downstream processing routines in a single toolkit, with strengths in operational breadth and instrument-oriented processing pathways.
 
-In addition to these general-purpose tools, there are project-specific parsers such as the `ocean-data-parser` [@TODO:2026] from the CIOOS ecosystem, which are technically valuable but were each developed for specific formats or data sources and do not offer a generally extensible metadata layer, a configurable standard workflow, or a plugin-based extension model.
+In addition to these general-purpose tools, there are project-specific parsers such as the `ocean-data-parser` [@TODO:2026] from the CIOOS ecosystem (Canadian Integrated Ocean Observing System), which are technically valuable but were each developed for specific formats or data sources and do not offer a generally extensible metadata layer, a configurable standard workflow, or a plugin-based extension model.
 
 `SeaSenseLib` differs from these approaches primary in design focus: it is engineered as an early, modular standardization component that converts heterogeneous raw sensor files into deterministic, metadata-harmonized Level-1 netCDF datasets (CF/ACDD-oriented), with canonical variable mapping, unit normalization, and preserved provenance. With support for multiple formats and plugin-based extensibility, SeaSenseLib is designed as a reusable building block that can be embedded into project-specific processing pipelines and workflow engines across diverse institutional contexts, rather than prescribing one end-to-end processing stack.
 
 
-# Design and approach
+# Design and Approach
 
 `SeaSenseLib` follows a multi-stage processing architecture. First, instrument-specific readers convert raw data into an xarray data structure, using existing libraries such as `pycnv` [@TODO:2026] and `pyrsktools` [@TODO:2026] where available. Data then passes through a configurable pipeline to be converted to a canonical data model through the harmonization of variable names. To achieve this, user-defined rules, format-specific mappings, and more general fallback-based mappings are combined. This process allows very different input data to be converted into a common internal schema, which is necessary as identical physical quantities often are recorded in different formats under different names.
 
