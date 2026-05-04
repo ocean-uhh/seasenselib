@@ -94,8 +94,11 @@
 <span class="sd">Module for writing sensor data to Excel files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractWriter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ExcelWriter">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.ExcelWriter">[docs]</a>
@@ -157,7 +160,9 @@
         <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
 
         <span class="c1"># Write the dataframe to the Excel file</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;openpyxl&#39;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing Excel file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;openpyxl&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote Excel file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExcelWriter.file_extension">

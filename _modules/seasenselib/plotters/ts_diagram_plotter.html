@@ -95,9 +95,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.plotters.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractPlotter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
@@ -163,6 +161,8 @@
         <span class="n">required_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_variables</span><span class="p">(</span><span class="n">required_vars</span><span class="p">)</span>
 
+        <span class="n">plt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plt</span><span class="p">()</span>
+
         <span class="c1"># Get dataset without NaN values</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset_without_nan</span><span class="p">()</span>
 
@@ -223,6 +223,14 @@
 <span class="sd">        ds : xr.Dataset</span>
 <span class="sd">            The dataset containing temperature and salinity data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;GSW library is required for density isolines. &quot;</span>
+                <span class="s2">&quot;Install with: pip install gsw&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
         <span class="c1"># Define the min / max values for plotting isopycnals</span>
         <span class="n">t_min</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="n">t_max</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -263,6 +271,7 @@
         <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">density</span> <span class="o">-</span> <span class="mi">1000</span>
 
         <span class="c1"># Plot isolines</span>
+        <span class="n">plt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plt</span><span class="p">()</span>
         <span class="n">cs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">sigma_t</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%1.2f</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># Label every second level</span>
 

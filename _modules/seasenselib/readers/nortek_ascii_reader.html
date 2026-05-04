@@ -291,6 +291,29 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="NortekAsciiReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Nortek ASCII format-specific variable name mappings.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary mapping canonical parameter names to Nortek-specific</span>
+<span class="sd">            variable name patterns commonly found in ASCII export files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">EAST_VELOCITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Velocity (Beam1|X|East)&#39;</span><span class="p">,</span> <span class="s1">&#39;Eastward velocity&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">NORTH_VELOCITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Velocity (Beam2|Y|North)&#39;</span><span class="p">,</span> <span class="s1">&#39;Northward velocity&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">UP_VELOCITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Velocity (Beam3|Z|Up)&#39;</span><span class="p">,</span> <span class="s1">&#39;Upward velocity&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">EAST_AMPLITUDE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Amplitude (Beam1)&#39;</span><span class="p">,</span> <span class="s1">&#39;Eastward amplitude&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">NORTH_AMPLITUDE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Amplitude (Beam2)&#39;</span><span class="p">,</span> <span class="s1">&#39;Northward amplitude&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">UP_AMPLITUDE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Amplitude (Beam3)&#39;</span><span class="p">,</span> <span class="s1">&#39;Upward amplitude&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Soundspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;Speed of Sound&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Pressure&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Temperature&#39;</span><span class="p">],</span>
+        <span class="p">}</span></div>
 </div>
 
 </pre></div>

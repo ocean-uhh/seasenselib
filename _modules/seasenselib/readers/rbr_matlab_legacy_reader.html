@@ -360,7 +360,7 @@
             <span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span>
             <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span>
             <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;Conventions&quot;</span><span class="p">:</span> <span class="s2">&quot;CF-1.8&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Conventions&quot;</span><span class="p">:</span> <span class="s2">&quot;CF-1.13&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;RBR oceanographic data&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;RBR instrument (legacy MATLAB export)&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;rbr_serial_number&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serial_number</span><span class="p">,</span>
@@ -382,8 +382,6 @@
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         
         <span class="c1"># Perform default post-processing</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_default_postprocessing</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-        
         <span class="k">return</span> <span class="n">ds</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>

@@ -221,8 +221,6 @@
             <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;rsk_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db_info</span><span class="o">.</span><span class="n">type</span>
 
         <span class="c1"># Perform default post-processing</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_default_postprocessing</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="RbrRskReader.format_key">
@@ -244,6 +242,25 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="RbrRskReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrRskReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get RBR RSK format-specific variable name mappings.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary mapping canonical parameter names to RBR-specific</span>
+<span class="sd">            variable name patterns commonly found in RSK files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;temperature_00&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature_01&#39;</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">CONDUCTIVITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;conductivity_00&#39;</span><span class="p">,</span> <span class="s1">&#39;conductivity_01&#39;</span><span class="p">,</span> <span class="s1">&#39;conductivity&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sea_pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;salinity_00&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity_01&#39;</span><span class="p">,</span> <span class="s1">&#39;salinity&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">],</span>
+        <span class="p">}</span></div>
 </div>
 
 </pre></div>

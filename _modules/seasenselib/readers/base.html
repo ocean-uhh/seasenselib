@@ -106,11 +106,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeConverter</span><span class="p">,</span> <span class="n">DatasetProcessor</span><span class="p">,</span> <span class="n">DatasetBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.pipeline.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_user_metadata</span><span class="p">,</span> <span class="n">normalize_user_metadata</span>
 
 <span class="n">MODULE_NAME</span> <span class="o">=</span> <span class="s1">&#39;seasenselib&#39;</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="AbstractReader">
@@ -174,6 +177,8 @@
                  <span class="n">input_header_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">perform_default_postprocessing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">rename_variables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">assign_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sort_variables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">use_steps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pipeline_config</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">user_metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the AbstractReader with the input file and optional mapping.</span>
 
@@ -198,6 +203,13 @@
 <span class="sd">            Whether to assign CF metadata to xarray variables. Default is True.</span>
 <span class="sd">        sort_variables : bool, optional</span>
 <span class="sd">            Whether to sort xarray variables by name. Default is True.</span>
+<span class="sd">        use_steps : bool, optional</span>
+<span class="sd">            Whether to use the processing step pipeline system. Default is True.</span>
+<span class="sd">            If False, returns raw data without any processing.</span>
+<span class="sd">        pipeline_config : PipelineConfig, optional</span>
+<span class="sd">            Custom pipeline configuration. If None, uses default pipeline.</span>
+<span class="sd">        user_metadata : dict, optional</span>
+<span class="sd">            Optional metadata overrides with sections {&quot;global&quot;: {...}, &quot;variables&quot;: {...}}.</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            Additional reader-specific parameters. These are accepted but not used</span>
 <span class="sd">            by the base class, allowing subclasses to define their own parameters</span>
@@ -212,7 +224,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_rename_variables</span> <span class="o">=</span> <span class="n">rename_variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_assign_metadata</span> <span class="o">=</span> <span class="n">assign_metadata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_sort_variables</span> <span class="o">=</span> <span class="n">sort_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_use_steps</span> <span class="o">=</span> <span class="n">use_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span> <span class="o">=</span> <span class="n">pipeline_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span> <span class="o">=</span> <span class="n">normalize_user_metadata</span><span class="p">(</span><span class="n">user_metadata</span><span class="p">)</span> <span class="k">if</span> <span class="n">user_metadata</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="c1"># **kwargs is intentionally not stored - subclasses handle their own parameters</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Initialized reader </span><span class="si">%s</span><span class="s2"> for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span>
+        <span class="p">)</span>
 
     <span class="c1"># =========================================================================</span>
     <span class="c1"># File Validation Methods (Override in subclasses for format-specific validation)</span>
@@ -360,9 +382,9 @@
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; class MyReader(AbstractReader):</span>
 <span class="sd">        ...     def _load_data(self) -&gt; xr.Dataset:</span>
-<span class="sd">        ...         # Read file and return Dataset</span>
+<span class="sd">        ...         # Read file and return raw Dataset</span>
 <span class="sd">        ...         ds = xr.open_dataset(self.input_file)</span>
-<span class="sd">        ...         return self._perform_default_postprocessing(ds)</span>
+<span class="sd">        ...         return ds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must implement _load_data() method. &quot;</span>
@@ -507,6 +529,9 @@
 <span class="sd">        &gt;&gt;&gt; ds = reader.data  # Re-read from file (lazy loading)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reload requested for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -527,6 +552,7 @@
 <span class="sd">        ...     # process data</span>
 <span class="sd">        &gt;&gt;&gt; # data automatically released</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Entering reader context for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -544,7 +570,8 @@
 <span class="sd">        exc_tb : TracebackType</span>
 <span class="sd">            Traceback if an exception was raised.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exiting reader context for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -802,6 +829,12 @@
 <span class="sd">        Perform default post-processing on the xarray Dataset.</span>
 <span class="sd">        This includes renaming variables and assigning metadata.</span>
 
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This method is invoked automatically by the ``data`` property.</span>
+<span class="sd">        Reader subclasses should return raw datasets from ``_load_data()``</span>
+<span class="sd">        and must not call this method directly.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ds : xr.Dataset</span>
@@ -813,30 +846,143 @@
 <span class="sd">            The processed xarray Dataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Apply custom mapping of variable names if provided</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
-                    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">value</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+        <span class="c1"># NEW: Use processing step pipeline if enabled (default)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_use_steps</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_pipeline</span><span class="p">,</span> <span class="n">create_pipeline</span><span class="p">,</span> <span class="n">PipelineConfig</span>
+                
+                <span class="c1"># Build metadata context</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;source_file&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">,</span>
+                    <span class="s1">&#39;format_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_name</span><span class="p">(),</span>
+                    <span class="s1">&#39;reader_class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="s1">&#39;reader_module&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span>
+                    <span class="s1">&#39;reader_mapping&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">,</span>  <span class="c1"># Pass reader mapping to stages</span>
+                    <span class="s1">&#39;format_key&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_key</span><span class="p">(),</span>  <span class="c1"># Pass format key for format-specific mapping</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_raw_header&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_raw_header&quot;</span><span class="p">):</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;raw_header&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_raw_header&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;user_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span>
+                
+                <span class="c1"># Create pipeline (custom or default)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;derivation&quot;</span> <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="o">.</span><span class="n">pipeline</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="o">.</span><span class="n">upsert_stage</span><span class="p">(</span><span class="s1">&#39;derivation&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+                                <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">)),</span>
+                                    <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span>
+                                <span class="p">}</span>
+                            <span class="p">})</span>
+                    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">create_pipeline</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Create default pipeline profile with reader-specific config</span>
+                    <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="o">.</span><span class="n">from_resource</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+                    
+                    <span class="c1"># Get format-specific mappings from the reader class</span>
+                    <span class="n">reader_mappings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_mappings</span><span class="p">()</span>
+                    
+                    <span class="c1"># Configure mapping stage with reader mapping</span>
+                    <span class="n">config</span><span class="o">.</span><span class="n">upsert_stage</span><span class="p">(</span><span class="s1">&#39;mapping&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s1">&#39;custom_mappings&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span> <span class="k">else</span> <span class="p">{},</span>
+                        <span class="s1">&#39;reader_mappings&#39;</span><span class="p">:</span> <span class="n">reader_mappings</span> <span class="k">if</span> <span class="n">reader_mappings</span> <span class="k">else</span> <span class="p">{},</span>
+                        <span class="s1">&#39;preserve_original&#39;</span><span class="p">:</span> <span class="kc">True</span>
+                    <span class="p">})</span>
 
-        <span class="c1"># Rename variables according to default mappings</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_rename_variables</span><span class="p">:</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_xarray_parameters</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">):</span>
+                        <span class="n">config</span><span class="o">.</span><span class="n">upsert_stage</span><span class="p">(</span><span class="s1">&#39;derivation&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">)),</span>
+                                <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span>
+                            <span class="p">}</span>
+                        <span class="p">})</span>
+                    
+                    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">create_pipeline</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+                
+                <span class="c1"># Track applied stages</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;stages_applied&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">get_stage_order</span><span class="p">()</span>
+                
+                <span class="c1"># Execute pipeline</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
 
-        <span class="c1"># Assign metadata for all attributes of the xarray Dataset</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_assign_metadata</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="c1"># Store processing metadata for optional logging</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
 
-        <span class="c1"># Assign default global attributes</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_default_global_attributes</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user_metadata_applied&#39;</span><span class="p">):</span>
+                    <span class="n">warning</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;User metadata was provided but not applied. &quot;</span>
+                        <span class="s2">&quot;Ensure the &#39;user_metadata&#39; handler is enabled in the metadata_enrichment stage.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;warnings&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span>
 
-        <span class="c1"># Sort variables and coordinates by name</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sort_variables</span><span class="p">:</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort_xarray_variables</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">ds</span>
+                
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Stages not available, fall back to legacy</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Stage system not available (</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). &quot;</span>
+                    <span class="s2">&quot;Falling back to legacy postprocessing. &quot;</span>
+                    <span class="s2">&quot;This should not happen in normal operation.&quot;</span><span class="p">,</span>
+                    <span class="ne">RuntimeWarning</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">ds</span>
+        
+        <span class="c1"># RAW MODE: When use_steps=False, return dataset as-is (no transformations)</span>
+        <span class="c1"># This is used for --raw-only CLI option to get original variable names from the file</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Prevent user metadata from overriding RAW/provenance fields</span>
+                    <span class="n">reserved_prefixes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;raw_&quot;</span><span class="p">,</span> <span class="s2">&quot;processor_&quot;</span><span class="p">)</span>
+                    <span class="n">filtered</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;global&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;global&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">reserved_prefixes</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="n">filtered</span><span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;variables&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="n">new_attrs</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">reserved_prefixes</span><span class="p">)</span>
+                            <span class="p">}</span>
+                            <span class="n">filtered</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_attrs</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">filtered</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Applying user metadata in raw mode for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
+                    <span class="n">ds</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">apply_user_metadata</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">filtered</span><span class="p">,</span> <span class="n">warn_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid user metadata: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">return</span> <span class="n">ds</span></div>
 
-        <span class="k">return</span> <span class="n">ds</span></div>
+        
+        <span class="c1"># Note: Legacy postprocessing code has been removed. All processing is handled</span>
+        <span class="c1"># by the pipeline system. If the pipeline import fails (which should never happen in normal</span>
+        <span class="c1"># operation), the code returns raw data above.</span>
+        <span class="c1"># </span>
+        <span class="c1"># The legacy code did:</span>
+        <span class="c1"># - Variable name mapping --&gt; now: variable_mapping step  </span>
+        <span class="c1"># - Metadata assignment --&gt; now: cf_convention + metadata_extraction steps</span>
+        <span class="c1"># - Global attributes --&gt; now: global_attributes step</span>
+        <span class="c1"># - Variable sorting --&gt; now: sorting step</span>
+        <span class="c1"># </span>
+        <span class="c1"># If old behavior needed, set use_steps=True (default) and use the processing pipeline.</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_postprocess_after_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optional hook for reader-specific adjustments after the pipeline ran.</span>
+
+<span class="sd">        Override in subclasses if you need to apply small, format-specific</span>
+<span class="sd">        tweaks after the standard pipeline completes. The default implementation</span>
+<span class="sd">        returns the dataset unchanged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">processing_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return processing metadata from the stage pipeline (if available).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -868,7 +1014,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading data from &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_data</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Loaded dataset from &#39;</span><span class="si">%s</span><span class="s2">&#39; with </span><span class="si">%d</span><span class="s2"> variables and </span><span class="si">%d</span><span class="s2"> coords&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">),</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+                <span class="p">)</span>
             <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
                 <span class="c1"># Re-raise NotImplementedError with clear message</span>
                 <span class="k">raise</span>
@@ -876,6 +1029,16 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Failed to load data from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_perform_postprocessing</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Applying postprocessing pipeline for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_default_postprocessing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_after_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_postprocessed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Returning cached dataset for &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_file</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
 <div class="viewcode-block" id="AbstractReader.get_data">
@@ -968,6 +1131,48 @@
 <span class="sd">            If the subclass does not implement this property.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Reader classes must define a file extension&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AbstractReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get format-specific variable name mappings for this reader.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns format-specific mappings that extend or override the default </span>
+<span class="sd">        mappings from parameters.py. This allows each reader to provide</span>
+<span class="sd">        sensor-specific variable name patterns without hard-coding them in stages.</span>
+<span class="sd">        </span>
+<span class="sd">        The stage system will use these mappings after user custom mappings</span>
+<span class="sd">        and before default mappings.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary mapping canonical parameter names to list of format-specific</span>
+<span class="sd">            variable name patterns. Empty dict means no format-specific mappings.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; class SbeCnvReader(AbstractReader):</span>
+<span class="sd">        ...     @classmethod</span>
+<span class="sd">        ...     def format_mappings(cls):</span>
+<span class="sd">        ...         import seasenselib.parameters as params</span>
+<span class="sd">        ...         return {</span>
+<span class="sd">        ...             params.TEMPERATURE: [&#39;t090C&#39;, &#39;t068&#39;, &#39;tv290C&#39;],</span>
+<span class="sd">        ...             params.SALINITY: [&#39;sal00&#39;, &#39;sal11&#39;],</span>
+<span class="sd">        ...             params.CONDUCTIVITY: [&#39;c0mS/cm&#39;, &#39;c0S/m&#39;]</span>
+<span class="sd">        ...         }</span>
+<span class="sd">        </span>
+<span class="sd">        Notes:</span>
+<span class="sd">        ------</span>
+<span class="sd">        - Override this method in subclasses to provide format-specific mappings</span>
+<span class="sd">        - Default implementation returns empty dict (no format-specific mappings)</span>
+<span class="sd">        - Keeps format-specific knowledge with the reader, not in stages</span>
+<span class="sd">        - Supports flexible, extensible architecture</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{}</span>  <span class="c1"># Default: no format-specific mappings</span></div>
 </div>
 
 </pre></div>

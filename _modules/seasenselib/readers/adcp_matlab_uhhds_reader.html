@@ -373,11 +373,10 @@
         <span class="k">return</span> <span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span>
     
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Add common metadata attributes</span>
+        <span class="c1"># Add minimal source metadata (CF compliance handled by stages)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-            <span class="s2">&quot;Conventions&quot;</span><span class="p">:</span> <span class="s2">&quot;CF-1.8&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;ADCP Data&quot;</span><span class="p">,</span>
             <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;Acoustic Doppler Current Profiler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;instrument&quot;</span><span class="p">:</span> <span class="s2">&quot;ADCP&quot;</span><span class="p">,</span>
         <span class="p">})</span>
 
 <div class="viewcode-block" id="AdcpMatlabUhhdsReader.format_key">

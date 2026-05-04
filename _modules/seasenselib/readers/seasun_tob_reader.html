@@ -235,32 +235,45 @@
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
                 <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-        <span class="c1"># Rename fields</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span>
-            <span class="s1">&#39;SALIN&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">,</span>
-            <span class="s1">&#39;Temp&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">,</span>
-            <span class="s1">&#39;Cond&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">CONDUCTIVITY</span><span class="p">,</span>
-            <span class="s1">&#39;Press&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">,</span>
-            <span class="s1">&#39;SOUND&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">,</span>
-            <span class="s1">&#39;Vbatt&#39;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">POWER_SUPPLY_INPUT_VOLTAGE</span><span class="p">,</span>
-            <span class="s1">&#39;SIGMA&#39;</span><span class="p">:</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;Datasets&#39;</span><span class="p">:</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span>
-        <span class="p">})</span>
-
-        <span class="c1"># Convert pressure to depth</span>
-        <span class="n">pressure_in_dbar</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># Extract pressure values from the dataset</span>
-        <span class="n">depth_in_meters</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">z_from_p</span><span class="p">(</span><span class="n">pressure_in_dbar</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">53.8187</span><span class="p">)</span>  <span class="c1"># TODO latitude is for Cuxhaven</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;time&#39;</span><span class="p">,),</span> <span class="n">depth_in_meters</span><span class="p">)</span>  <span class="c1"># Assuming the pressure varies with time</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+        <span class="c1"># Convert pressure to depth if available</span>
+        <span class="k">if</span> <span class="s1">&#39;Press&#39;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">pressure_in_dbar</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;Press&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">depth_in_meters</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">z_from_p</span><span class="p">(</span><span class="n">pressure_in_dbar</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">53.8187</span><span class="p">)</span>  <span class="c1"># TODO latitude is for Cuxhaven</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;time&#39;</span><span class="p">,),</span> <span class="n">depth_in_meters</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
 
         <span class="c1"># Ensure &#39;time&#39; coordinate is datetime type</span>
-        <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
 
         <span class="c1"># Assign meta information for all attributes of the xarray Dataset</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_assign_metadata_for_key_to_xarray_dataset</span><span class="p">(</span> <span class="n">ds</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ds</span>
+
+<div class="viewcode-block" id="SeasunTobReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Sea &amp; Sun TOB format-specific variable name mappings.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, list]</span>
+<span class="sd">            Dictionary mapping standard names to TOB format-specific aliases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;SALIN&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Temp&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">CONDUCTIVITY</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Cond&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Press&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;SOUND&#39;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">POWER_SUPPLY_INPUT_VOLTAGE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Vbatt&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;SIGMA&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Datasets&#39;</span><span class="p">],</span>
+        <span class="p">}</span></div>
+
 
 <div class="viewcode-block" id="SeasunTobReader.format_key">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.format_key">[docs]</a>

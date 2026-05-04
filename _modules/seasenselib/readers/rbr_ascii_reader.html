@@ -189,8 +189,6 @@
         <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
         <span class="c1"># Perform default post-processing</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_default_postprocessing</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="n">ds</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>

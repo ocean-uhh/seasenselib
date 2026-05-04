@@ -93,7 +93,10 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module for writing sensor data to netCDF files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractWriter</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NetCdfWriter">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter">[docs]</a>
@@ -169,7 +172,9 @@
             <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
                 <span class="n">ds</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
 
-        <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NetCdfWriter.file_extension">

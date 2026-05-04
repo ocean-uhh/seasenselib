@@ -144,12 +144,15 @@
 <span class="sd">            - sort_variables : bool, default=True</span>
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Avoid running the pipeline twice: delegate reader handles postprocessing.</span>
+        <span class="n">delegate_use_steps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;use_steps&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">use_steps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reader_format_name</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reader_format_key</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
         <span class="c1"># Store kwargs to pass to delegate reader</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delegate_use_steps</span> <span class="o">=</span> <span class="n">delegate_use_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -176,12 +179,14 @@
             <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrMatlabLegacyReader</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
                 <span class="n">mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">,</span>
+                <span class="n">use_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_delegate_use_steps</span><span class="p">,</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="s2">&quot;rsk&quot;</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">:</span>
             <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrMatlabRsktoolsReader</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
                 <span class="n">mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">,</span>
+                <span class="n">use_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_delegate_use_steps</span><span class="p">,</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
