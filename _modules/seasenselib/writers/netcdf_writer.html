@@ -94,17 +94,139 @@
 <span class="sd">Module for writing sensor data to netCDF files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WriterError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.writers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractWriter</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_netcdf_name_with_slashes_replaced</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a NetCDF-safe name by replacing slash separators.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_netcdf_name_map</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a rename map for names containing slashes.&quot;&quot;&quot;</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">source_names</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">dims</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">source_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">final_names</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">name_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+        <span class="n">safe_name</span> <span class="o">=</span> <span class="n">_netcdf_name_with_slashes_replaced</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">previous_name</span> <span class="o">=</span> <span class="n">final_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">safe_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">previous_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">previous_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">WriterError</span><span class="p">(</span>
+                <span class="s2">&quot;NetCDF name sanitization would create duplicate name &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">&#39; from &#39;</span><span class="si">{</span><span class="n">previous_name</span><span class="si">}</span><span class="s2">&#39; and &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                <span class="s2">&quot;Please provide explicit variable mappings instead.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">final_names</span><span class="p">[</span><span class="n">safe_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">safe_name</span> <span class="o">!=</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">name_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_name</span>
+
+    <span class="k">return</span> <span class="n">name_map</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_netcdf_names</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise a clear error when dataset names cannot be written to NetCDF.&quot;&quot;&quot;</span>
+    <span class="n">invalid_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">kind</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;dimension&quot;</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;coordinate&quot;</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">),</span>
+    <span class="p">]:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">invalid_names</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">kind</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">invalid_names</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">kind</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">invalid_names</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">WriterError</span><span class="p">(</span>
+        <span class="s2">&quot;NetCDF output cannot be created because these names contain &#39;/&#39;: &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">details</span><span class="si">}</span><span class="s2">. NetCDF/HDF5 uses &#39;/&#39; as a group separator. Rename or map &quot;</span>
+        <span class="s2">&quot;these variables before writing, for example map &#39;cond0S/m&#39; to &quot;</span>
+        <span class="s2">&quot;&#39;conductivity&#39;. Alternatively, pass sanitize_names=True (or &quot;</span>
+        <span class="s2">&quot;--sanitize-netcdf-names in the CLI) to replace &#39;/&#39; with &#39;_&#39; automatically.&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dataset_with_netcdf_safe_names</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dataset with slash-containing names replaced by underscores.&quot;&quot;&quot;</span>
+    <span class="n">name_map</span> <span class="o">=</span> <span class="n">_build_netcdf_name_map</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">name_map</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="n">renamed</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name_map</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">name_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">data_vars</span> <span class="ow">or</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="n">renamed</span><span class="p">[</span><span class="n">safe_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">original_name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">renamed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dataset_with_netcdf_safe_attrs</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a shallow dataset copy with NetCDF-compatible attributes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean_attr_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert attribute values to NetCDF-compatible types.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">value</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+                <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="n">safe</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">safe</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">attr_name</span><span class="p">:</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">safe</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">attr_name</span><span class="p">:</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">safe</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">attr_name</span><span class="p">:</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">coord</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">safe</span>
+
 
 <div class="viewcode-block" id="NetCdfWriter">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NetCdfWriter</span><span class="p">(</span><span class="n">AbstractWriter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes sensor data from a xarray Dataset to a netCDF file. </span>
 <span class="sd">    </span>
-<span class="sd">    This class is used to save sensor data in a netCDF format, which is commonly used for</span>
-<span class="sd">    storing large datasets, especially in the field of oceanography and environmental science.</span>
+<span class="sd">    This class is used to save sensor data in a netCDF format, which is</span>
+<span class="sd">    commonly used for storing large datasets, especially in oceanography and</span>
+<span class="sd">    environmental science.</span>
 <span class="sd">    The provided data is expected to be in an xarray Dataset format.</span>
 
 <span class="sd">    Example usage:</span>
@@ -128,53 +250,53 @@
 
 <div class="viewcode-block" id="NetCdfWriter.write">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.write">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sanitize_names</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a netCDF file with the specified file name.</span>
 
 <span class="sd">        Parameters:</span>
 <span class="sd">        -----------</span>
 <span class="sd">        file_name (str): </span>
 <span class="sd">            The name of the output netCDF file where the data will be saved.</span>
+<span class="sd">        sanitize_names : bool, optional</span>
+<span class="sd">            If True, replace slashes in NetCDF dimension, coordinate, and variable</span>
+<span class="sd">            names with underscores before writing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="n">sanitize_names</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">_dataset_with_netcdf_safe_names</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_validate_netcdf_names</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="n">safe_ds</span> <span class="o">=</span> <span class="n">_dataset_with_netcdf_safe_attrs</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">clean_attr_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Convert attribute values to NetCDF-compatible types&quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-                <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Convert None to empty string</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># Check if list contains non-serializable items</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="c1"># Test if it&#39;s already NetCDF compatible by trying to convert to string</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="n">value</span>
-                <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-                    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-                    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">value</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">output_dir</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span> <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">temp_path</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="c1"># Fix attributes at dataset level</span>
-        <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span>
+                <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="nb">dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">output_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="n">suffix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.tmp</span><span class="si">{</span><span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;.nc&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">temp_file</span><span class="p">:</span>
+                <span class="n">temp_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="c1"># Fix attributes at variable level</span>
-        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-                <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-
-        <span class="c1"># Fix attributes at coordinate level</span>
-        <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-                <span class="n">ds</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clean_attr_value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">)</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing temporary netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">)</span>
+            <span class="n">safe_ds</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+            <span class="n">temp_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote netCDF file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">temp_path</span> <span class="ow">and</span> <span class="n">temp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">temp_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">WriterError</span><span class="p">):</span>
+                <span class="k">raise</span>
+            <span class="k">raise</span> <span class="n">WriterError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not write netCDF file &#39;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
 
 
 <div class="viewcode-block" id="NetCdfWriter.file_extension">

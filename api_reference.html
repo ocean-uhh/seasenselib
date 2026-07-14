@@ -2712,8 +2712,9 @@ If the writer does not specify a unique file extension, just return <cite>None</
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">seasenselib.writers.</span></span><span class="sig-name descname"><span class="pre">NetCdfWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seasenselib/writers/netcdf_writer.html#NetCdfWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seasenselib.writers.NetCdfWriter" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#seasenselib.writers.base.AbstractWriter" title="seasenselib.writers.base.AbstractWriter"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractWriter</span></code></a></p>
 <p>Writes sensor data from a xarray Dataset to a netCDF file.</p>
-<p>This class is used to save sensor data in a netCDF format, which is commonly used for
-storing large datasets, especially in the field of oceanography and environmental science.
+<p>This class is used to save sensor data in a netCDF format, which is
+commonly used for storing large datasets, especially in oceanography and
+environmental science.
 The provided data is expected to be in an xarray Dataset format.</p>
 <dl class="simple">
 <dt>Example usage:</dt><dd><p>writer = NetCdfWriter(data)
@@ -2778,12 +2779,15 @@ writer.write(“output_file.nc”)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seasenselib.writers.NetCdfWriter.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seasenselib/writers/netcdf_writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seasenselib.writers.NetCdfWriter.write" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seasenselib/writers/netcdf_writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seasenselib.writers.NetCdfWriter.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the xarray Dataset to a netCDF file with the specified file name.</p>
 <section id="id133">
 <h5>Parameters:<a class="headerlink" href="#id133" title="Link to this heading"></a></h5>
 <dl class="simple">
 <dt>file_name (str):</dt><dd><p>The name of the output netCDF file where the data will be saved.</p>
+</dd>
+<dt>sanitize_names<span class="classifier">bool, optional</span></dt><dd><p>If True, replace slashes in NetCDF dimension, coordinate, and variable
+names with underscores before writing.</p>
 </dd>
 </dl>
 </section>
@@ -2816,8 +2820,9 @@ writer.write(“output_file.csv”)</p>
 <dl class="simple">
 <dt>__init__(data: xr.Dataset):</dt><dd><p>Initializes the CsvWriter with the provided xarray Dataset.</p>
 </dd>
-<dt>write(file_name: str, coordinate = params.TIME):</dt><dd><p>Writes the xarray Dataset to a CSV file with the specified file name and coordinate.
-The coordinate parameter specifies which coordinate to use for selecting the data.</p>
+<dt>write(file_name: str, coordinate = params.TIME):</dt><dd><p>Writes the xarray Dataset to a CSV file with the specified file name.
+The coordinate parameter is validated to exist in the dataset but does not
+affect which data is written; the full dataset is always exported.</p>
 </dd>
 <dt>file_extension: str</dt><dd><p>The default file extension for this writer, which is ‘.csv’.</p>
 </dd>
@@ -2870,8 +2875,9 @@ The coordinate parameter specifies which coordinate to use for selecting the dat
 <dl class="simple">
 <dt>file_name (str):</dt><dd><p>The name of the output CSV file where the data will be saved.</p>
 </dd>
-<dt>coordinate (str):</dt><dd><p>The coordinate to use for selecting the data. Default is params.TIME.
-This should be a valid coordinate present in the xarray Dataset.</p>
+<dt>coordinate (str):</dt><dd><p>A coordinate or dimension that must be present in the dataset. Default is params.TIME.
+This parameter is validated but does not affect the output; the full dataset
+is always written to CSV.</p>
 </dd>
 <dt><a href="#id140"><span class="problematic" id="id141">**</span></a>kwargs:</dt><dd><p>Additional keyword arguments (unused in this implementation).</p>
 </dd>

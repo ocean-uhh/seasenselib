@@ -122,8 +122,9 @@
 <span class="sd">    __init__(data: xr.Dataset):</span>
 <span class="sd">        Initializes the CsvWriter with the provided xarray Dataset.</span>
 <span class="sd">    write(file_name: str, coordinate = params.TIME):</span>
-<span class="sd">        Writes the xarray Dataset to a CSV file with the specified file name and coordinate.</span>
-<span class="sd">        The coordinate parameter specifies which coordinate to use for selecting the data.</span>
+<span class="sd">        Writes the xarray Dataset to a CSV file with the specified file name.</span>
+<span class="sd">        The coordinate parameter is validated to exist in the dataset but does not</span>
+<span class="sd">        affect which data is written; the full dataset is always exported.</span>
 <span class="sd">    file_extension: str</span>
 <span class="sd">        The default file extension for this writer, which is &#39;.csv&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -138,17 +139,18 @@
 <span class="sd">        file_name (str):</span>
 <span class="sd">            The name of the output CSV file where the data will be saved.</span>
 <span class="sd">        coordinate (str):</span>
-<span class="sd">            The coordinate to use for selecting the data. Default is params.TIME.</span>
-<span class="sd">            This should be a valid coordinate present in the xarray Dataset.</span>
+<span class="sd">            A coordinate or dimension that must be present in the dataset. Default is params.TIME.</span>
+<span class="sd">            This parameter is validated but does not affect the output; the full dataset</span>
+<span class="sd">            is always written to CSV.</span>
 <span class="sd">        **kwargs:</span>
 <span class="sd">            Additional keyword arguments (unused in this implementation).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Select the data corresponding to the specified coordinate</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="n">coordinate</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">coordinate</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">coordinate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="n">coordinate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coordinate &#39;</span><span class="si">{</span><span class="n">coordinate</span><span class="si">}</span><span class="s2">&#39; not found in the dataset.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Convert the selected data to a pandas dataframe</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
 
         <span class="c1"># Write the dataframe to the CSV file</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing CSV file to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
