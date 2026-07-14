@@ -56,6 +56,11 @@ Specific Reader Classes
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: seasenselib.readers.NortekCsvReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: seasenselib.readers.AdcpMatlabRdadcpReader
    :members:
    :undoc-members:
@@ -204,4 +209,3 @@ Specific Processor Classes
    :members:
    :undoc-members:
    :show-inheritance:
-

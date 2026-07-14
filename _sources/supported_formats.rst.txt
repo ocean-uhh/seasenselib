@@ -37,6 +37,11 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``.dat`` + ``.hdr``
      - ``nortek-ascii``
      - Nortek ASCII format (requires header file)
+   * - Nortek
+     - Aquadopp
+     - ``.csv``
+     - ``nortek-csv``
+     - Nortek AquaPro CSV export format
    * - RBR
      - Solo T
      - ``.rsk``
@@ -157,6 +162,11 @@ SeaSenseLib can automatically detect format for files with unique extensions:
                           file_format='nortek-ascii',
                           header_file='current_meter.hdr')
 
+   # Nortek AquaPro CSV exports use an explicit format key because .csv is
+   # also used by the generic CSV reader
+   nortek_csv_data = ssl.read('Average Velocity DF3.csv',
+                              file_format='nortek-csv')
+
 Format Detection Summary
 ------------------------
 
@@ -173,6 +183,7 @@ Format Detection Summary
 
 - ``.mat`` files: ``rbr-matlab``, ``rcm-matlab``, ``adcp-matlab-uhhds``, ``adcp-matlab-rdadcp``
 - ``.txt/.dat`` files: ``rbr-ascii``, ``sbe-ascii``, ``nortek-ascii``
+- Nortek AquaPro ``.csv`` exports: ``nortek-csv`` (``.csv`` otherwise auto-detects as generic ``csv``)
 - Multi-file formats: ``nortek-ascii`` (requires both ``.dat`` and ``.hdr`` files)
 
 When to Use Format Keys
