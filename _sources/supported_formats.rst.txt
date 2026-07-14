@@ -78,6 +78,11 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``sbe-cnv``
      - SeaBird CNV format (time series)
    * - SeaBird
+     - SBE37 MicroCAT
+     - ``.hex``
+     - ``sbe-hex``
+     - SeaBird HEX format (time series)
+   * - SeaBird
      - SBE 911
      - ``.cnv``
      - ``sbe-cnv``
@@ -126,6 +131,7 @@ SeaSenseLib can automatically detect format for files with unique extensions:
    
    # Automatic detection for unique extensions
    dataset = ssl.read('your_file.cnv')     # SeaBird CNV files
+   dataset = ssl.read('your_file.hex')     # SeaBird SBE37 HEX files
    dataset = ssl.read('logger_data.rsk')   # RBR RSK files (auto-selects modern/legacy)
    dataset = ssl.read('grid_data.nc')      # NetCDF files
    dataset = ssl.read('sensor_data.csv')   # CSV files
@@ -157,6 +163,7 @@ Format Detection Summary
 **Auto-detected formats** (unique file extensions):
    
 - ``.cnv`` → ``sbe-cnv`` (SeaBird CNV files)
+- ``.hex`` → ``sbe-hex`` (SeaBird SBE37 HEX files)
 - ``.rsk`` → ``rbr-rsk`` (RBR RSK files - automatically selects modern/legacy reader)
 - ``.nc`` → ``netcdf`` (NetCDF files)
 - ``.csv`` → ``csv`` (CSV files)

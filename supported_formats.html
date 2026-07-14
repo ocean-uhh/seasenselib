@@ -196,42 +196,48 @@
 <td><p>SeaBird CNV format (time series)</p></td>
 </tr>
 <tr class="row-even"><td><p>SeaBird</p></td>
+<td><p>SBE37 MicroCAT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code></p></td>
+<td><p>SeaBird HEX format (time series)</p></td>
+</tr>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE 911</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (CTD profiles)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>SBE16 Seacat</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (CTD data)</p></td>
 </tr>
-<tr class="row-even"><td><p>SeaBird</p></td>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE56</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (thermistor data)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>Various</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">.dat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-ascii</span></code></p></td>
 <td><p>SeaBird ASCII format</p></td>
 </tr>
-<tr class="row-even"><td><p>Sea &amp; Sun</p></td>
+<tr class="row-odd"><td><p>Sea &amp; Sun</p></td>
 <td><p>TOB</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.tob</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">seasun-tob</span></code></p></td>
 <td><p>Seasun TOB format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne/RDI</p></td>
+<tr class="row-even"><td><p>Teledyne/RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-uhhds</span></code></p></td>
 <td><p>ADCP MATLAB UHHDS format</p></td>
 </tr>
-<tr class="row-even"><td><p>Teledyne/RDI</p></td>
+<tr class="row-odd"><td><p>Teledyne/RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-rdadcp</span></code></p></td>
@@ -248,6 +254,7 @@
 
 <span class="c1"># Automatic detection for unique extensions</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;your_file.cnv&#39;</span><span class="p">)</span>     <span class="c1"># SeaBird CNV files</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;your_file.hex&#39;</span><span class="p">)</span>     <span class="c1"># SeaBird SBE37 HEX files</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;logger_data.rsk&#39;</span><span class="p">)</span>   <span class="c1"># RBR RSK files (auto-selects modern/legacy)</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;grid_data.nc&#39;</span><span class="p">)</span>      <span class="c1"># NetCDF files</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;sensor_data.csv&#39;</span><span class="p">)</span>   <span class="c1"># CSV files</span>
@@ -276,6 +283,7 @@
 <p><strong>Auto-detected formats</strong> (unique file extensions):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code> → <code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code> (SeaBird CNV files)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code> → <code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code> (SeaBird SBE37 HEX files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.rsk</span></code> → <code class="docutils literal notranslate"><span class="pre">rbr-rsk</span></code> (RBR RSK files - automatically selects modern/legacy reader)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.nc</span></code> → <code class="docutils literal notranslate"><span class="pre">netcdf</span></code> (NetCDF files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.csv</span></code> → <code class="docutils literal notranslate"><span class="pre">csv</span></code> (CSV files)</p></li>
