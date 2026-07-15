@@ -109,22 +109,16 @@
 <span class="n">_AMPLITUDE_COLUMN_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^Amplitude \(Beam(?P&lt;beam&gt;\d+)\)$&quot;</span><span class="p">)</span>
 
 
-<span class="n">_VELOCITY_NAMES_BY_COORDINATE_SYSTEM</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;BEAM&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;velocity_beam1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;velocity_beam2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;velocity_beam3&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;XYZ&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;x_velocity&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;y_velocity&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;z_velocity&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;ENU&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">EAST_VELOCITY</span><span class="p">,</span>
-        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">NORTH_VELOCITY</span><span class="p">,</span>
-        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">UP_VELOCITY</span><span class="p">,</span>
-    <span class="p">},</span>
+<span class="n">_VELOCITY_AXIS_NAMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="s2">&quot;x_velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="s2">&quot;y_velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="s2">&quot;z_velocity&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_VELOCITY_ENU_NAMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;East&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">EAST_VELOCITY</span><span class="p">,</span>
+    <span class="s2">&quot;North&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">NORTH_VELOCITY</span><span class="p">,</span>
+    <span class="s2">&quot;Up&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">UP_VELOCITY</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">_NORTEK_COLUMN_NAMES</span> <span class="o">=</span> <span class="p">{</span>
@@ -377,12 +371,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Map a Nortek header column to its coordinate-aware variable name.&quot;&quot;&quot;</span>
         <span class="n">velocity_match</span> <span class="o">=</span> <span class="n">_VELOCITY_COLUMN_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">raw_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">velocity_match</span><span class="p">:</span>
-            <span class="n">beam</span> <span class="o">=</span> <span class="n">velocity_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">)</span>
-            <span class="n">velocity_names</span> <span class="o">=</span> <span class="n">_VELOCITY_NAMES_BY_COORDINATE_SYSTEM</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="n">coordinate_system</span><span class="p">,</span>
-                <span class="n">_VELOCITY_NAMES_BY_COORDINATE_SYSTEM</span><span class="p">[</span><span class="s2">&quot;BEAM&quot;</span><span class="p">],</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="n">velocity_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">beam</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;velocity_beam</span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;XYZ&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_VELOCITY_AXIS_NAMES</span><span class="p">[</span><span class="n">velocity_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;axis&quot;</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;ENU&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_VELOCITY_ENU_NAMES</span><span class="p">[</span><span class="n">velocity_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;enu&quot;</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;velocity_beam</span><span class="si">{</span><span class="n">velocity_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;beam&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="n">amplitude_match</span> <span class="o">=</span> <span class="n">_AMPLITUDE_COLUMN_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">raw_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">amplitude_match</span><span class="p">:</span>
