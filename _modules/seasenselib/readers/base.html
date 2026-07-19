@@ -1118,16 +1118,18 @@
     <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the file extension for this reader.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the primary file extension for this reader.</span>
 
 <span class="sd">        This property must be implemented by all subclasses.</span>
-<span class="sd">        The extension must be unique over all registered readers.</span>
-<span class="sd">        If a reader does not specify a unique file extension, just return `None`.</span>
+<span class="sd">        The primary extension must be unique over all registered readers.</span>
+<span class="sd">        If a reader does not specify a unique primary file extension, just</span>
+<span class="sd">        return `None`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">        --------</span>
-<span class="sd">        str</span>
-<span class="sd">            The file extension (e.g., &#39;.cnv&#39;, &#39;.tob&#39;, &#39;.rsk&#39;).</span>
+<span class="sd">        str | None</span>
+<span class="sd">            The primary file extension (e.g., &#39;.cnv&#39;, &#39;.tob&#39;, &#39;.rsk&#39;), or</span>
+<span class="sd">            None when there is no single primary extension (see :meth:`file_extensions`).</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">        -------</span>
@@ -1135,6 +1137,26 @@
 <span class="sd">            If the subclass does not implement this property.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Reader classes must define a file extension&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractReader.file_extensions">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.file_extensions">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all extensions that can be auto-detected for this reader.</span>
+
+<span class="sd">        Subclasses with multiple unique file suffixes should override this</span>
+<span class="sd">        method. The default keeps backward compatibility by exposing only the</span>
+<span class="sd">        primary extension returned by :meth:`file_extension`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        tuple[str, ...]</span>
+<span class="sd">            Supported auto-detect extensions. The first entry should match</span>
+<span class="sd">            :meth:`file_extension` when a primary extension exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">file_extension</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">extension</span><span class="p">,)</span> <span class="k">if</span> <span class="n">extension</span> <span class="k">else</span> <span class="p">()</span></div>
 
     
 <div class="viewcode-block" id="AbstractReader.format_mappings">
