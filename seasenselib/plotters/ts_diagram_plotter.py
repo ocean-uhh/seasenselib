@@ -59,24 +59,31 @@ class TsDiagramPlotter(AbstractPlotter):
         Raises:
         -------
         ValueError:
-            If required variables (temperature, salinity, depth) are missing.
+            If required variables (temperature or potential_temperature,
+            salinity, depth) are missing.
         """
-        # Validate required variables
-        required_vars = [params.TEMPERATURE, params.SALINITY, params.DEPTH]
-        self._validate_required_variables(required_vars)
+        # Validate required variables. Temperature may be provided either as
+        # in place temperature or as potential temperature.
+        required_groups = [
+            [params.TEMPERATURE, params.POTENTIAL_TEMPERATURE],
+            [params.SALINITY],
+            [params.DEPTH],
+        ]
+        self._validate_required_variables_any(required_groups)
 
         plt = self._get_plt()
 
         # Get dataset without NaN values
         ds = self._get_dataset_without_nan()
 
-        temperature = ds[params.TEMPERATURE]
-        salinity = ds[params.SALINITY]
-        depth = ds[params.DEPTH]
-
-        # Check for potential temperature and use it if available
+        # Prefer potential temperature if available, otherwise use in place
+        # temperature.
         if params.POTENTIAL_TEMPERATURE in ds:
             temperature = ds[params.POTENTIAL_TEMPERATURE]
+        else:
+            temperature = ds[params.TEMPERATURE]
+        salinity = ds[params.SALINITY]
+        depth = ds[params.DEPTH]
 
         # Create figure
         fig = plt.figure(figsize=(15, 8))
@@ -100,17 +107,13 @@ class TsDiagramPlotter(AbstractPlotter):
         plt.title(title)
         plt.xlabel('Salinity [PSU]')
 
-        # Set y-label based on temperature type
-        if params.POTENTIAL_TEMPERATURE in ds:
-            plt.ylabel(ds[params.POTENTIAL_TEMPERATURE].attrs['long_name'] + \
-                      " [" + ds[params.POTENTIAL_TEMPERATURE].attrs['units'] + "]")
-        else:
-            plt.ylabel(ds[params.TEMPERATURE].attrs['long_name'] + \
-                      " [" + ds[params.TEMPERATURE].attrs['units'] + "]")
+        # Set y-label based on the temperature variable actually used
+        plt.ylabel(temperature.attrs['long_name'] + \
+                  " [" + temperature.attrs['units'] + "]")
 
         # Integrate density isolines if wanted
         if show_density_isolines:
-            self._plot_density_isolines(ds)
+            self._plot_density_isolines(ds, temperature)
 
         # Enable tight layout
         plt.tight_layout()
@@ -118,13 +121,16 @@ class TsDiagramPlotter(AbstractPlotter):
         # Save or show the plot
         self._save_or_show_plot(output_file)
 
-    def _plot_density_isolines(self, ds):
+    def _plot_density_isolines(self, ds, temperature):
         """Plots density isolines into the T-S diagram.
         
         Parameters:
         -----------
         ds : xr.Dataset
             The dataset containing temperature and salinity data.
+        temperature : xr.DataArray
+            The temperature variable to use (in-situ or potential), matching
+            the one plotted.
         """
         try:
             import gsw  # type: ignore
@@ -135,8 +141,8 @@ class TsDiagramPlotter(AbstractPlotter):
             ) from exc
 
         # Define the min / max values for plotting isopycnals
-        t_min = ds[params.TEMPERATURE].values.min()
-        t_max = ds[params.TEMPERATURE].values.max()
+        t_min = temperature.values.min()
+        t_max = temperature.values.max()
         s_min = ds[params.SALINITY].values.min()
         s_max = ds[params.SALINITY].values.max()
 
