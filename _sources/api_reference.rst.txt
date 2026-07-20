@@ -66,6 +66,11 @@ Specific Reader Classes
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: seasenselib.readers.NortekRawReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: seasenselib.readers.AdcpMatlabRdadcpReader
    :members:
    :undoc-members:

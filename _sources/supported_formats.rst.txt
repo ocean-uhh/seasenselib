@@ -42,6 +42,11 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``.csv``
      - ``nortek-csv``
      - Nortek AquaPro CSV export format
+   * - Nortek
+     - Aquadopp, Vector, AWAC
+     - ``.aqd``, ``.VEC``, ``.wpr``
+     - ``nortek-raw``
+     - Nortek raw binary files via MHKiT DOLfYN (experimental)
    * - RBR
      - Solo T
      - ``.rsk``
@@ -151,6 +156,7 @@ SeaSenseLib can automatically detect format for files with unique extensions:
    dataset = ssl.read('grid_data.nc')      # NetCDF files
    dataset = ssl.read('sensor_data.csv')   # CSV files
    dataset = ssl.read('tob_data.tob')      # Seasun TOB files
+   dataset = ssl.read('aquadopp.aqd')      # Nortek raw files
 
 **Explicit Format Specification:**
 
@@ -181,6 +187,11 @@ SeaSenseLib can automatically detect format for files with unique extensions:
    nortek_csv_data = ssl.read('Average Velocity DF3.csv',
                               file_format='nortek-csv')
 
+   # Nortek raw Aquadopp, Vector and AWAC data is decoded by MHKiT DOLfYN
+   # (experimental)
+   nortek_raw_data = ssl.read('DS-FDA01.aqd',
+                              file_format='nortek-raw')
+
    # RDI raw ADCP data is decoded by MHKiT DOLfYN
    rdi_data = ssl.read('DS2_2025_recovery.000',
                        file_format='rdi-raw',
@@ -203,6 +214,7 @@ Format Detection Summary
 - ``.nc`` → ``netcdf`` (NetCDF files)
 - ``.csv`` → ``csv`` (CSV files)
 - ``.tob`` → ``seasun-tob`` (Sea & Sun TOB files)
+- ``.aqd/.VEC/.wpr`` → ``nortek-raw`` (Nortek raw binary files via MHKiT DOLfYN, experimental)
 - ``.000/.PD0/.ENR/.ENS/.ENX`` → ``rdi-raw`` (RDI raw ADCP files via MHKiT DOLfYN)
 
 **Requires explicit format keys** (ambiguous extensions):

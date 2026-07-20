@@ -65,6 +65,8 @@
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Reader Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rbr-hex">RBR HEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nortek-raw">Nortek raw</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rdi-raw-adcp">RDI raw ADCP</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#source-annotations">Source annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#velocity">Velocity</a></li>
@@ -105,6 +107,41 @@
 <p>This page documents reader-specific interpretation choices that affect the
 scientific meaning of decoded variables. The supported formats overview stays
 short; details live here when a raw format needs extra care.</p>
+<section id="rbr-hex">
+<h2>RBR HEX<a class="headerlink" href="#rbr-hex" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">rbr-hex</span></code> reader decodes RBR TR-1050 style binary HEX exports with a
+human-readable header followed by ASCII HEX encoded binary data. The reader
+preserves raw 24-bit ADC counts as <code class="docutils literal notranslate"><span class="pre">channel_N</span></code> variables and adds calibrated
+engineering variables when the header contains the expected four calibration
+coefficients. For thermistor channels, calibration follows the RBR
+Steinhart-Hart form used by the original standalone decoder.</p>
+<p>RBR HEX files use the same <code class="docutils literal notranslate"><span class="pre">.hex</span></code> suffix as SeaBird SBE37 HEX files.
+SeaSenseLib therefore keeps automatic <code class="docutils literal notranslate"><span class="pre">.hex</span></code> detection assigned to
+<code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code> and requires explicit selection for RBR HEX data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rbr_logger.hex&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s2">&quot;rbr-hex&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seasenselib<span class="w"> </span>convert<span class="w"> </span>-f<span class="w"> </span>rbr-hex<span class="w"> </span>-i<span class="w"> </span>rbr_logger.hex<span class="w"> </span>-o<span class="w"> </span>rbr_logger.nc
+</pre></div>
+</div>
+<p>The original RBR text header, parsed calibration coefficients, timestamp/event
+anchors and channel metadata are preserved in <code class="docutils literal notranslate"><span class="pre">raw_metadata</span></code>.</p>
+</section>
+<section id="nortek-raw">
+<h2>Nortek raw<a class="headerlink" href="#nortek-raw" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">nortek-raw</span></code> reader decodes classic Nortek raw binary files, currently
+advertised for Aquadopp <code class="docutils literal notranslate"><span class="pre">.aqd</span></code>, Vector <code class="docutils literal notranslate"><span class="pre">.VEC</span></code> and AWAC <code class="docutils literal notranslate"><span class="pre">.wpr</span></code> files,
+with MHKiT DOLfYN. Nortek Signature <code class="docutils literal notranslate"><span class="pre">.ad2cp</span></code> files use a separate DOLfYN
+decoder and are not part of this reader. This reader is marked experimental
+because support is still being validated across Nortek raw variants.</p>
+<p>Velocity is preserved as vector variable <code class="docutils literal notranslate"><span class="pre">vel</span></code>. If <code class="docutils literal notranslate"><span class="pre">coord_sys</span></code> is
+<code class="docutils literal notranslate"><span class="pre">earth</span></code>, the decoded <code class="docutils literal notranslate"><span class="pre">dir</span></code> coordinate usually identifies east, north and
+up components, but the reader does not split these into CF component variables
+automatically.</p>
+<p>Where Nortek header fields give clear evidence, the reader uses the same
+compact <code class="docutils literal notranslate"><span class="pre">sensor_source</span></code> and <code class="docutils literal notranslate"><span class="pre">sensor_source_basis</span></code> attributes as other raw
+readers; otherwise variables are left unannotated.</p>
+</section>
 <section id="rdi-raw-adcp">
 <h2>RDI raw ADCP<a class="headerlink" href="#rdi-raw-adcp" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">rdi-raw</span></code> reader decodes Teledyne RD Instruments ADCP raw binary files
