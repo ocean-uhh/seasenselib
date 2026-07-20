@@ -126,7 +126,7 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ADCP
      - ``.000``, ``.PD0``, ``.ENR``, ``.ENS``, ``.ENX``
      - ``rdi-raw``
-     - RDI raw binary ADCP files via MHKiT DOLfYN
+     - RDI raw binary ADCP files
 
 Usage Examples
 --------------
