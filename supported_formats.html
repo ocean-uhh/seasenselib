@@ -22,7 +22,7 @@
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Developers Guide" href="developers_guide.html" />
+    <link rel="next" title="Reader Notes" href="reader_notes.html" />
     <link rel="prev" title="Formats Demo" href="demo_mooring-output.html" /> 
 </head>
 
@@ -71,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#checking-available-formats">Checking Available Formats</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="reader_notes.html">Reader Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developers_guide.html">Developers Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 </ul>
@@ -237,17 +238,23 @@
 <td><p><code class="docutils literal notranslate"><span class="pre">seasun-tob</span></code></p></td>
 <td><p>Seasun TOB format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne/RDI</p></td>
+<tr class="row-odd"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-uhhds</span></code></p></td>
 <td><p>ADCP MATLAB UHHDS format</p></td>
 </tr>
-<tr class="row-even"><td><p>Teledyne/RDI</p></td>
+<tr class="row-even"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-rdadcp</span></code></p></td>
 <td><p>ADCP MATLAB RDADCP format</p></td>
+</tr>
+<tr class="row-odd"><td><p>Teledyne RDI</p></td>
+<td><p>ADCP</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.000</span></code>, <code class="docutils literal notranslate"><span class="pre">.PD0</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENR</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENS</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENX</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rdi-raw</span></code></p></td>
+<td><p>RDI raw binary ADCP files via MHKiT DOLfYN</p></td>
 </tr>
 </tbody>
 </table>
@@ -286,8 +293,18 @@
 <span class="c1"># also used by the generic CSV reader</span>
 <span class="n">nortek_csv_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;Average Velocity DF3.csv&#39;</span><span class="p">,</span>
                            <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;nortek-csv&#39;</span><span class="p">)</span>
+
+<span class="c1"># RDI raw ADCP data is decoded by MHKiT DOLfYN</span>
+<span class="n">rdi_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;DS2_2025_recovery.000&#39;</span><span class="p">,</span>
+                    <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rdi-raw&#39;</span><span class="p">,</span>
+                    <span class="n">nens</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Automatic detection also works for supported RDI raw suffixes:</span>
+<span class="n">rdi_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;DS2_2025_recovery.000&#39;</span><span class="p">,</span> <span class="n">nens</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>For reader-specific interpretation notes, including conservative RDI raw ADCP
+mapping choices, see <a class="reference internal" href="reader_notes.html"><span class="doc">Reader Notes</span></a>.</p>
 </section>
 <section id="format-detection-summary">
 <h2>Format Detection Summary<a class="headerlink" href="#format-detection-summary" title="Link to this heading"></a></h2>
@@ -299,6 +316,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">.nc</span></code> → <code class="docutils literal notranslate"><span class="pre">netcdf</span></code> (NetCDF files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.csv</span></code> → <code class="docutils literal notranslate"><span class="pre">csv</span></code> (CSV files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.tob</span></code> → <code class="docutils literal notranslate"><span class="pre">seasun-tob</span></code> (Sea &amp; Sun TOB files)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.000/.PD0/.ENR/.ENS/.ENX</span></code> → <code class="docutils literal notranslate"><span class="pre">rdi-raw</span></code> (RDI raw ADCP files via MHKiT DOLfYN)</p></li>
 </ul>
 <p><strong>Requires explicit format keys</strong> (ambiguous extensions):</p>
 <ul class="simple">
@@ -333,7 +351,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="demo_mooring-output.html" class="btn btn-neutral float-left" title="Formats Demo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="developers_guide.html" class="btn btn-neutral float-right" title="Developers Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="reader_notes.html" class="btn btn-neutral float-right" title="Reader Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

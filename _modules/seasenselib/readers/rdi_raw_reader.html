@@ -1,0 +1,975 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.readers.rdi_raw_reader &mdash; seasenselib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            seasenselib
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">seasenselib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.readers.rdi_raw_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.readers.rdi_raw_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Reader wrapper for RDI raw binary ADCP files.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">redirect_stdout</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_SUPPORTED_EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.000&quot;</span><span class="p">,</span> <span class="s2">&quot;.pd0&quot;</span><span class="p">,</span> <span class="s2">&quot;.enr&quot;</span><span class="p">,</span> <span class="s2">&quot;.ens&quot;</span><span class="p">,</span> <span class="s2">&quot;.enx&quot;</span><span class="p">)</span>
+<span class="n">_RDI_SALINITY_SETTING</span> <span class="o">=</span> <span class="s2">&quot;rdi_salinity_setting&quot;</span>
+<span class="n">_RDI_TEMPERATURE_SETTING</span> <span class="o">=</span> <span class="s2">&quot;rdi_temperature_setting&quot;</span>
+<span class="n">_RDI_TRANSDUCER_DEPTH</span> <span class="o">=</span> <span class="s2">&quot;rdi_transducer_depth&quot;</span>
+<span class="n">_RDI_PRESSURE_PLACEHOLDER</span> <span class="o">=</span> <span class="s2">&quot;rdi_pressure_placeholder&quot;</span>
+<span class="n">_RDI_SENSOR_BITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;c_sound&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;heading&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;pitch&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;roll&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;salinity&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;temp&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_SENSOR_SOURCE_DESCRIPTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;sensor&quot;</span><span class="p">:</span> <span class="s2">&quot;Value is interpreted as coming from an instrument sensor.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;configured&quot;</span><span class="p">:</span> <span class="s2">&quot;Value is interpreted as an instrument or user setting.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;configured_fallback&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;A sensor value was requested, but RDI flags indicate that the &quot;</span>
+        <span class="s2">&quot;instrument fell back to a configured setting.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;derived&quot;</span><span class="p">:</span> <span class="s2">&quot;Value is interpreted as calculated by the instrument.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;placeholder&quot;</span><span class="p">:</span> <span class="s2">&quot;Field is present but is not interpreted as a valid value.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="s2">&quot;Source cannot be determined from available metadata.&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_RDI_SENSOR_BASIS_DESCRIPTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;rdi_fixed_leader_source_flag&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;RDI fixed-leader sensor-source flag.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;rdi_fixed_leader_source_and_available_flags&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;RDI fixed-leader sensor-source and sensor-available flags.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;rdi_fixed_leader_source_requested_but_unavailable&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;RDI fixed-leader source flag requested a sensor, but the &quot;</span>
+        <span class="s2">&quot;sensor-available flag was false.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;rdi_fixed_leader_flags_unavailable&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;RDI fixed-leader sensor flags were unavailable or undecodable.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;rdi_pressure_nonzero&quot;</span><span class="p">:</span> <span class="s2">&quot;Decoded RDI pressure field contains non-zero values.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rdi_pressure_all_zero&quot;</span><span class="p">:</span> <span class="s2">&quot;Decoded RDI pressure field contains only zero values.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rdi_pressure_all_zero_and_fixed_leader_flags&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;Decoded RDI pressure field contains only zero values and RDI &quot;</span>
+        <span class="s2">&quot;fixed-leader flags do not confirm a pressure/depth sensor.&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;rdi_fixed_leader_depth_available_flag&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;RDI fixed-leader depth/pressure sensor-available flag.&quot;</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;c_sound&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m s-1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Speed of Sound&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;speed_of_sound_in_sea_water&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Derived&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="s2">&quot;Speed of sound used by the ADCP, decoded from the RDI variable leader.&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;RDI Transducer Depth&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;positive&quot;</span><span class="p">:</span> <span class="s2">&quot;down&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;RDI variable-leader depth field for the transducer head. The &quot;</span>
+            <span class="s2">&quot;fixed-leader sensor flags indicate whether this came from the &quot;</span>
+            <span class="s2">&quot;pressure/depth sensor or from the manual ED setting.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;dbar&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Pressure&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;sea_water_pressure&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">_RDI_PRESSURE_PLACEHOLDER</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;dbar&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;RDI Pressure Placeholder&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Placeholder&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;RDI pressure field is present in the ensemble but contains only &quot;</span>
+            <span class="s2">&quot;zeros, which usually indicates that no pressure sensor was &quot;</span>
+            <span class="s2">&quot;available or enabled.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="n">_RDI_SALINITY_SETTING</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;1e-3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;RDI Salinity Setting&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Configured&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;RDI variable-leader salinity field. This is normally a configured &quot;</span>
+            <span class="s2">&quot;value used by the ADCP for sound-speed calculations, not a salinity &quot;</span>
+            <span class="s2">&quot;measurement.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="n">_RDI_TEMPERATURE_SETTING</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;degree_C&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;RDI Temperature Setting&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Configured&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;RDI variable-leader temperature field came from the manual ET &quot;</span>
+            <span class="s2">&quot;setting because the fixed-leader sensor flags do not show an &quot;</span>
+            <span class="s2">&quot;active temperature sensor source.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;salinity&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;1e-3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ADCP Salinity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;sea_water_salinity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;Salinity decoded from the RDI variable leader. The fixed-leader &quot;</span>
+            <span class="s2">&quot;sensor flags indicate a conductivity/salinity sensor source; &quot;</span>
+            <span class="s2">&quot;verify instrument configuration before treating this as CTD-quality data.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;temp&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;degree_C&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ADCP Temperature&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;standard_name&quot;</span><span class="p">:</span> <span class="s2">&quot;sea_water_temperature&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;measurement_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Measured&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;Temperature reported by the ADCP variable leader, usually from &quot;</span>
+            <span class="s2">&quot;the instrument&#39;s internal thermistor rather than an external CTD.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;vel&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m s-1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Water Velocity&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the compact SeaSenseLib measurement-type annotation.&quot;&quot;&quot;</span>
+    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;measurement_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rdi_flag</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">bit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return one RDI fixed-leader sensor flag bit, if it can be decoded.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">}:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">number</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode RDI EZ source/available flags for one environmental field.&quot;&quot;&quot;</span>
+    <span class="n">bit</span> <span class="o">=</span> <span class="n">_RDI_SENSOR_BITS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;source_flag&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;available_flag&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;basis&quot;</span><span class="p">:</span> <span class="s2">&quot;rdi_fixed_leader_flags_unavailable&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="n">source_flag</span> <span class="o">=</span> <span class="n">_rdi_flag</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sensors_src&quot;</span><span class="p">),</span> <span class="n">bit</span><span class="p">)</span>
+    <span class="n">available_flag</span> <span class="o">=</span> <span class="n">_rdi_flag</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sensors_avail&quot;</span><span class="p">),</span> <span class="n">bit</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">source_flag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_flags_unavailable&quot;</span>
+    <span class="k">elif</span> <span class="n">variable_name</span> <span class="o">==</span> <span class="s2">&quot;c_sound&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">source_flag</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;derived&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;configured&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_source_flag&quot;</span>
+    <span class="k">elif</span> <span class="n">source_flag</span> <span class="ow">and</span> <span class="n">available_flag</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;sensor&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_source_and_available_flags&quot;</span>
+    <span class="k">elif</span> <span class="n">source_flag</span> <span class="ow">and</span> <span class="n">available_flag</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;configured_fallback&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_source_requested_but_unavailable&quot;</span>
+    <span class="k">elif</span> <span class="n">source_flag</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_source_flag&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;configured&quot;</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="s2">&quot;rdi_fixed_leader_source_flag&quot;</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;source_flag&quot;</span><span class="p">:</span> <span class="n">source_flag</span><span class="p">,</span>
+        <span class="s2">&quot;available_flag&quot;</span><span class="p">:</span> <span class="n">available_flag</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+        <span class="s2">&quot;basis&quot;</span><span class="p">:</span> <span class="n">basis</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_rdi_import</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the MHKiT DOLfYN RDI reader lazily.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mhkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">dolfyn</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;mhkit&quot;</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">dolfyn</span>  <span class="c1"># type: ignore[no-redef]</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">fallback_exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;RdiRawReader requires MHKiT with DOLfYN support. &quot;</span>
+                <span class="s1">&#39;Install it with: pip install &quot;mhkit[dolfyn]&quot;&#39;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">fallback_exc</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;dolfyn.io.rdi.read_rdi&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="s2">&quot;mhkit.dolfyn.io.rdi.read_rdi&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">read_rdi</span> <span class="o">=</span> <span class="n">dolfyn</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">rdi</span><span class="o">.</span><span class="n">read_rdi</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;The installed DOLfYN package does not expose io.rdi.read_rdi(). &quot;</span>
+            <span class="s1">&#39;Please install a recent MHKiT build with: pip install &quot;mhkit[dolfyn]&quot;&#39;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">return</span> <span class="n">read_rdi</span><span class="p">,</span> <span class="n">source</span>
+
+
+<div class="viewcode-block" id="RdiRawReader">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RdiRawReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read Teledyne RD Instruments (RDI) raw binary ADCP files.</span>
+
+<span class="sd">    The reader delegates binary decoding to a tested RDI parser and keeps the</span>
+<span class="sd">    returned xarray structure intact. SeaSenseLib only adds reader provenance,</span>
+<span class="sd">    raw-metadata hints, and conservative variable mappings such as ``temp``</span>
+<span class="sd">    -&gt; ``temperature`` and ``c_sound`` -&gt; ``speed_of_sound``.</span>
+
+<span class="sd">    Velocity is intentionally preserved as vector variable ``vel``. Its</span>
+<span class="sd">    component meaning depends on ``ds.attrs[&quot;coord_sys&quot;]`` (for example beam,</span>
+<span class="sd">    inst, ship, earth, or principal), so automatic CF component variables would</span>
+<span class="sd">    be a scientific decision rather than a safe metadata cleanup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">userdata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">debug</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">vmdas_search</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">winriver</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">search_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">show_decoder_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the RDI raw ADCP reader.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_file</span>
+<span class="sd">            Path to an RDI raw binary ADCP file, commonly ``.000``.</span>
+<span class="sd">        userdata</span>
+<span class="sd">            Passed to DOLfYN. Use ``True`` to search for a sibling</span>
+<span class="sd">            ``*.userdata.json`` file, ``False`` to skip it, or a string path</span>
+<span class="sd">            to use a specific metadata file. ``None`` keeps DOLfYN&#39;s default.</span>
+<span class="sd">        nens</span>
+<span class="sd">            Number of ensembles to read, or a start/stop tuple for DOLfYN</span>
+<span class="sd">            versions that support sliced reads.</span>
+<span class="sd">        debug</span>
+<span class="sd">            DOLfYN debug level. ``None`` keeps DOLfYN&#39;s default.</span>
+<span class="sd">        vmdas_search</span>
+<span class="sd">            Ask DOLfYN to search for VMDAS navigation blocks when offsets are</span>
+<span class="sd">            unreliable.</span>
+<span class="sd">        winriver</span>
+<span class="sd">            Force DOLfYN&#39;s WinRiver parsing path. DOLfYN normally detects this.</span>
+<span class="sd">        search_num</span>
+<span class="sd">            Optional DOLfYN search window for versions that expose it.</span>
+<span class="sd">        show_decoder_output</span>
+<span class="sd">            If True, let the backend decoder write progress messages to</span>
+<span class="sd">            stdout. The default keeps SeaSenseLib reads quiet.</span>
+<span class="sd">        mapping</span>
+<span class="sd">            Additional SeaSenseLib variable mappings.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Base reader options such as ``perform_default_postprocessing`` and</span>
+<span class="sd">            ``use_steps``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_userdata</span> <span class="o">=</span> <span class="n">userdata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span> <span class="o">=</span> <span class="n">nens</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vmdas_search</span> <span class="o">=</span> <span class="n">vmdas_search</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_winriver</span> <span class="o">=</span> <span class="n">winriver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_search_num</span> <span class="o">=</span> <span class="n">search_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span> <span class="o">=</span> <span class="n">show_decoder_output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return supported RDI raw binary extensions.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_SUPPORTED_EXTENSIONS</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the RDI raw data and return an xarray Dataset.&quot;&quot;&quot;</span>
+        <span class="n">read_rdi</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">_read_rdi_import</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_read_rdi</span><span class="p">(</span><span class="n">read_rdi</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;DOLfYN returned </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="si">!r}</span><span class="s2">; expected xarray.Dataset.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotate_decoded_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_raw_metadata_blocks</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_raw_variable_metadata</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_call_read_rdi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_rdi</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call DOLfYN&#39;s RDI reader while tolerating small API changes.&quot;&quot;&quot;</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;userdata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_userdata</span><span class="p">,</span>
+            <span class="s2">&quot;nens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span><span class="p">,</span>
+            <span class="s2">&quot;vmdas_search&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vmdas_search</span><span class="p">,</span>
+            <span class="s2">&quot;winriver&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_winriver</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;search_num&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_num</span>
+
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">read_rdi</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">accepts_kwargs</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span>
+            <span class="k">elif</span> <span class="s2">&quot;debug_level&quot;</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug_level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span>
+            <span class="k">elif</span> <span class="n">accepts_kwargs</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accepts_kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">read_rdi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">captured_stdout</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">redirect_stdout</span><span class="p">(</span><span class="n">captured_stdout</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">read_rdi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">captured_stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Suppressed RDI decoder stdout:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_annotate_decoded_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add SeaSenseLib provenance and conservative metadata defaults.&quot;&quot;&quot;</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rename_configuration_fields</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">variable_name</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="n">_RDI_ATTR_DEFAULTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">variable_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">variable_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">variable_attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+            <span class="n">variable_attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_name&quot;</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="n">variable_attrs</span><span class="p">:</span>
+                <span class="n">variable_attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_units&quot;</span><span class="p">,</span> <span class="n">variable_attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="s2">&quot;range&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">,</span> <span class="s2">&quot;m&quot;</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;long_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Profile Range&quot;</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="s2">&quot;comment&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Distance from transducer to cell center, as decoded from raw data.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rename_configuration_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Avoid presenting RDI settings/fallback fields as measured variables.&quot;&quot;&quot;</span>
+        <span class="n">rename_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;salinity&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;salinity&quot;</span><span class="p">)[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;sensor&quot;</span><span class="p">:</span>
+            <span class="n">rename_map</span><span class="p">[</span><span class="s2">&quot;salinity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_SALINITY_SETTING</span>
+        <span class="k">if</span> <span class="s2">&quot;temp&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;temp&quot;</span><span class="p">)[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;configured&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;configured_fallback&quot;</span><span class="p">,</span>
+        <span class="p">}:</span>
+            <span class="n">rename_map</span><span class="p">[</span><span class="s2">&quot;temp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_TEMPERATURE_SETTING</span>
+        <span class="k">if</span> <span class="s2">&quot;depth&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">rename_map</span><span class="p">[</span><span class="s2">&quot;depth&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_TRANSDUCER_DEPTH</span>
+        <span class="k">if</span> <span class="s2">&quot;pressure&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_zero_placeholder</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">]):</span>
+            <span class="n">rename_map</span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_PRESSURE_PLACEHOLDER</span>
+
+        <span class="n">renamed</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">rename_map</span><span class="p">)</span> <span class="k">if</span> <span class="n">rename_map</span> <span class="k">else</span> <span class="n">ds</span>
+        <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">renamed_name</span> <span class="ow">in</span> <span class="n">rename_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">renamed</span><span class="p">[</span><span class="n">renamed_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+            <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_name&quot;</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_units&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">renamed_name</span> <span class="o">==</span> <span class="n">_RDI_SALINITY_SETTING</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">[</span><span class="n">_RDI_SALINITY_SETTING</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">renamed_name</span> <span class="o">==</span> <span class="n">_RDI_TEMPERATURE_SETTING</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">[</span><span class="n">_RDI_TEMPERATURE_SETTING</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">renamed_name</span> <span class="o">==</span> <span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">[</span><span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">renamed_name</span> <span class="o">==</span> <span class="n">_RDI_PRESSURE_PLACEHOLDER</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">[</span><span class="n">_RDI_PRESSURE_PLACEHOLDER</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_environmental_source_attrs</span><span class="p">(</span><span class="n">renamed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">renamed</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_environmental_source_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach decoded RDI sensor-source flags to environmental fields.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">variable_name</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;c_sound&quot;</span><span class="p">,</span> <span class="s2">&quot;c_sound&quot;</span><span class="p">),</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;temp&quot;</span><span class="p">,</span>
+                <span class="n">_RDI_TEMPERATURE_SETTING</span>
+                <span class="k">if</span> <span class="n">_RDI_TEMPERATURE_SETTING</span> <span class="ow">in</span> <span class="n">ds</span>
+                <span class="k">else</span> <span class="s2">&quot;temp&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;salinity&quot;</span><span class="p">,</span>
+                <span class="n">_RDI_SALINITY_SETTING</span>
+                <span class="k">if</span> <span class="n">_RDI_SALINITY_SETTING</span> <span class="ow">in</span> <span class="n">ds</span>
+                <span class="k">else</span> <span class="s2">&quot;salinity&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;heading&quot;</span><span class="p">,</span> <span class="s2">&quot;heading&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;pitch&quot;</span><span class="p">,</span> <span class="s2">&quot;pitch&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;roll&quot;</span><span class="p">,</span> <span class="s2">&quot;roll&quot;</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">variable_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source_basis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;basis&quot;</span><span class="p">]</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_source_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag_attr</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;source_flag&quot;</span><span class="p">])</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_available_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag_attr</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">&quot;available_flag&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">original_name</span> <span class="o">==</span> <span class="s2">&quot;c_sound&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;configured&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Configured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Speed of sound decoded from the RDI variable leader. &quot;</span>
+                        <span class="s2">&quot;The fixed-leader sensor-source flag indicates the &quot;</span>
+                        <span class="s2">&quot;manual EC setting was used.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;derived&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Derived&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Speed of sound decoded from the RDI variable leader. &quot;</span>
+                        <span class="s2">&quot;The fixed-leader sensor-source flag indicates the ADCP &quot;</span>
+                        <span class="s2">&quot;calculated it from environmental fields.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">original_name</span> <span class="o">==</span> <span class="s2">&quot;temp&quot;</span> <span class="ow">and</span> <span class="n">variable_name</span> <span class="o">==</span> <span class="s2">&quot;temp&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sensor&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Measured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Temperature reported by the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor flags indicate the transducer &quot;</span>
+                        <span class="s2">&quot;temperature sensor was used.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Temperature reported by the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor-source flags were not available, &quot;</span>
+                        <span class="s2">&quot;so SeaSenseLib cannot determine whether this came &quot;</span>
+                        <span class="s2">&quot;from ET or from the temperature sensor.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">original_name</span> <span class="o">==</span> <span class="s2">&quot;salinity&quot;</span> <span class="ow">and</span> <span class="n">variable_name</span> <span class="o">==</span> <span class="s2">&quot;salinity&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                    <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_units&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">])</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_ATTR_DEFAULTS</span><span class="p">[</span><span class="s2">&quot;salinity&quot;</span><span class="p">][</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+                <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Measured&quot;</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Salinity decoded from the RDI variable leader. The &quot;</span>
+                    <span class="s2">&quot;fixed-leader sensor flags indicate a conductivity/salinity &quot;</span>
+                    <span class="s2">&quot;sensor source; verify instrument configuration before &quot;</span>
+                    <span class="s2">&quot;treating this as CTD-quality data.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">original_name</span> <span class="o">==</span> <span class="s2">&quot;depth&quot;</span> <span class="ow">and</span> <span class="n">variable_name</span> <span class="o">==</span> <span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sensor&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Measured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;RDI variable-leader transducer depth. The fixed-leader &quot;</span>
+                        <span class="s2">&quot;sensor flags indicate this came from the internal &quot;</span>
+                        <span class="s2">&quot;pressure/depth sensor.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;configured_fallback&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Configured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;RDI variable-leader transducer depth. The fixed-leader &quot;</span>
+                        <span class="s2">&quot;sensor-source flag requested the pressure/depth sensor, &quot;</span>
+                        <span class="s2">&quot;but the sensor-available flag is false, so the ADCP &quot;</span>
+                        <span class="s2">&quot;falls back to the manual ED setting.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;configured&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Configured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;RDI variable-leader transducer depth. The fixed-leader &quot;</span>
+                        <span class="s2">&quot;sensor-source flag indicates the manual ED setting was used.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">original_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;heading&quot;</span><span class="p">,</span> <span class="s2">&quot;pitch&quot;</span><span class="p">,</span> <span class="s2">&quot;roll&quot;</span><span class="p">}:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">original_name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sensor&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Measured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> decoded from the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor flags indicate an instrument &quot;</span>
+                        <span class="s2">&quot;sensor was used.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;configured_fallback&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Configured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> decoded from the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor-source flag requested a sensor, &quot;</span>
+                        <span class="s2">&quot;but the sensor-available flag is false, so the ADCP &quot;</span>
+                        <span class="s2">&quot;falls back to a configured value.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;configured&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Configured&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> decoded from the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor-source flag indicates a configured &quot;</span>
+                        <span class="s2">&quot;value was used.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
+                    <span class="n">_set_measurement_type</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+                    <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> decoded from the RDI variable leader. The &quot;</span>
+                        <span class="s2">&quot;fixed-leader sensor flags were not available, so &quot;</span>
+                        <span class="s2">&quot;SeaSenseLib cannot determine the source.&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;pressure&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+            <span class="n">depth_state</span> <span class="o">=</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">)</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sensor&quot;</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_source_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;rdi_fixed_leader_depth_available_flag&quot;</span>
+                <span class="k">if</span> <span class="n">depth_state</span><span class="p">[</span><span class="s2">&quot;available_flag&quot;</span><span class="p">]</span>
+                <span class="k">else</span> <span class="s2">&quot;rdi_pressure_nonzero&quot;</span>
+            <span class="p">)</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source_basis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">basis</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_available_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag_attr</span><span class="p">(</span>
+                <span class="n">depth_state</span><span class="p">[</span><span class="s2">&quot;available_flag&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_RDI_PRESSURE_PLACEHOLDER</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">_RDI_PRESSURE_PLACEHOLDER</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+            <span class="n">depth_state</span> <span class="o">=</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">)</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;placeholder&quot;</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_source_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;rdi_pressure_all_zero&quot;</span>
+                <span class="k">if</span> <span class="n">depth_state</span><span class="p">[</span><span class="s2">&quot;available_flag&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="s2">&quot;rdi_pressure_all_zero_and_fixed_leader_flags&quot;</span>
+            <span class="p">)</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;sensor_source_basis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">basis</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;rdi_sensor_available_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag_attr</span><span class="p">(</span>
+                <span class="n">depth_state</span><span class="p">[</span><span class="s2">&quot;available_flag&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flag_attr</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize optional booleans safely for netCDF attrs.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;true&quot;</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;false&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_zero_placeholder</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True when a decoded field only contains zero-like values.&quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">finite</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">values</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">finite</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">finite</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_raw_metadata_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build opaque raw metadata blocks for the finalization stage.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span><span class="p">,</span>
+                <span class="s2">&quot;reader_options&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_options</span><span class="p">(),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;sensor_sources&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sensor_source_summary</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span>
+            <span class="s2">&quot;mapping_notes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_notes</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sensor_source_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return decoded RDI sensor-source flags for raw metadata.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;sensor_source values are compact SeaSenseLib annotations. &quot;</span>
+                <span class="s2">&quot;sensor_source_basis values and rdi_* flag attributes are &quot;</span>
+                <span class="s2">&quot;RDI-specific evidence from decoded fixed-leader fields. &quot;</span>
+                <span class="s2">&quot;These annotations are not external standard terms.&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;bit_mapping&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_RDI_SENSOR_BITS</span><span class="p">),</span>
+            <span class="s2">&quot;definitions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;sensor_source&quot;</span><span class="p">:</span> <span class="n">_SENSOR_SOURCE_DESCRIPTIONS</span><span class="p">,</span>
+                <span class="s2">&quot;sensor_source_basis&quot;</span><span class="p">:</span> <span class="n">_RDI_SENSOR_BASIS_DESCRIPTIONS</span><span class="p">,</span>
+                <span class="s2">&quot;bit_mapping&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;RDI fixed-leader sensor-source fields follow the &quot;</span>
+                    <span class="s2">&quot;EZcdhprst order; SeaSenseLib maps c,d,h,p,r,s,t to bits &quot;</span>
+                    <span class="s2">&quot;6,5,4,3,2,1,0.&quot;</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;raw_flags&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;sensors_src&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sensors_src&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;sensors_avail&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sensors_avail&quot;</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">_sensor_state</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_RDI_SENSOR_BITS</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_raw_variable_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarize variables without copying data values.&quot;&quot;&quot;</span>
+        <span class="n">variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+            <span class="n">variable_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dims&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dims</span><span class="p">)}</span>
+            <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="s2">&quot;original_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;units&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;original_units&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;measurement_type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sensor_source&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sensor_source_basis&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;rdi_sensor_source_flag&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;rdi_sensor_available_flag&quot;</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                    <span class="n">variable_metadata</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span>
+            <span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_metadata</span>
+        <span class="k">return</span> <span class="n">variables</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_postprocess_after_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expose raw-variable metadata under mapped variable names as well.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;raw_metadata&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ds</span>
+
+        <span class="n">variable_mappings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;variable_mappings&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable_mappings</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">variable_mappings</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ds</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;raw_metadata&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ds</span>
+
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">raw_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;variables&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ds</span>
+
+        <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">mapped_name</span> <span class="ow">in</span> <span class="n">variable_mappings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">original_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variables</span> <span class="ow">or</span> <span class="n">mapped_name</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">source_metadata</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="n">original_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source_metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">mapped_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">source_metadata</span><span class="p">)</span>
+            <span class="n">mapped_metadata</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_name&quot;</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mapped_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">mapped_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+                <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                    <span class="n">mapped_metadata</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;original_units&quot;</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                    <span class="n">mapped_metadata</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_units&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;original_units&quot;</span><span class="p">])</span>
+            <span class="n">variables</span><span class="p">[</span><span class="n">mapped_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped_metadata</span>
+
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;raw_metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+            <span class="n">raw_metadata</span><span class="p">,</span>
+            <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return raw read options for provenance.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;userdata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_userdata</span><span class="p">,</span>
+            <span class="s2">&quot;nens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span><span class="p">,</span>
+            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">,</span>
+            <span class="s2">&quot;vmdas_search&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vmdas_search</span><span class="p">,</span>
+            <span class="s2">&quot;winriver&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_winriver</span><span class="p">,</span>
+            <span class="s2">&quot;search_num&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_num</span><span class="p">,</span>
+            <span class="s2">&quot;show_decoder_output&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mapping_notes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Describe conservative mapping choices without duplicating flags.&quot;&quot;&quot;</span>
+        <span class="n">coord_sys</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coord_sys&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">safe_mappings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">canonical</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;temp&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;c_sound&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;salinity&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SALINITY</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">safe_mappings</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="n">canonical</span>
+
+        <span class="n">setting_fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">original</span><span class="p">,</span> <span class="n">renamed</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;temp&quot;</span><span class="p">,</span> <span class="n">_RDI_TEMPERATURE_SETTING</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;salinity&quot;</span><span class="p">,</span> <span class="n">_RDI_SALINITY_SETTING</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">_RDI_TRANSDUCER_DEPTH</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">renamed</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">setting_fields</span><span class="p">[</span><span class="n">original</span><span class="p">]</span> <span class="o">=</span> <span class="n">renamed</span>
+
+        <span class="n">placeholder_fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">_RDI_PRESSURE_PLACEHOLDER</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">placeholder_fields</span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_RDI_PRESSURE_PLACEHOLDER</span>
+
+        <span class="n">not_mapped</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">setting_fields</span><span class="p">:</span>
+            <span class="n">not_mapped</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">original</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Kept as </span><span class="si">{</span><span class="n">renamed</span><span class="si">}</span><span class="s2">; RDI flags indicate a configured, &quot;</span>
+                        <span class="s2">&quot;fallback, or instrument-head value rather than an &quot;</span>
+                        <span class="s2">&quot;unambiguous canonical measurement.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">original</span><span class="p">,</span> <span class="n">renamed</span> <span class="ow">in</span> <span class="n">setting_fields</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">placeholder_fields</span><span class="p">:</span>
+            <span class="n">not_mapped</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">original</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Kept as </span><span class="si">{</span><span class="n">renamed</span><span class="si">}</span><span class="s2">; decoded values are all zero and &quot;</span>
+                        <span class="s2">&quot;are treated as a placeholder.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">original</span><span class="p">,</span> <span class="n">renamed</span> <span class="ow">in</span> <span class="n">placeholder_fields</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;vel&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">not_mapped</span><span class="p">[</span><span class="s2">&quot;vel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Kept as vector variable vel; component splitting depends on &quot;</span>
+                <span class="s2">&quot;coord_sys and can require reviewed rotation or deployment &quot;</span>
+                <span class="s2">&quot;metadata.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;safe_reader_mappings&quot;</span><span class="p">:</span> <span class="n">safe_mappings</span><span class="p">,</span>
+            <span class="s2">&quot;not_mapped&quot;</span><span class="p">:</span> <span class="n">not_mapped</span><span class="p">,</span>
+            <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;source_variable&quot;</span><span class="p">:</span> <span class="s2">&quot;vel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;coordinate_system&quot;</span><span class="p">:</span> <span class="n">coord_sys</span><span class="p">,</span>
+                <span class="s2">&quot;cf_component_mapping&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;not_applied&quot;</span>
+                    <span class="k">if</span> <span class="n">coord_sys</span> <span class="o">!=</span> <span class="s2">&quot;earth&quot;</span>
+                    <span class="k">else</span> <span class="s2">&quot;possible_after_review&quot;</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="RdiRawReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return conservative RDI-to-SeaSenseLib variable mappings.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;temp&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c_sound&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">],</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="RdiRawReader.format_key">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader.format_key">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;rdi-raw&quot;</span></div>
+
+
+<div class="viewcode-block" id="RdiRawReader.format_name">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader.format_name">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;RDI ADCP raw&quot;</span></div>
+
+
+<div class="viewcode-block" id="RdiRawReader.file_extension">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader.file_extension">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;.000&quot;</span></div>
+
+
+<div class="viewcode-block" id="RdiRawReader.file_extensions">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RdiRawReader.file_extensions">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">_SUPPORTED_EXTENSIONS</span></div>
+</div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RdiRawReader&quot;</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

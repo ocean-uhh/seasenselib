@@ -71,6 +71,11 @@ Specific Reader Classes
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: seasenselib.readers.RdiRawReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: seasenselib.readers.RbrMatlabLegacyReader
    :members:
    :undoc-members:

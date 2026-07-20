@@ -112,16 +112,21 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``.tob``
      - ``seasun-tob``
      - Seasun TOB format
-   * - Teledyne/RDI
+   * - Teledyne RDI
      - ADCP
      - ``.mat``
      - ``adcp-matlab-uhhds``
      - ADCP MATLAB UHHDS format
-   * - Teledyne/RDI
+   * - Teledyne RDI
      - ADCP
      - ``.mat``
      - ``adcp-matlab-rdadcp``
      - ADCP MATLAB RDADCP format
+   * - Teledyne RDI
+     - ADCP
+     - ``.000``, ``.PD0``, ``.ENR``, ``.ENS``, ``.ENX``
+     - ``rdi-raw``
+     - RDI raw binary ADCP files via MHKiT DOLfYN
 
 Usage Examples
 --------------
@@ -167,6 +172,17 @@ SeaSenseLib can automatically detect format for files with unique extensions:
    nortek_csv_data = ssl.read('Average Velocity DF3.csv',
                               file_format='nortek-csv')
 
+   # RDI raw ADCP data is decoded by MHKiT DOLfYN
+   rdi_data = ssl.read('DS2_2025_recovery.000',
+                       file_format='rdi-raw',
+                       nens=100)
+
+   # Automatic detection also works for supported RDI raw suffixes:
+   rdi_data = ssl.read('DS2_2025_recovery.000', nens=100)
+
+For reader-specific interpretation notes, including conservative RDI raw ADCP
+mapping choices, see :doc:`reader_notes`.
+
 Format Detection Summary
 ------------------------
 
@@ -178,6 +194,7 @@ Format Detection Summary
 - ``.nc`` → ``netcdf`` (NetCDF files)
 - ``.csv`` → ``csv`` (CSV files)
 - ``.tob`` → ``seasun-tob`` (Sea & Sun TOB files)
+- ``.000/.PD0/.ENR/.ENS/.ENX`` → ``rdi-raw`` (RDI raw ADCP files via MHKiT DOLfYN)
 
 **Requires explicit format keys** (ambiguous extensions):
 
