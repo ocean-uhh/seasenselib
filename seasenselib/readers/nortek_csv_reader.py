@@ -15,10 +15,10 @@ import xarray as xr
 import seasenselib.parameters as params
 from .base import AbstractReader
 
-
 _NORTEK_VECTOR_COLUMN_RE = re.compile(
     r"^(?P<kind>vel|velocity|amp|amplitude|corr|correlation)"
-    r"Beam(?P<beam>\d+)#(?P<cell>\d+)$",
+    r"(?:(?:Beam(?P<beam>\d+))|(?P<axis>East|North|Up))"
+    r"#(?P<cell>\d+)$",
     re.IGNORECASE,
 )
 
@@ -132,14 +132,15 @@ def _first_command(commands: Dict[str, Any], name: str) -> Dict[str, Any]:
 
 
 def _parse_vector_column(source_column: str) -> Optional[Dict[str, int | str]]:
-    """Parse a Nortek vector CSV column name into kind, beam, and cell."""
+    """Parse a Nortek vector CSV column name into kind, beam_or_dir, and cell."""
     match = _NORTEK_VECTOR_COLUMN_RE.match(source_column.strip())
     if not match:
         return None
 
     return {
-        "kind": _NORTEK_VECTOR_KIND_ALIASES[match.group("kind").lower()],
-        "beam": int(match.group("beam")),
+        "kind": _NORTEK_VECTOR_KIND_ALIASES[match.group("kind")],
+        "beam": str(match.group("beam")),
+        "axis": str(match.group("axis")),
         "cell": int(match.group("cell")),
     }
 
@@ -402,14 +403,14 @@ def _units_for_source_column(
     return {}
 
 
-def _velocity_variable_name(beam: int, cell: int, coordinate_system: str) -> str:
+def _velocity_variable_name(beam_or_axis: str, cell: int, coordinate_system: str) -> str:
     """Map Nortek velocity columns to coordinate-aware variable names."""
     if coordinate_system == "XYZ":
-        variable_name = _VELOCITY_AXIS_NAMES.get(beam, f"velocity_beam{beam}")
+        variable_name = _VELOCITY_AXIS_NAMES.get(beam_or_axis, f"velocity_beam{beam_or_axis}")
     elif coordinate_system == "ENU":
-        variable_name = _VELOCITY_ENU_NAMES.get(beam, f"velocity_beam{beam}")
+        variable_name = _VELOCITY_ENU_NAMES.get(beam_or_axis, f"velocity_{beam_or_axis}")
     else:
-        variable_name = f"velocity_beam{beam}"
+        variable_name = f"velocity_beam{beam_or_axis}"
 
     if cell > 1:
         return f"{variable_name}_cell{cell}"
@@ -461,13 +462,24 @@ def _build_nortek_csv_columns(
         if not vector_column:
             continue
 
-        kind = str(vector_column["kind"])
-        beam = int(vector_column["beam"])
+        kind = str(vector_column["kind"]).lower()
+        if vector_column["beam"] is not None:
+            beam = str(vector_column["beam"]).lower()
+        else:
+            beam = None
+        if vector_column["axis"] is not None:
+            axis = str(vector_column["axis"]).lower()
+        else:
+            axis = None
         cell = int(vector_column["cell"])
 
         if kind == "vel":
-            variable_name = _velocity_variable_name(beam, cell, coordinate_system)
-            long_name = _velocity_long_name(variable_name, beam, cell)
+            if beam is not None:
+                variable_name = _velocity_variable_name(beam, cell, coordinate_system)
+                long_name = _velocity_long_name(variable_name, beam, cell)
+            if axis is not None:
+                variable_name = _velocity_variable_name(axis, cell, coordinate_system)
+                long_name = _velocity_long_name(variable_name, axis, cell)
         elif kind == "amp":
             variable_name = f"amplitude_beam{beam}"
             if cell > 1:
