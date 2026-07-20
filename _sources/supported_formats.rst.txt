@@ -77,6 +77,11 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``.txt``, ``.dat``
      - ``rbr-ascii``
      - RBR ASCII format
+   * - RBR
+     - TR1050
+     - ``.hex``
+     - ``rbr-hex``
+     - RBR binary HEX format (explicit format key required)
    * - SeaBird
      - SBE37 MicroCAT
      - ``.cnv``
@@ -158,6 +163,10 @@ SeaSenseLib can automatically detect format for files with unique extensions:
    rbr_data = ssl.read('logger_export.mat', file_format='rbr-matlab')
    adcp_data = ssl.read('current_data.mat', file_format='adcp-matlab-uhhds')
 
+   # RBR HEX files also require an explicit key because .hex auto-detects
+   # as SeaBird SBE37 HEX
+   rbr_hex_data = ssl.read('logger.hex', file_format='rbr-hex')
+
 **Multi-file Formats:**
 
 .. code-block:: python
@@ -198,6 +207,7 @@ Format Detection Summary
 
 **Requires explicit format keys** (ambiguous extensions):
 
+- RBR ``.hex`` files: ``rbr-hex`` (``.hex`` otherwise auto-detects as ``sbe-hex``)
 - ``.mat`` files: ``rbr-matlab``, ``rcm-matlab``, ``adcp-matlab-uhhds``, ``adcp-matlab-rdadcp``
 - ``.txt/.dat`` files: ``rbr-ascii``, ``sbe-ascii``, ``nortek-ascii``
 - Nortek AquaPro ``.csv`` exports: ``nortek-csv`` (``.csv`` otherwise auto-detects as generic ``csv``)

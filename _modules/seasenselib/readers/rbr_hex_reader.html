@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.readers.rbr_hex_reader &mdash; seasenselib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            seasenselib
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">seasenselib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.readers.rbr_hex_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.readers.rbr_hex_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Reader for RBR TR-1050 style binary HEX files.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+
+
+<span class="n">_EVENT_MARKER_LEN</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">_BINARY_HEADER_LEN</span> <span class="o">=</span> <span class="mi">48</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bcd</span><span class="p">(</span><span class="n">byte</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode one packed BCD byte.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">byte</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="p">(</span><span class="n">byte</span> <span class="o">&amp;</span> <span class="mh">0xF</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bcd_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode six BCD bytes as YY MM DD HH MM SS with year base 2000.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span>
+        <span class="mi">2000</span> <span class="o">+</span> <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+        <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+        <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+        <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bcd_timedelta</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode three BCD bytes as HH MM SS and return seconds.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">+</span> <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">_bcd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_float</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_text_header</span><span class="p">(</span><span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract metadata from the human-readable RBR HEX header.&quot;&quot;&quot;</span>
+    <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;firmware&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;serial&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;n_channels&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;n_bytes_data&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;channel_names&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;column_names&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;channel_units&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;channel_calibration&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;host_time&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;logger_time&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;logging_start&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;logging_end&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;sample_period_str&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;timestamps&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="n">cal_channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cal_coeffs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cal_units</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">raw_line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">is_indented</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">raw_line</span><span class="p">)</span> <span class="ow">and</span> <span class="n">raw_line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">raw_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;RBR\s+([\w-]+)\s+([\d.]+)\s+0*(\d+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;firmware&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;serial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Host time\s+(\S+\s+\S+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;host_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Logger time\s+(\S+\s+\S+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;logger_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Logging start\s+(\S+\s+\S+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;logging_start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Logging end\s+(\S+\s+\S+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;logging_end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Sample period\s+(\S+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;sample_period_str&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s2">&quot;Number of channels\s*=\s*(\d+).*number of samples\s*=\s*(\d+)&quot;</span><span class="p">,</span>
+            <span class="n">line</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_channels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Number of bytes of data\s+(\d+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_bytes_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;column_names&quot;</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_bytes_data&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">raw_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">line</span>
+            <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="p">):</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;column_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Channel\[(\d+)\]\.name=(.+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_names&quot;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Channel\[(\d+)\]\.units=(.+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_units&quot;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Channel\[(\d+)\]\.calibration=(.+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">cal_channel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">cal_coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_calibration&quot;</span><span class="p">][</span><span class="n">cal_channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">cal_coeffs</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">cal_channel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">is_indented</span> <span class="ow">and</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">float_parts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">part</span><span class="p">)]</span>
+            <span class="n">non_float</span> <span class="o">=</span> <span class="p">[</span><span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">part</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">non_float</span><span class="p">:</span>
+                <span class="n">cal_units</span> <span class="o">=</span> <span class="n">non_float</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="n">cal_coeffs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">float_parts</span><span class="p">)</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_calibration&quot;</span><span class="p">][</span><span class="n">cal_channel</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cal_coeffs</span><span class="p">)</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_units&quot;</span><span class="p">][</span><span class="n">cal_channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">cal_units</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_indented</span><span class="p">:</span>
+            <span class="n">cal_channel</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">cal_units</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Calibration\s+(\d+):\s+([-\d.Ee+]+)&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">cal_channel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">cal_coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))]</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_calibration&quot;</span><span class="p">][</span><span class="n">cal_channel</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cal_coeffs</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s2">&quot;(?:Timestamp|Reset stamp)\s+(\d</span><span class="si">{4}</span><span class="s2">/\d</span><span class="si">{2}</span><span class="s2">/\d</span><span class="si">{2}</span><span class="s2">\s+\d</span><span class="si">{2}</span><span class="s2">:\d</span><span class="si">{2}</span><span class="s2">:\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;\s+at sample\s+(\d+)\s+of type:\s+(.+)&quot;</span><span class="p">,</span>
+            <span class="n">line</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">meta</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_rbr_cal</span><span class="p">(</span><span class="n">raw_counts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply the original RBR Steinhart-Hart calibration.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected 4 calibration coefficients, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span> <span class="o">=</span> <span class="n">coeffs</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">raw_counts</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">/</span> <span class="mf">16777215.0</span>
+    <span class="n">ln_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">inv_tk</span> <span class="o">=</span> <span class="n">c0</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">ln_r</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">ln_r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c3</span> <span class="o">*</span> <span class="n">ln_r</span><span class="o">**</span><span class="mi">3</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">inv_tk</span> <span class="o">-</span> <span class="mf">273.15</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_binary_header</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the fixed 48-byte binary header.&quot;&quot;&quot;</span>
+    <span class="n">log_start</span> <span class="o">=</span> <span class="n">_bcd_datetime</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+    <span class="n">log_end</span> <span class="o">=</span> <span class="n">_bcd_datetime</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+    <span class="n">period_seconds</span> <span class="o">=</span> <span class="n">_bcd_timedelta</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">15</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">log_start</span><span class="p">,</span> <span class="n">log_end</span><span class="p">,</span> <span class="n">period_seconds</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_events</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">record_bytes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return event records as sample index, marker, and timestamp tuples.&quot;&quot;&quot;</span>
+    <span class="n">events</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sample_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pos</span> <span class="o">+</span> <span class="n">_EVENT_MARKER_LEN</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">pos</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00\x00\x00</span><span class="s2">&quot;</span>
+            <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">3</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">3</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">sample_count</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">_bcd_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">6</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">12</span><span class="p">]))</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OverflowError</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">_EVENT_MARKER_LEN</span>
+        <span class="k">elif</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">record_bytes</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">sample_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">record_bytes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">events</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_time_array</span><span class="p">(</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">period_seconds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">events</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]],</span>
+    <span class="n">fallback_start</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build sample times using TIM events as anchors.&quot;&quot;&quot;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ms]&quot;</span><span class="p">)</span>
+    <span class="n">period_ms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">period_seconds</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">anchors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">events</span>
+        <span class="k">if</span> <span class="n">marker</span> <span class="o">==</span> <span class="s2">&quot;TIM&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">anchors</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">fallback_start</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+        <span class="n">times</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">period_ms</span>
+        <span class="k">return</span> <span class="n">times</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">anchor_index</span><span class="p">,</span> <span class="n">anchor_timestamp</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">anchors</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">anchor_timestamp</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+        <span class="n">next_anchor_index</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">anchors</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span> <span class="k">else</span> <span class="n">n_samples</span>
+        <span class="p">)</span>
+        <span class="n">block_len</span> <span class="o">=</span> <span class="n">next_anchor_index</span> <span class="o">-</span> <span class="n">anchor_index</span>
+        <span class="k">if</span> <span class="n">block_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">times</span><span class="p">[</span><span class="n">anchor_index</span><span class="p">:</span><span class="n">next_anchor_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">start</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">block_len</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">period_ms</span>
+            <span class="p">)</span>
+
+    <span class="n">first_anchor_index</span><span class="p">,</span> <span class="n">first_anchor_timestamp</span> <span class="o">=</span> <span class="n">anchors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">first_anchor_index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">first_anchor_timestamp</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">first_anchor_index</span> <span class="o">*</span> <span class="n">period_ms</span>
+        <span class="p">)</span>
+        <span class="n">times</span><span class="p">[:</span><span class="n">first_anchor_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">start</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">first_anchor_index</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">period_ms</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">times</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_sample_period_seconds</span><span class="p">(</span><span class="n">period_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">hours</span><span class="p">,</span> <span class="n">minutes</span><span class="p">,</span> <span class="n">seconds</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">period_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">hours</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">+</span> <span class="n">minutes</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">seconds</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_safe_variable_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\W+&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_event_metadata</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;sample_index&quot;</span><span class="p">:</span> <span class="n">sample_index</span><span class="p">,</span>
+            <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="n">marker</span><span class="p">,</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">sample_index</span><span class="p">,</span> <span class="n">marker</span><span class="p">,</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">events</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_rbr_hex_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read an RBR HEX file and return the dataset plus parsed metadata.&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="n">raw_bytes</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">raw_bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;latin-1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">data_start_line</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">data_start_line</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">data_start_line</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find hex data section in </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">header_lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[:</span><span class="n">data_start_line</span><span class="p">]</span>
+    <span class="n">raw_header</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">header_lines</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">_parse_text_header</span><span class="p">(</span><span class="n">header_lines</span><span class="p">)</span>
+
+    <span class="n">hex_text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^0-9A-Fa-f]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">data_start_line</span><span class="p">:]))</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">fromhex</span><span class="p">(</span><span class="n">hex_text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_BINARY_HEADER_LEN</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;RBR HEX data section in </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is shorter than the &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_BINARY_HEADER_LEN</span><span class="si">}</span><span class="s2">-byte binary header.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">log_start</span><span class="p">,</span> <span class="n">log_end</span><span class="p">,</span> <span class="n">period_seconds</span> <span class="o">=</span> <span class="n">_parse_binary_header</span><span class="p">(</span><span class="n">raw</span><span class="p">[:</span><span class="n">_BINARY_HEADER_LEN</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">period_seconds</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sample_period_str&quot;</span><span class="p">):</span>
+        <span class="n">period_seconds</span> <span class="o">=</span> <span class="n">_parse_sample_period_seconds</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;sample_period_str&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">period_seconds</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: sample period is 0; cannot build time axis&quot;</span><span class="p">)</span>
+    <span class="n">n_channels</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_channels&quot;</span><span class="p">]</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;n_samples&quot;</span><span class="p">]</span>
+    <span class="n">record_bytes</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_channels</span>
+    <span class="n">data_section</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="n">_BINARY_HEADER_LEN</span><span class="p">:]</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">_find_events</span><span class="p">(</span><span class="n">data_section</span><span class="p">,</span> <span class="n">record_bytes</span><span class="p">)</span>
+
+    <span class="n">channel_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_section</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pos</span> <span class="o">+</span> <span class="n">_EVENT_MARKER_LEN</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_section</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">data_section</span><span class="p">[</span><span class="n">pos</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00\x00\x00</span><span class="s2">&quot;</span>
+            <span class="ow">and</span> <span class="n">data_section</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">3</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">_EVENT_MARKER_LEN</span>
+        <span class="k">elif</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">record_bytes</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_section</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">channel_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">):</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">channel_index</span> <span class="o">*</span> <span class="mi">3</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data_section</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span>
+                <span class="n">channel_data</span><span class="p">[</span><span class="n">channel_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">record_bytes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">n_actual</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">n_actual</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: expected </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2"> samples, decoded </span><span class="si">{</span><span class="n">n_actual</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;Time array built from decoded count.&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">n_actual</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="n">_build_time_array</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">period_seconds</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">log_start</span><span class="p">)</span>
+    <span class="n">data_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Variable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">channel_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;column_names&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="k">for</span> <span class="n">channel_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">):</span>
+        <span class="n">channel_number</span> <span class="o">=</span> <span class="n">channel_index</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">channel_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">channel_number</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">column_names</span><span class="p">[</span><span class="n">channel_index</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">channel_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_names</span><span class="p">)</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Channel </span><span class="si">{</span><span class="n">channel_number</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">channel_units</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">channel_number</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">calibration</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel_calibration&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">channel_number</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">raw_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">channel_data</span><span class="p">[</span><span class="n">channel_index</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="n">raw_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;channel_</span><span class="si">{</span><span class="n">channel_number</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">data_vars</span><span class="p">[</span><span class="n">raw_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">,</span>
+            <span class="n">raw_array</span><span class="p">,</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel_name</span><span class="si">}</span><span class="s2"> raw ADC count&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="s2">&quot;Raw 24-bit unsigned integer from instrument.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;rbr_channel_number&quot;</span><span class="p">:</span> <span class="n">channel_number</span><span class="p">,</span>
+                <span class="s2">&quot;rbr_channel_name&quot;</span><span class="p">:</span> <span class="n">channel_name</span><span class="p">,</span>
+                <span class="s2">&quot;calibration_coefficients&quot;</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">calibration</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;units_after_calibration&quot;</span><span class="p">:</span> <span class="n">channel_units</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="n">physical_name</span> <span class="o">=</span> <span class="n">_safe_variable_name</span><span class="p">(</span><span class="n">channel_name</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">raw_name</span><span class="si">}</span><span class="s2">_phys&quot;</span>
+        <span class="k">if</span> <span class="n">physical_name</span> <span class="o">==</span> <span class="n">raw_name</span><span class="p">:</span>
+            <span class="n">physical_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">raw_name</span><span class="si">}</span><span class="s2">_phys&quot;</span>
+        <span class="k">if</span> <span class="n">physical_name</span> <span class="ow">in</span> <span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">physical_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">physical_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">channel_number</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">calibration</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">physical_data</span> <span class="o">=</span> <span class="n">_apply_rbr_cal</span><span class="p">(</span><span class="n">raw_array</span><span class="p">,</span> <span class="n">calibration</span><span class="p">)</span>
+            <span class="n">calibration_method</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Steinhart-Hart: x=raw/16777215, R=(1-x)/x, &quot;</span>
+                <span class="s2">&quot;1/T_K=c0+c1*ln(R)+c2*ln(R)^2+c3*ln(R)^3, T=1/T_K-273.15&quot;</span>
+            <span class="p">)</span>
+            <span class="n">calibration_units</span> <span class="o">=</span> <span class="s2">&quot;degC&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">physical_data</span> <span class="o">=</span> <span class="n">raw_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">/</span> <span class="mf">16777215.0</span>
+            <span class="n">calibration_method</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;raw / 16777215 (calibration not applied: unexpected number &quot;</span>
+                <span class="s2">&quot;of coefficients)&quot;</span>
+            <span class="p">)</span>
+            <span class="n">calibration_units</span> <span class="o">=</span> <span class="n">channel_units</span>
+
+        <span class="n">data_vars</span><span class="p">[</span><span class="n">physical_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">,</span>
+            <span class="n">physical_data</span><span class="p">,</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="n">channel_name</span><span class="p">,</span>
+                <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">calibration_units</span><span class="p">,</span>
+                <span class="s2">&quot;rbr_channel_number&quot;</span><span class="p">:</span> <span class="n">channel_number</span><span class="p">,</span>
+                <span class="s2">&quot;rbr_channel_name&quot;</span><span class="p">:</span> <span class="n">channel_name</span><span class="p">,</span>
+                <span class="s2">&quot;rbr_original_units&quot;</span><span class="p">:</span> <span class="n">channel_units</span><span class="p">,</span>
+                <span class="s2">&quot;calibration_method&quot;</span><span class="p">:</span> <span class="n">calibration_method</span><span class="p">,</span>
+                <span class="s2">&quot;calibration_coefficients&quot;</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">calibration</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="n">channel_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;channel_number&quot;</span><span class="p">:</span> <span class="n">channel_number</span><span class="p">,</span>
+                <span class="s2">&quot;channel_name&quot;</span><span class="p">:</span> <span class="n">channel_name</span><span class="p">,</span>
+                <span class="s2">&quot;raw_variable_name&quot;</span><span class="p">:</span> <span class="n">raw_name</span><span class="p">,</span>
+                <span class="s2">&quot;variable_name&quot;</span><span class="p">:</span> <span class="n">physical_name</span><span class="p">,</span>
+                <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">channel_units</span><span class="p">,</span>
+                <span class="s2">&quot;calibrated_units&quot;</span><span class="p">:</span> <span class="n">calibration_units</span><span class="p">,</span>
+                <span class="s2">&quot;calibration&quot;</span><span class="p">:</span> <span class="n">calibration</span><span class="p">,</span>
+                <span class="s2">&quot;calibration_method&quot;</span><span class="p">:</span> <span class="n">calibration_method</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;instrument_model&quot;</span><span class="p">:</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;UNK&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;instrument_firmware&quot;</span><span class="p">:</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;firmware&quot;</span><span class="p">,</span> <span class="s2">&quot;UNK&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;serial_number&quot;</span><span class="p">:</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="s2">&quot;UNK&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;logging_start&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_start</span><span class="p">),</span>
+        <span class="s2">&quot;logging_end&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_end</span><span class="p">),</span>
+        <span class="s2">&quot;sample_period_seconds&quot;</span><span class="p">:</span> <span class="n">period_seconds</span><span class="p">,</span>
+        <span class="s2">&quot;n_channels&quot;</span><span class="p">:</span> <span class="n">n_channels</span><span class="p">,</span>
+        <span class="s2">&quot;source_file&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;reader&quot;</span><span class="p">:</span> <span class="s2">&quot;seasenselib.readers.rbr_hex_reader.read_rbr_hex&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="n">times</span><span class="p">},</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;raw_header&quot;</span><span class="p">:</span> <span class="n">raw_header</span><span class="p">,</span>
+        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="n">meta</span><span class="p">,</span>
+        <span class="s2">&quot;binary_header&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;logging_start&quot;</span><span class="p">:</span> <span class="n">log_start</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">),</span>
+            <span class="s2">&quot;logging_end&quot;</span><span class="p">:</span> <span class="n">log_end</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">),</span>
+            <span class="s2">&quot;sample_period_seconds&quot;</span><span class="p">:</span> <span class="n">period_seconds</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="n">_event_metadata</span><span class="p">(</span><span class="n">events</span><span class="p">),</span>
+        <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="n">channel_metadata</span><span class="p">,</span>
+        <span class="s2">&quot;number_of_samples_decoded&quot;</span><span class="p">:</span> <span class="n">n_actual</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ds</span><span class="p">,</span> <span class="n">metadata</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">read_rbr_hex</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read an RBR binary HEX file and return an xarray Dataset.&quot;&quot;&quot;</span>
+    <span class="n">ds</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_read_rbr_hex_dataset</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rbr_hex_raw_metadata_blocks</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">]</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;firmware&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;firmware&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;serial&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;serial&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;host_time&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_time&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;logger_time&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logger_time&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;logging_start_text&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logging_start&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;logging_end_text&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;logging_end&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;sample_period_text&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sample_period_str&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;number_of_channels&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_channels&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;number_of_samples&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_samples&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;number_of_samples_decoded&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;number_of_samples_decoded&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;number_of_bytes_data&quot;</span><span class="p">:</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_bytes_data&quot;</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;binary_header&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+
+    <span class="n">calibration</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">]:</span>
+            <span class="n">calibration</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;variable_name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;channel_number&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;channel_number&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;coefficients&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;units_after_calibration&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;calibration_method&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+
+    <span class="n">configuration</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">):</span>
+        <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;header_events&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">):</span>
+        <span class="n">configuration</span><span class="p">[</span><span class="s2">&quot;binary_events&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">]</span>
+
+    <span class="n">blocks</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="n">attributes</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">calibration</span><span class="p">:</span>
+        <span class="n">blocks</span><span class="p">[</span><span class="s2">&quot;calibration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calibration</span>
+    <span class="k">if</span> <span class="n">configuration</span><span class="p">:</span>
+        <span class="n">blocks</span><span class="p">[</span><span class="s2">&quot;configuration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configuration</span>
+    <span class="k">return</span> <span class="n">blocks</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rbr_hex_raw_variable_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]:</span>
+        <span class="n">common</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;channel_number&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;channel_number&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;rbr_channel_name&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;channel_name&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">variables</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;raw_variable_name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">common</span><span class="p">,</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;raw_counts&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;units_after_calibration&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">variables</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;variable_name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">common</span><span class="p">,</span>
+            <span class="s2">&quot;original_name&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;channel_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;calibrated_units&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;rbr_original_units&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;calibration_method&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;calibration_method&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="k">return</span> <span class="n">variables</span>
+
+
+<div class="viewcode-block" id="RbrHexReader">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrHexReader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RbrHexReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read RBR TR-1050 style binary HEX files.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_header</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;.hex&quot;</span><span class="p">,)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="n">ds</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">_read_rbr_hex_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_header</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;raw_header&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span> <span class="o">=</span> <span class="n">_rbr_hex_raw_metadata_blocks</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_variables</span> <span class="o">=</span> <span class="n">_rbr_hex_raw_variable_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+<div class="viewcode-block" id="RbrHexReader.format_key">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrHexReader.format_key">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;rbr-hex&quot;</span></div>
+
+
+<div class="viewcode-block" id="RbrHexReader.format_name">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrHexReader.format_name">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;RBR HEX&quot;</span></div>
+
+
+<div class="viewcode-block" id="RbrHexReader.file_extension">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrHexReader.file_extension">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RbrHexReader.format_mappings">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.RbrHexReader.format_mappings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;temp&quot;</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">],</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

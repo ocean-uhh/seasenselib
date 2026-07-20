@@ -15,11 +15,12 @@ SeaSenseLib is a Python library for reading, converting, and plotting oceanograp
 **Supported Instruments:**
 
 * Seabird CTD instruments (CNV and ASCII format)
-* RBR CTD and moored instruments (RSK, ASCII and MATLAB format)
-* Nortek current meters (ASCII format)
+* RBR CTD and moored instruments (RSK, ASCII, HEX and MATLAB format)
+* Nortek current meters (ASCII and CSV format)
 * ADCP data (MATLAB format e.g., output from `rdadcp`)
 * RCM data (MATLAB format)
 * Sea & Sun Technology instruments (TOB format)
+* Teledyne RDI ADCPs (raw binary format)
 * General CSV and NetCDF files
 
 See also the :doc:`supported_formats` for a complete list of supported formats and instruments.

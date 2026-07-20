@@ -196,61 +196,67 @@
 <td><p><code class="docutils literal notranslate"><span class="pre">rbr-ascii</span></code></p></td>
 <td><p>RBR ASCII format</p></td>
 </tr>
-<tr class="row-even"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>RBR</p></td>
+<td><p>TR1050</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rbr-hex</span></code></p></td>
+<td><p>RBR binary HEX format (explicit format key required)</p></td>
+</tr>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE37 MicroCAT</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (time series)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>SBE37 MicroCAT</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code></p></td>
 <td><p>SeaBird HEX format (time series)</p></td>
 </tr>
-<tr class="row-even"><td><p>SeaBird</p></td>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE 911</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (CTD profiles)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>SBE16 Seacat</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (CTD data)</p></td>
 </tr>
-<tr class="row-even"><td><p>SeaBird</p></td>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE56</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (thermistor data)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>Various</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">.dat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-ascii</span></code></p></td>
 <td><p>SeaBird ASCII format</p></td>
 </tr>
-<tr class="row-even"><td><p>Sea &amp; Sun</p></td>
+<tr class="row-odd"><td><p>Sea &amp; Sun</p></td>
 <td><p>TOB</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.tob</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">seasun-tob</span></code></p></td>
 <td><p>Seasun TOB format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne RDI</p></td>
+<tr class="row-even"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-uhhds</span></code></p></td>
 <td><p>ADCP MATLAB UHHDS format</p></td>
 </tr>
-<tr class="row-even"><td><p>Teledyne RDI</p></td>
+<tr class="row-odd"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-rdadcp</span></code></p></td>
 <td><p>ADCP MATLAB RDADCP format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne RDI</p></td>
+<tr class="row-even"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.000</span></code>, <code class="docutils literal notranslate"><span class="pre">.PD0</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENR</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENS</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENX</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">rdi-raw</span></code></p></td>
@@ -281,6 +287,10 @@
 <span class="c1"># For ambiguous extensions like .mat</span>
 <span class="n">rbr_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;logger_export.mat&#39;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-matlab&#39;</span><span class="p">)</span>
 <span class="n">adcp_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;current_data.mat&#39;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;adcp-matlab-uhhds&#39;</span><span class="p">)</span>
+
+<span class="c1"># RBR HEX files also require an explicit key because .hex auto-detects</span>
+<span class="c1"># as SeaBird SBE37 HEX</span>
+<span class="n">rbr_hex_data</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;logger.hex&#39;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-hex&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Multi-file Formats:</strong></p>
@@ -320,6 +330,7 @@ mapping choices, see <a class="reference internal" href="reader_notes.html"><spa
 </ul>
 <p><strong>Requires explicit format keys</strong> (ambiguous extensions):</p>
 <ul class="simple">
+<li><p>RBR <code class="docutils literal notranslate"><span class="pre">.hex</span></code> files: <code class="docutils literal notranslate"><span class="pre">rbr-hex</span></code> (<code class="docutils literal notranslate"><span class="pre">.hex</span></code> otherwise auto-detects as <code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code> files: <code class="docutils literal notranslate"><span class="pre">rbr-matlab</span></code>, <code class="docutils literal notranslate"><span class="pre">rcm-matlab</span></code>, <code class="docutils literal notranslate"><span class="pre">adcp-matlab-uhhds</span></code>, <code class="docutils literal notranslate"><span class="pre">adcp-matlab-rdadcp</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.txt/.dat</span></code> files: <code class="docutils literal notranslate"><span class="pre">rbr-ascii</span></code>, <code class="docutils literal notranslate"><span class="pre">sbe-ascii</span></code>, <code class="docutils literal notranslate"><span class="pre">nortek-ascii</span></code></p></li>
 <li><p>Nortek AquaPro <code class="docutils literal notranslate"><span class="pre">.csv</span></code> exports: <code class="docutils literal notranslate"><span class="pre">nortek-csv</span></code> (<code class="docutils literal notranslate"><span class="pre">.csv</span></code> otherwise auto-detects as generic <code class="docutils literal notranslate"><span class="pre">csv</span></code>)</p></li>

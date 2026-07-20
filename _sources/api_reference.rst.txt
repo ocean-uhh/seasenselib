@@ -51,6 +51,11 @@ Specific Reader Classes
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: seasenselib.readers.RbrHexReader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: seasenselib.readers.NortekAsciiReader
    :members:
    :undoc-members:
