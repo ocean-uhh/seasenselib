@@ -139,9 +139,9 @@ def _parse_vector_column(source_column: str) -> Optional[Dict[str, int | str]]:
 
     return {
         "kind": _NORTEK_VECTOR_KIND_ALIASES[match.group("kind")],
-        "beam": str(match.group("beam")),
-        "axis": str(match.group("axis")),
-        "cell": int(match.group("cell")),
+        "beam": match.group("beam"),
+        "axis": match.group("axis"),
+        "cell": match.group("cell"),
     }
 
 
