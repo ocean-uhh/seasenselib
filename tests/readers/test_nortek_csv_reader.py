@@ -181,7 +181,7 @@ def test_nortek_csv_metadata_files_set_coordinate_system_and_units(tmp_path):
     )
 
     assert ds.attrs["coordinate_system"] == "ENU"
-    assert {"east_velocity", "north_velocity", "up_velocity"}.issubset(ds.data_vars)
+    assert {"velocity_east", "velocity_north", "velocity_up"}.issubset(ds.data_vars)
     assert "velocity_beam1" not in ds.data_vars
     assert ds["east_velocity"].values.tolist() == [0.11, 0.12]
     assert ds["east_velocity"].attrs["coordinate_system"] == "ENU"
@@ -274,7 +274,7 @@ def test_nortek_csv_raw_metadata_matches_ascii_shape(tmp_path):
         [0, 0, -1],
     ]
     assert payload["blocks"]["units"]["vel"]["units"] == "m/s"
-    assert payload["variables"]["east_velocity"] == {
+    assert payload["variables"]["velocity_east"] == {
         "column_number": "11",
         "original_name": "velBeam1#1",
         "units": "m/s",
