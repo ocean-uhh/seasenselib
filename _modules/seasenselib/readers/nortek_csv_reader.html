@@ -109,9 +109,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
 
 
-<span class="n">_NORTEK_VECTOR_COLUMN_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="n">_NORTEK_VECTOR_BEAM_COLUMN_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
     <span class="sa">r</span><span class="s2">&quot;^(?P&lt;kind&gt;vel|velocity|amp|amplitude|corr|correlation)&quot;</span>
     <span class="sa">r</span><span class="s2">&quot;Beam(?P&lt;beam&gt;\d+)#(?P&lt;cell&gt;\d+)$&quot;</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">_NORTEK_VELOCITY_COMPONENT_COLUMN_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">&quot;^(?P&lt;kind&gt;vel|velocity)(?P&lt;component&gt;East|North|Up|X|Y|Z)&quot;</span>
+    <span class="sa">r</span><span class="s2">&quot;#(?P&lt;cell&gt;\d+)$&quot;</span><span class="p">,</span>
     <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -129,11 +134,21 @@
     <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;y_velocity&quot;</span><span class="p">,</span>
     <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;z_velocity&quot;</span><span class="p">,</span>
 <span class="p">}</span>
+<span class="n">_VELOCITY_AXIS_NAMES_BY_LABEL</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="s2">&quot;x_velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="s2">&quot;y_velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="s2">&quot;z_velocity&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
 <span class="n">_VELOCITY_ENU_NAMES</span> <span class="o">=</span> <span class="p">{</span>
     <span class="mi">1</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">EAST_VELOCITY</span><span class="p">,</span>
     <span class="mi">2</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">NORTH_VELOCITY</span><span class="p">,</span>
     <span class="mi">3</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">UP_VELOCITY</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_VELOCITY_ENU_NAMES_BY_LABEL</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EAST&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">EAST_VELOCITY</span><span class="p">,</span>
+    <span class="s2">&quot;NORTH&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">NORTH_VELOCITY</span><span class="p">,</span>
+    <span class="s2">&quot;UP&quot;</span><span class="p">:</span> <span class="n">params</span><span class="o">.</span><span class="n">UP_VELOCITY</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">_COORDINATE_SYSTEM_CODES</span> <span class="o">=</span> <span class="p">{</span>
@@ -224,17 +239,32 @@
     <span class="k">return</span> <span class="p">{}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_vector_column</span><span class="p">(</span><span class="n">source_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a Nortek vector CSV column name into kind, beam, and cell.&quot;&quot;&quot;</span>
-    <span class="n">match</span> <span class="o">=</span> <span class="n">_NORTEK_VECTOR_COLUMN_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">source_column</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_vector_column</span><span class="p">(</span>
+    <span class="n">source_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a Nortek vector CSV column name into kind, component, and cell.&quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">_NORTEK_VECTOR_BEAM_COLUMN_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">source_column</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="n">_NORTEK_VECTOR_KIND_ALIASES</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()],</span>
+            <span class="s2">&quot;beam&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">)),</span>
+            <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;enu&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;cell&quot;</span><span class="p">)),</span>
+        <span class="p">}</span>
 
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="n">_NORTEK_VECTOR_KIND_ALIASES</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()],</span>
-        <span class="s2">&quot;beam&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">)),</span>
-        <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;cell&quot;</span><span class="p">)),</span>
-    <span class="p">}</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">_NORTEK_VELOCITY_COMPONENT_COLUMN_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">source_column</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">component</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;component&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="n">_NORTEK_VECTOR_KIND_ALIASES</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()],</span>
+            <span class="s2">&quot;beam&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="n">component</span> <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">_VELOCITY_AXIS_NAMES_BY_LABEL</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;enu&quot;</span><span class="p">:</span> <span class="n">component</span> <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">_VELOCITY_ENU_NAMES_BY_LABEL</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;cell&quot;</span><span class="p">)),</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_first_existing_command</span><span class="p">(</span>
@@ -476,6 +506,23 @@
     <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_coordinate_system_from_vector_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Infer coordinate system from explicit velocity component column names.&quot;&quot;&quot;</span>
+    <span class="n">coordinate_systems</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">source_column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">vector_column</span> <span class="o">=</span> <span class="n">_parse_vector_column</span><span class="p">(</span><span class="n">source_column</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vector_column</span> <span class="ow">or</span> <span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;vel&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">vector_column</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enu&quot;</span><span class="p">):</span>
+            <span class="n">coordinate_systems</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;ENU&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">vector_column</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;axis&quot;</span><span class="p">):</span>
+            <span class="n">coordinate_systems</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;XYZ&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinate_systems</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">coordinate_systems</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_units_for_source_column</span><span class="p">(</span>
     <span class="n">source_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -495,11 +542,27 @@
     <span class="k">return</span> <span class="p">{}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_variable_name</span><span class="p">(</span><span class="n">beam</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">coordinate_system</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_variable_name</span><span class="p">(</span>
+    <span class="n">beam</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">coordinate_system</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">enu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Map Nortek velocity columns to coordinate-aware variable names.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;XYZ&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">enu</span><span class="p">:</span>
+        <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_VELOCITY_ENU_NAMES_BY_LABEL</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">enu</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;velocity_</span><span class="si">{</span><span class="n">enu</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">axis</span><span class="p">:</span>
+        <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_VELOCITY_AXIS_NAMES_BY_LABEL</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">axis</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_velocity&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;XYZ&quot;</span> <span class="ow">and</span> <span class="n">beam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_VELOCITY_AXIS_NAMES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">beam</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;velocity_beam</span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;ENU&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">coordinate_system</span> <span class="o">==</span> <span class="s2">&quot;ENU&quot;</span> <span class="ow">and</span> <span class="n">beam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_VELOCITY_ENU_NAMES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">beam</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;velocity_beam</span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">variable_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;velocity_beam</span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -509,7 +572,7 @@
     <span class="k">return</span> <span class="n">variable_name</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_long_name</span><span class="p">(</span><span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">beam</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_long_name</span><span class="p">(</span><span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">beam</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a readable long name for velocity variables.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">variable_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;velocity_beam&quot;</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Velocity Beam </span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -555,12 +618,28 @@
             <span class="k">continue</span>
 
         <span class="n">kind</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">])</span>
-        <span class="n">beam</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;beam&quot;</span><span class="p">])</span>
+        <span class="n">beam</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;beam&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;beam&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">enu</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;enu&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;enu&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">cell</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vector_column</span><span class="p">[</span><span class="s2">&quot;cell&quot;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;vel&quot;</span><span class="p">:</span>
-            <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_velocity_variable_name</span><span class="p">(</span><span class="n">beam</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">coordinate_system</span><span class="p">)</span>
-            <span class="n">long_name</span> <span class="o">=</span> <span class="n">_velocity_long_name</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="n">beam</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+            <span class="n">variable_name</span> <span class="o">=</span> <span class="n">_velocity_variable_name</span><span class="p">(</span>
+                <span class="n">beam</span><span class="p">,</span>
+                <span class="n">cell</span><span class="p">,</span>
+                <span class="n">coordinate_system</span><span class="p">,</span>
+                <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span>
+                <span class="n">enu</span><span class="o">=</span><span class="n">enu</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">long_name</span> <span class="o">=</span> <span class="n">_velocity_long_name</span><span class="p">(</span>
+                <span class="n">variable_name</span><span class="p">,</span>
+                <span class="n">beam</span> <span class="k">if</span> <span class="n">beam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">axis</span> <span class="ow">or</span> <span class="n">enu</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="n">cell</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;amp&quot;</span><span class="p">:</span>
             <span class="n">variable_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;amplitude_beam</span><span class="si">{</span><span class="n">beam</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">if</span> <span class="n">cell</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -587,6 +666,8 @@
                 <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">units_entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">),</span>
                 <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="n">long_name</span><span class="p">,</span>
                 <span class="s2">&quot;beam&quot;</span><span class="p">:</span> <span class="n">beam</span><span class="p">,</span>
+                <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="n">axis</span><span class="p">,</span>
+                <span class="s2">&quot;enu&quot;</span><span class="p">:</span> <span class="n">enu</span><span class="p">,</span>
                 <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="n">cell</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
@@ -710,6 +791,7 @@
 
     <span class="n">coordinate_system</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">_coordinate_system_from_data</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">_coordinate_system_from_vector_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coordinate_system&quot;</span><span class="p">)</span>
         <span class="ow">or</span> <span class="s2">&quot;BEAM&quot;</span>
     <span class="p">)</span>
