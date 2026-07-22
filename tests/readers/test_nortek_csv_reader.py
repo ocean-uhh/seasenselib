@@ -117,6 +117,35 @@ def _write_nortek_csv_with_coordinate_system(tmp_path, coordinate_system="ENU"):
     return csv_file
 
 
+def _write_nortek_csv_with_velocity_components(
+    tmp_path,
+    coordinate_system,
+    component_columns,
+):
+    csv_file = tmp_path / "Average Velocity DF3.csv"
+    csv_file.write_text(
+        "\n".join(
+            [
+                (
+                    "dateTime;serialNumber;temperature;coordinateSystem;"
+                    f"{component_columns[0]};{component_columns[1]};"
+                    f"{component_columns[2]};ampBeam1#1;corrBeam1#1"
+                ),
+                (
+                    "2026-07-11 12:00:00;A123;8.1;"
+                    f"{coordinate_system};0.11;0.21;0.31;55;98"
+                ),
+                (
+                    "2026-07-11 12:00:01;A123;8.2;"
+                    f"{coordinate_system};0.12;0.22;0.32;56;97"
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return csv_file
+
+
 def test_load_nortek_csv_data_preserves_original_helper_logic(tmp_path):
     csv_file = _write_nortek_csv(tmp_path)
 
@@ -190,6 +219,61 @@ def test_nortek_csv_metadata_files_set_coordinate_system_and_units(tmp_path):
     assert ds["temperature"].attrs["units"] == "degC"
     assert ds["amplitude_beam1"].attrs["units"] == "dB"
     assert ds["correlation_beam1"].attrs["units"] == "%"
+
+
+def test_nortek_csv_beam_coordinate_system_keeps_beam_velocity_names(tmp_path):
+    csv_file = _write_nortek_csv_with_coordinate_system(tmp_path, "BEAM")
+    header_file, units_file = _write_nortek_csv_metadata_files(tmp_path, "BEAM")
+
+    ds = load_nortek_csv_data(
+        csv_file,
+        header_file=header_file,
+        units_file=units_file,
+    )
+
+    assert ds.attrs["coordinate_system"] == "BEAM"
+    assert {"velocity_beam1", "velocity_beam2", "velocity_beam3"}.issubset(
+        ds.data_vars
+    )
+    assert {"east_velocity", "north_velocity", "up_velocity"}.isdisjoint(
+        ds.data_vars
+    )
+    assert ds["velocity_beam1"].values.tolist() == [0.11, 0.12]
+    assert ds["velocity_beam1"].attrs["coordinate_system"] == "BEAM"
+    assert ds["velocity_beam1"].attrs["original_name"] == "velBeam1#1"
+
+
+def test_nortek_csv_explicit_enu_columns_use_standard_velocity_names(tmp_path):
+    csv_file = _write_nortek_csv_with_velocity_components(
+        tmp_path,
+        "ENU",
+        ("velEast#1", "velNorth#1", "velUp#1"),
+    )
+
+    ds = load_nortek_csv_data(csv_file)
+
+    assert ds.attrs["coordinate_system"] == "ENU"
+    assert {"east_velocity", "north_velocity", "up_velocity"}.issubset(ds.data_vars)
+    assert "velocity_east" not in ds.data_vars
+    assert ds["east_velocity"].values.tolist() == [0.11, 0.12]
+    assert ds["east_velocity"].attrs["original_name"] == "velEast#1"
+    assert ds["east_velocity"].attrs["coordinate_system"] == "ENU"
+
+
+def test_nortek_csv_explicit_xyz_columns_use_standard_velocity_names(tmp_path):
+    csv_file = _write_nortek_csv_with_velocity_components(
+        tmp_path,
+        "XYZ",
+        ("velX#1", "velY#1", "velZ#1"),
+    )
+
+    ds = load_nortek_csv_data(csv_file)
+
+    assert ds.attrs["coordinate_system"] == "XYZ"
+    assert {"x_velocity", "y_velocity", "z_velocity"}.issubset(ds.data_vars)
+    assert ds["x_velocity"].values.tolist() == [0.11, 0.12]
+    assert ds["x_velocity"].attrs["original_name"] == "velX#1"
+    assert ds["x_velocity"].attrs["coordinate_system"] == "XYZ"
 
 
 def test_nortek_csv_raw_metadata_matches_ascii_shape(tmp_path):
