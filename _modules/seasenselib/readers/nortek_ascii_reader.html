@@ -184,6 +184,10 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">header_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">target_coordinate_system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pointing_down</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">coordinate_transform_keep_source</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">coordinate_transform_overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize NortekAsciiReader.</span>
 <span class="sd">        </span>
@@ -195,6 +199,17 @@
 <span class="sd">            Path to the .hdr file.</span>
 <span class="sd">        mapping : dict, optional</span>
 <span class="sd">            Variable name mapping dictionary.</span>
+<span class="sd">        target_coordinate_system : str, optional</span>
+<span class="sd">            Optional target velocity coordinate system (``BEAM``, ``XYZ`` or</span>
+<span class="sd">            ``ENU``). If omitted, no coordinate transformation is applied.</span>
+<span class="sd">        pointing_down : bool or str, optional</span>
+<span class="sd">            Instrument orientation for BEAM transformations. If omitted,</span>
+<span class="sd">            SeaSenseLib uses ``status_code`` bit 0 when available.</span>
+<span class="sd">        coordinate_transform_keep_source : bool, default=False</span>
+<span class="sd">            Keep the original velocity component variables after creating the</span>
+<span class="sd">            transformed variables.</span>
+<span class="sd">        coordinate_transform_overwrite : bool, default=False</span>
+<span class="sd">            Allow existing target velocity variables to be replaced.</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            Additional base class parameters:</span>
 <span class="sd">            </span>
@@ -207,6 +222,10 @@
 <span class="sd">            - sort_variables : bool, default=True</span>
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_coordinate_system</span> <span class="o">=</span> <span class="n">target_coordinate_system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_pointing_down</span> <span class="o">=</span> <span class="n">pointing_down</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_keep_source</span> <span class="o">=</span> <span class="n">coordinate_transform_keep_source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_overwrite</span> <span class="o">=</span> <span class="n">coordinate_transform_overwrite</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dat_file_path</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">input_header_file</span><span class="o">=</span><span class="n">header_file_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nortek_header_settings</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span> <span class="o">=</span> <span class="p">{}</span>
@@ -547,9 +566,65 @@
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ds</span>
 
+<div class="viewcode-block" id="NortekAsciiReader.pipeline_transformations">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekAsciiReader.pipeline_transformations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pipeline_transformations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return reader-provided transformations for the pipeline.</span>
+
+<span class="sd">        The base reader calls this hook after ``_load_data()`` and before the</span>
+<span class="sd">        transformation stage runs. By then the Nortek header has already been</span>
+<span class="sd">        parsed and stored in ``_raw_metadata_blocks``, so the transformation</span>
+<span class="sd">        handler can read the BEAM-to-XYZ matrix from the normal pipeline</span>
+<span class="sd">        metadata context. This method only decides whether a transformation was</span>
+<span class="sd">        requested by the caller and passes through the reader-level options.</span>
+
+<span class="sd">        If no target coordinate system was requested, no handler is returned and</span>
+<span class="sd">        the default read path remains unchanged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_coordinate_system</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Import lazily to keep ordinary reader imports light and to avoid a</span>
+        <span class="c1"># module-level dependency cycle with the transformation package.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.pipeline.transformation.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">NortekCoordinateTransformation</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">NortekCoordinateTransformation</span><span class="p">(</span>
+                <span class="n">target_coordinate_system</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_coordinate_system</span><span class="p">,</span>
+                <span class="n">pointing_down</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_pointing_down</span><span class="p">,</span>
+                <span class="n">keep_source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_keep_source</span><span class="p">,</span>
+                <span class="n">overwrite</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_coordinate_transform_overwrite</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">]</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_postprocess_after_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore Nortek-specific metadata after the generic pipeline.&quot;&quot;&quot;</span>
-        <span class="n">coordinate_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nortek_header_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coordinate_system&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore the final Nortek coordinate-system attribute.</span>
+
+<span class="sd">        The finalization stage moves most reader/header-specific global</span>
+<span class="sd">        attributes into ``raw_metadata``. ``coordinate_system`` is kept as a</span>
+<span class="sd">        plain global attribute because downstream users need to know the current</span>
+<span class="sd">        velocity frame without parsing the RAW metadata container.</span>
+
+<span class="sd">        If the optional transformation ran, the processing metadata contains the</span>
+<span class="sd">        final target coordinate system. Otherwise the dataset should keep the</span>
+<span class="sd">        coordinate system declared in the Nortek header.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.pipeline.transformation.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">transformed_coordinate_system_from_metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Prefer the transformation record over the original header value:</span>
+        <span class="c1"># after BEAM -&gt; XYZ/ENU, the header still describes the source frame.</span>
+        <span class="n">coordinate_system</span> <span class="o">=</span> <span class="n">transformed_coordinate_system_from_metadata</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processing_metadata</span>
+        <span class="p">)</span>
+        <span class="n">coordinate_system</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">coordinate_system</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nortek_header_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coordinate_system&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">coordinate_system</span><span class="p">:</span>
             <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;coordinate_system&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coordinate_system</span>
         <span class="k">return</span> <span class="n">ds</span>
