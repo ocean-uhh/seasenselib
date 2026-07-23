@@ -869,6 +869,12 @@
                     <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;raw_metadata_variables&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_raw_metadata_variables&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span><span class="p">:</span>
                     <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;user_metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_metadata</span>
+                <span class="n">reader_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_groups</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">reader_groups</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reader_groups&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader_groups</span><span class="p">)</span>
+                <span class="n">reader_transformations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_transformations</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">reader_transformations</span><span class="p">:</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;reader_transformations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader_transformations</span><span class="p">)</span>
                 
                 <span class="c1"># Create pipeline (custom or default)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1200,6 +1206,40 @@
 <span class="sd">        - Supports flexible, extensible architecture</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{}</span>  <span class="c1"># Default: no format-specific mappings</span></div>
+
+
+<div class="viewcode-block" id="AbstractReader.reader_groups">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.reader_groups">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reader_groups</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return optional reader-group identifiers for pipeline controls.</span>
+
+<span class="sd">        Reader groups allow pipeline stages to enable/disable behavior for</span>
+<span class="sd">        related formats such as ``nortek-ascii`` and ``nortek-csv`` without</span>
+<span class="sd">        coupling the stage to concrete reader classes. The default derives the</span>
+<span class="sd">        group from the format key prefix before the first hyphen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">format_key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">format_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;-&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">format_key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">()</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">format_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">group</span><span class="p">,)</span> <span class="k">if</span> <span class="n">group</span> <span class="k">else</span> <span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AbstractReader.pipeline_transformations">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.pipeline_transformations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pipeline_transformations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return optional transformation handlers for this concrete dataset.</span>
+
+<span class="sd">        Readers can override this hook when a transformation depends on data,</span>
+<span class="sd">        header metadata, or reader state. The transformation stage accepts</span>
+<span class="sd">        objects implementing ``ITransformation``. The default performs no</span>
+<span class="sd">        transformations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
 </div>
 
 </pre></div>
