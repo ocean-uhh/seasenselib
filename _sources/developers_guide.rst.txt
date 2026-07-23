@@ -174,13 +174,17 @@ The ``SbeCnvReader`` handles SeaBird CNV files, commonly used for CTD profile da
    dataset = ssl.read("rbr_export.mat", file_format='rbr-matlab')
    dataset = ssl.read("rsktools_export.mat", file_format='rbr-matlab-rsktools')
 
+   # RBR HEX exports require an explicit format key because .hex is also used
+   # by SeaBird HEX files
+   dataset = ssl.read("rbr_logger.hex", file_format='rbr-hex')
+
 *Legacy API:*
 
 The ``RbrRskReader`` family handles RBR RSK files from moored instruments:
 
 .. code-block:: python
 
-   from seasenselib.readers import RbrRskAutoReader, RbrMatlabReader
+   from seasenselib.readers import RbrRskAutoReader, RbrMatlabReader, RbrHexReader
    
    # Auto-detect RSK format version
    reader = RbrRskAutoReader("solo_temp.rsk")
@@ -188,6 +192,10 @@ The ``RbrRskReader`` family handles RBR RSK files from moored instruments:
    
    # MATLAB format reader
    reader = RbrMatlabReader("rbr_export.mat")
+   dataset = reader.data
+
+   # HEX format reader
+   reader = RbrHexReader("rbr_logger.hex")
    dataset = reader.data
 
 **Nortek Aquadopp Instruments**

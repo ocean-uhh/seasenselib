@@ -95,12 +95,15 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span><span class="p">,</span> <span class="n">redirect_stdout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -113,6 +116,14 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">_SUPPORTED_EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.aqd&quot;</span><span class="p">,</span> <span class="s2">&quot;.vec&quot;</span><span class="p">,</span> <span class="s2">&quot;.wpr&quot;</span><span class="p">)</span>
+<span class="n">_NORTEK2_SIGNATURE</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\xa5\x0a</span><span class="s2">&quot;</span>
+<span class="n">_NORTEK2_AVERAGE_RECORD_ID</span> <span class="o">=</span> <span class="mi">22</span>
+<span class="n">_NORTEK2_AVGD_RECORD_ID</span> <span class="o">=</span> <span class="mi">38</span>
+<span class="n">_NORTEK2_STRING_RECORD_ID</span> <span class="o">=</span> <span class="mi">160</span>
+<span class="n">_NORTEK2_HEADER</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;BBBBhhh&quot;</span><span class="p">)</span>
+<span class="n">_NORTEK2_AVGD_PAYLOAD_SIZE</span> <span class="o">=</span> <span class="mi">191</span>
+<span class="n">_NORTEK2_AVGD_VECTOR_OFFSET</span> <span class="o">=</span> <span class="mi">160</span>
+<span class="n">_NORTEK2_AVGD_DECODER</span> <span class="o">=</span> <span class="s2">&quot;seasenselib.nortek2.avgd&quot;</span>
 <span class="n">_NORTEK_SOUND_SPEED_SETTING</span> <span class="o">=</span> <span class="s2">&quot;nortek_sound_speed_setting&quot;</span>
 <span class="n">_NORTEK_PRESSURE_PLACEHOLDER</span> <span class="o">=</span> <span class="s2">&quot;nortek_pressure_placeholder&quot;</span>
 <span class="n">_NORTEK_CORRELATION_PLACEHOLDER</span> <span class="o">=</span> <span class="s2">&quot;nortek_correlation_placeholder&quot;</span>
@@ -292,74 +303,907 @@
     <span class="k">return</span> <span class="n">read_nortek</span><span class="p">,</span> <span class="n">source</span>
 
 
-<span class="nd">@contextmanager</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_patched_aquadopp_template</span><span class="p">(</span>
-    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">read_nortek</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Temporarily fill missing Aquadopp 0x01 template fields if needed.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.aqd&quot;</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
-
-    <span class="n">module_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">read_nortek</span><span class="p">,</span> <span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">module_name</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
-
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_nortek2_import</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the MHKiT DOLfYN Nortek Gen2/AD2CP reader lazily.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">nortek_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
-        <span class="n">defs_base</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">module_name</span>
-            <span class="k">if</span> <span class="n">module_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.io&quot;</span><span class="p">)</span>
-            <span class="k">else</span> <span class="n">module_name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mhkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">dolfyn</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;mhkit&quot;</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">dolfyn</span>  <span class="c1"># type: ignore[no-redef]</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">fallback_exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;NortekRawReader requires MHKiT with DOLfYN support. &quot;</span>
+                <span class="s1">&#39;Install it with: pip install &quot;mhkit[dolfyn]&quot;&#39;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">fallback_exc</span>
+        <span class="n">source_prefix</span> <span class="o">=</span> <span class="s2">&quot;dolfyn&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">source_prefix</span> <span class="o">=</span> <span class="s2">&quot;mhkit.dolfyn&quot;</span>
+
+    <span class="n">read_signature</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dolfyn</span><span class="o">.</span><span class="n">io</span><span class="p">,</span> <span class="s2">&quot;read_signature&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_prefix</span><span class="si">}</span><span class="s2">.io.read_signature&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">read_signature</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nortek2_module</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dolfyn</span><span class="o">.</span><span class="n">io</span><span class="p">,</span> <span class="s2">&quot;nortek2&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nortek2_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_prefix</span><span class="si">}</span><span class="s2">.io.nortek2&quot;</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                    <span class="s2">&quot;The installed DOLfYN package does not expose &quot;</span>
+                    <span class="s2">&quot;io.nortek2.read_signature(). Please install a recent &quot;</span>
+                    <span class="s1">&#39;MHKiT build with: pip install &quot;mhkit[dolfyn]&quot;&#39;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">read_signature</span> <span class="o">=</span> <span class="n">nortek2_module</span><span class="o">.</span><span class="n">read_signature</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;The installed DOLfYN package does not expose &quot;</span>
+                <span class="s2">&quot;io.nortek2.read_signature(). Please install a recent MHKiT &quot;</span>
+                <span class="s1">&#39;build with: pip install &quot;mhkit[dolfyn]&quot;&#39;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_prefix</span><span class="si">}</span><span class="s2">.io.nortek2.read_signature&quot;</span>
+
+    <span class="k">return</span> <span class="n">read_signature</span><span class="p">,</span> <span class="n">source</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Nortek2PacketInspector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inspect Nortek Gen2 packet headers without decoding scientific data.</span>
+
+<span class="sd">    This class is only responsible for routing decisions in ``NortekRawReader``.</span>
+<span class="sd">    It performs cheap binary checks that are safe to run before importing or</span>
+<span class="sd">    invoking DOLfYN:</span>
+
+<span class="sd">    * ``looks_like_file()`` checks the first bytes for the Nortek Gen2/AD2CP</span>
+<span class="sd">      sync signature.</span>
+<span class="sd">    * ``looks_like_avgd_product()`` scans the first few packet headers and</span>
+<span class="sd">      identifies already averaged ID 38 products.</span>
+<span class="sd">    * ``iter_headers()`` exposes the minimal header fields needed for those</span>
+<span class="sd">      checks and skips over payloads without interpreting them.</span>
+
+<span class="sd">    The class deliberately does not parse samples, metadata strings, checksums,</span>
+<span class="sd">    or instrument configuration. Keeping it that narrow makes the file-type</span>
+<span class="sd">    selection fast and keeps decoding responsibility in the reader/decoder that</span>
+<span class="sd">    actually handles the chosen data layout.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">looks_like_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True when the file starts with the Nortek Gen2 AD2CP header.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">_NORTEK2_SIGNATURE</span><span class="p">))</span> <span class="o">==</span> <span class="n">_NORTEK2_SIGNATURE</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">looks_like_avgd_product</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True when the first data packet is the averaged ID 38 product.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">iter_headers</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_packets</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">_NORTEK2_STRING_RECORD_ID</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">return</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">_NORTEK2_AVGD_RECORD_ID</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_headers</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">max_packets</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield sequential Nortek2 packet headers without decoding payloads.&quot;&quot;&quot;</span>
+        <span class="n">packets_read</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">max_packets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">packets_read</span> <span class="o">&lt;</span> <span class="n">max_packets</span><span class="p">:</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+                <span class="n">header_bytes</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">header_bytes</span><span class="p">:</span>
+                    <span class="k">return</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">header_bytes</span><span class="p">)</span> <span class="o">!=</span> <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Truncated Nortek2 packet header.&quot;</span><span class="p">)</span>
+
+                <span class="n">sync</span><span class="p">,</span> <span class="n">header_size</span><span class="p">,</span> <span class="n">record_id</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">hchecksum</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">header_bytes</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">sync</span> <span class="o">!=</span> <span class="mi">165</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Out-of-sync Nortek2 packet header.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">header_size</span> <span class="o">!=</span> <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Unsupported Nortek2 packet header size &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">header_size</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Invalid Nortek2 packet payload size: </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="k">yield</span> <span class="p">{</span>
+                    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">position</span><span class="p">,</span>
+                    <span class="s2">&quot;header_size&quot;</span><span class="p">:</span> <span class="n">header_size</span><span class="p">,</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">record_id</span><span class="p">,</span>
+                    <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="n">family</span><span class="p">,</span>
+                    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span>
+                    <span class="s2">&quot;checksum&quot;</span><span class="p">:</span> <span class="n">checksum</span><span class="p">,</span>
+                    <span class="s2">&quot;header_checksum&quot;</span><span class="p">:</span> <span class="n">hchecksum</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">packets_read</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Nortek2AvgdProductDecoder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode Nortek2 averaged ID 38 product files into an xarray dataset.</span>
+
+<span class="sd">    Responsibility</span>
+<span class="sd">        This class is a small SeaSenseLib fallback decoder for Nortek Gen2</span>
+<span class="sd">        ``*_avgd.aqd`` files. Those files are not full raw burst streams; they</span>
+<span class="sd">        are already averaged products containing string metadata packets and ID</span>
+<span class="sd">        38 data packets. In the validated Aquadopp Gen2 examples, each ID 38</span>
+<span class="sd">        packet represents one averaged sample.</span>
+
+<span class="sd">    Why it exists</span>
+<span class="sd">        The installed DOLfYN Nortek2 reader can handle normal Gen2 packet</span>
+<span class="sd">        streams, but its indexer does not include the ID 38 product packet</span>
+<span class="sd">        family. It therefore builds an empty index and fails before returning</span>
+<span class="sd">        data. Rather than broadening DOLfYN with a runtime monkey patch, this</span>
+<span class="sd">        decoder handles the unsupported product format directly.</span>
+
+<span class="sd">    How it works</span>
+<span class="sd">        The decoder reads packets sequentially, parses string records into</span>
+<span class="sd">        structured raw metadata, parses ID 38 payload fields at fixed offsets,</span>
+<span class="sd">        and builds a DOLfYN-like ``*_avg`` dataset with ``time_avg``,</span>
+<span class="sd">        ``range_avg``, ``beam``, ``dir`` and ``dirIMU`` coordinates.</span>
+
+<span class="sd">    Boundaries</span>
+<span class="sd">        The implementation is intentionally conservative. It currently supports</span>
+<span class="sd">        the observed 191-byte ID 38 payload with one cell and three beams. Other</span>
+<span class="sd">        Nortek2 averaged product layouts should add a guarded branch here rather</span>
+<span class="sd">        than weakening the existing validation. If DOLfYN gains native ID 38</span>
+<span class="sd">        support later, this fallback can be disabled or changed to try DOLfYN</span>
+<span class="sd">        first after regression tests confirm identical values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a Nortek2 averaged-product file into an xarray dataset.&quot;&quot;&quot;</span>
+        <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">string_records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">header_position</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+                <span class="n">header_bytes</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">header_bytes</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">header_bytes</span><span class="p">)</span> <span class="o">!=</span> <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Truncated Nortek2 averaged-product header.&quot;</span><span class="p">)</span>
+
+                <span class="n">sync</span><span class="p">,</span> <span class="n">header_size</span><span class="p">,</span> <span class="n">record_id</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">hchecksum</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">header_bytes</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">sync</span> <span class="o">!=</span> <span class="mi">165</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Out-of-sync Nortek2 averaged-product packet at byte &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">header_position</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">header_size</span> <span class="o">!=</span> <span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Unsupported Nortek2 averaged-product header size &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">header_size</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="n">_NORTEK2_HEADER</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">!=</span> <span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Truncated Nortek2 averaged-product payload.&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">record_id</span> <span class="o">==</span> <span class="n">_NORTEK2_STRING_RECORD_ID</span><span class="p">:</span>
+                    <span class="n">parsed</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_string_record</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+                    <span class="n">string_records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">parsed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;blocks&quot;</span><span class="p">):</span>
+                        <span class="n">config</span> <span class="o">=</span> <span class="n">parsed</span><span class="p">[</span><span class="s2">&quot;blocks&quot;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">record_id</span> <span class="o">==</span> <span class="n">_NORTEK2_AVGD_RECORD_ID</span><span class="p">:</span>
+                    <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_parse_record</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;Skipping unsupported Nortek2 averaged-product packet &quot;</span>
+                        <span class="s2">&quot;ID </span><span class="si">%s</span><span class="s2"> at byte </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">record_id</span><span class="p">,</span>
+                        <span class="n">header_position</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">records</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No Nortek2 averaged ID 38 records found.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_dataset</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">string_records</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_string_record</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a Nortek2 string record into structured raw metadata.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">payload</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="n">string_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">string_id</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+            <span class="s2">&quot;blocks&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_config_text</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_config_text</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse Nortek2 comma-separated configuration text.&quot;&quot;&quot;</span>
+        <span class="n">blocks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">raw_line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">raw_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="s2">&quot;,&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">block_name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">name</span>
+            <span class="n">parsed_values</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_assignments</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+                <span class="n">existing</span> <span class="o">=</span> <span class="n">blocks</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">blocks</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">existing</span><span class="p">]</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parsed_values</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">blocks</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parsed_values</span>
+        <span class="k">return</span> <span class="n">blocks</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_assignments</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a comma-separated key=value list, preserving text if needed.&quot;&quot;&quot;</span>
+        <span class="n">assignments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">([</span><span class="n">text</span><span class="p">])):</span>
+            <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">assignments</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_coerce_value</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">assignments</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Coerce Nortek2 configuration values to simple Python scalars.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">value</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_record</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse one Nortek2 averaged ID 38 payload.</span>
+
+<span class="sd">        The offsets used here are taken from the observed Aquadopp Gen2 averaged</span>
+<span class="sd">        product layout and validated against Nortek&#39;s own CSV export. Values in</span>
+<span class="sd">        this product are already averaged/stored as floats for scalar fields,</span>
+<span class="sd">        while the vector block at byte 160 keeps velocity as signed millimetres</span>
+<span class="sd">        per second, amplitude as half-counts, and correlation as integer</span>
+<span class="sd">        percent-like values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">!=</span> <span class="n">_NORTEK2_AVGD_PAYLOAD_SIZE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unsupported Nortek2 averaged-product payload size &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="n">_NORTEK2_AVGD_PAYLOAD_SIZE</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">usec100</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
+            <span class="s2">&quot;&lt;6BH&quot;</span><span class="p">,</span>
+            <span class="n">payload</span><span class="p">,</span>
+            <span class="mi">24</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">defs_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">defs_base</span><span class="si">}</span><span class="s2">.nortek_defs&quot;</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;&lt;i2&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">_NORTEK2_AVGD_VECTOR_OFFSET</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
+            <span class="n">payload</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+            <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="mi">166</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">correlation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
+            <span class="n">payload</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+            <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="mi">169</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-    <span class="n">vec_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">defs_module</span><span class="p">,</span> <span class="s2">&quot;vec_data&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">vec_sys</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">defs_module</span><span class="p">,</span> <span class="s2">&quot;vec_sys&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vec_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vec_sys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span>
+            <span class="s2">&quot;serial_number&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">20</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_datetime</span><span class="p">(</span>
+                <span class="n">year</span><span class="p">,</span>
+                <span class="n">month</span><span class="p">,</span>
+                <span class="n">day</span><span class="p">,</span>
+                <span class="n">hour</span><span class="p">,</span>
+                <span class="n">minute</span><span class="p">,</span>
+                <span class="n">second</span><span class="p">,</span>
+                <span class="n">usec100</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;c_sound&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">32</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;temp&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">36</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">40</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;pressure_with_offset&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">44</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;heading&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">48</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;pitch&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">52</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;roll&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">56</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;cell_size&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">80</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;blank_dist&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">84</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;batt&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">88</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;temp_press&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">92</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;temp_mag&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">96</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">10.0</span><span class="p">,</span>
+            <span class="s2">&quot;temp_clock&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">100</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;mag&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;3f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">104</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="s2">&quot;accel&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;3f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">116</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;ambig_vel&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">128</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;stm_data_scattering&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">148</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;stm_data_high_range&quot;</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="mi">152</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;vel&quot;</span><span class="p">:</span> <span class="n">velocity</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">,</span>
+            <span class="s2">&quot;amp&quot;</span><span class="p">:</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>
+            <span class="s2">&quot;corr&quot;</span><span class="p">:</span> <span class="n">correlation</span><span class="p">,</span>
+            <span class="s2">&quot;percent_good&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="mi">172</span><span class="p">]),</span>
+        <span class="p">}</span>
 
-    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">field</span>
-        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">_AQUADOPP_TEMPLATE_FIELDS</span>
-        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vec_data</span> <span class="ow">and</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">vec_sys</span>
-    <span class="p">]</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_datetime</span><span class="p">(</span>
+        <span class="n">year</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">month</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">day</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">hour</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">minute</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">second</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">usec100</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert Nortek2 timestamp fields to numpy datetime64.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+                <span class="n">year</span> <span class="o">+</span> <span class="mi">1900</span><span class="p">,</span>
+                <span class="n">month</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">day</span><span class="p">,</span>
+                <span class="n">hour</span><span class="p">,</span>
+                <span class="n">minute</span><span class="p">,</span>
+                <span class="n">second</span><span class="p">,</span>
+                <span class="n">usec100</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">)</span>
 
-    <span class="n">patched</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">vec_data</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
-        <span class="n">patched</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">vec_sys</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_dataset</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">string_records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build an xarray dataset from parsed Nortek2 averaged-product records.&quot;&quot;&quot;</span>
+        <span class="n">avg_config</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AVG&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AVG&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="p">)</span>
+        <span class="n">coord_axes</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CY&quot;</span><span class="p">,</span> <span class="s2">&quot;ENU&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="n">n_cells</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">avg_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NC&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">n_beams</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">avg_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NB&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_cells</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">n_beams</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Nortek2 averaged ID 38 products are currently supported for &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;3 beams and 1 cell; got </span><span class="si">{</span><span class="n">n_beams</span><span class="si">}</span><span class="s2"> beams and </span><span class="si">{</span><span class="n">n_cells</span><span class="si">}</span><span class="s2"> cells.&quot;</span>
+            <span class="p">)</span>
 
-    <span class="n">module_defs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nortek_module</span><span class="p">,</span> <span class="s2">&quot;defs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module_defs</span><span class="p">,</span> <span class="s2">&quot;vec_data&quot;</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="kc">None</span>
-        <span class="k">return</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
+        <span class="n">range_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;blank_dist&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;cell_size&quot;</span><span class="p">])</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_attrs</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="n">coord_axes</span><span class="p">,</span> <span class="n">string_records</span><span class="p">)</span>
 
-    <span class="n">original_defs</span> <span class="o">=</span> <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span>
-    <span class="n">original_nortek_defs</span> <span class="o">=</span> <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span>
-    <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">patched</span>
-    <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">patched</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;aquadopp_single_point_template&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;in_memory_for_this_read&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s2">&quot;Adds missing timestamp and environmental variable definitions &quot;</span>
-                <span class="s2">&quot;for classic Aquadopp 0x01 blocks when the backend template is &quot;</span>
-                <span class="s2">&quot;incomplete.&quot;</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+            <span class="n">data_vars</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;c_sound_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;c_sound&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;temp_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;temp&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;pressure_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;pressure_with_offset_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;pressure_with_offset&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;heading_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;heading&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;pitch_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;pitch&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;roll_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;roll&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;batt_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;batt&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;temp_press_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;temp_press&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;temp_mag_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;temp_mag&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;temp_clock_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;temp_clock&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;ambig_vel_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;ambig_vel&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;stm_data_scattering_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;stm_data_scattering&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;stm_data_high_range_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;stm_data_high_range&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;percent_good_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;time_avg&quot;</span><span class="p">,</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_array</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;percent_good&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;mag_avg&quot;</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;dirIMU&quot;</span><span class="p">,</span> <span class="s2">&quot;time_avg&quot;</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_record_matrix</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;accel_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;dirIMU&quot;</span><span class="p">,</span> <span class="s2">&quot;time_avg&quot;</span><span class="p">),</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_matrix</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;accel&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;vel_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;dir&quot;</span><span class="p">,</span> <span class="s2">&quot;range_avg&quot;</span><span class="p">,</span> <span class="s2">&quot;time_avg&quot;</span><span class="p">),</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_matrix</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;vel&quot;</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;amp_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">,</span> <span class="s2">&quot;range_avg&quot;</span><span class="p">,</span> <span class="s2">&quot;time_avg&quot;</span><span class="p">),</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_matrix</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;amp&quot;</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;corr_avg&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">,</span> <span class="s2">&quot;range_avg&quot;</span><span class="p">,</span> <span class="s2">&quot;time_avg&quot;</span><span class="p">),</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_record_matrix</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)[</span>
+                        <span class="p">:,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span>
+                        <span class="p">:,</span>
+                    <span class="p">],</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;time_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;time_avg&quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">),</span>
+                <span class="s2">&quot;range_avg&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;range_avg&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">range_value</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)),</span>
+                <span class="s2">&quot;beam&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_beams</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)),</span>
+                <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;dir&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_direction_labels</span><span class="p">(</span><span class="n">coord_axes</span><span class="p">)),</span>
+                <span class="s2">&quot;dirIMU&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;dirIMU&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_record_array</span><span class="p">(</span>
+        <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a 1-D array from parsed record dictionaries.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">record</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_record_matrix</span><span class="p">(</span>
+        <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a 2-D component-by-time array from parsed record dictionaries.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_direction_labels</span><span class="p">(</span><span class="n">coord_axes</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return DOLfYN-like direction labels for a Nortek coordinate system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">coord_axes</span> <span class="o">==</span> <span class="s2">&quot;ENU&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">coord_axes</span> <span class="o">==</span> <span class="s2">&quot;XYZ&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_attrs</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">coord_axes</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">string_records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return dataset attrs for Nortek2 averaged-product records.&quot;&quot;&quot;</span>
+        <span class="n">id_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ID&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ID&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">id_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;STR&quot;</span><span class="p">,</span> <span class="s2">&quot;Aquadopp Gen2&quot;</span><span class="p">)</span>
+        <span class="n">serial_number</span> <span class="o">=</span> <span class="n">id_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SN&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;serial_number&quot;</span><span class="p">]</span>
+        <span class="n">coord_sys</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ENU&quot;</span><span class="p">:</span> <span class="s2">&quot;earth&quot;</span><span class="p">,</span> <span class="s2">&quot;XYZ&quot;</span><span class="p">:</span> <span class="s2">&quot;inst&quot;</span><span class="p">,</span> <span class="s2">&quot;BEAM&quot;</span><span class="p">:</span> <span class="s2">&quot;beam&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">coord_axes</span><span class="p">,</span>
+            <span class="n">coord_axes</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;filehead_config&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
+            <span class="s2">&quot;nortek_string_records&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                <span class="n">string_records</span><span class="p">,</span>
+                <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;inst_model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;inst_make&quot;</span><span class="p">:</span> <span class="s2">&quot;Nortek&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;inst_type&quot;</span><span class="p">:</span> <span class="s2">&quot;ADCP&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;serial_number&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">serial_number</span><span class="p">),</span>
+            <span class="s2">&quot;coord_sys&quot;</span><span class="p">:</span> <span class="n">coord_sys</span><span class="p">,</span>
+            <span class="s2">&quot;coord_sys_axes_avg&quot;</span><span class="p">:</span> <span class="n">coord_axes</span><span class="p">,</span>
+            <span class="s2">&quot;n_cells_avg&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;n_beams_avg&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;decoder_note&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;Nortek2 averaged ID 38 product decoded by SeaSenseLib because &quot;</span>
+                <span class="s2">&quot;the installed DOLfYN Nortek2 indexer does not include this &quot;</span>
+                <span class="s2">&quot;packet family.&quot;</span>
             <span class="p">),</span>
         <span class="p">}</span>
-    <span class="k">finally</span><span class="p">:</span>
-        <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">original_defs</span>
-        <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">original_nortek_defs</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ClassicAquadoppTemplateRepair</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch incomplete DOLfYN classic Aquadopp templates for one read call.</span>
+
+<span class="sd">    Responsibility</span>
+<span class="sd">        This class handles a compatibility issue in some DOLfYN/MHKiT versions</span>
+<span class="sd">        for classic Nortek Aquadopp ``.aqd`` files. The backend template for</span>
+<span class="sd">        0x01 data blocks can miss timestamp and environmental fields that are</span>
+<span class="sd">        present in the matching system template.</span>
+
+<span class="sd">    What it fixes</span>
+<span class="sd">        When the template is incomplete, DOLfYN may fail to decode classic</span>
+<span class="sd">        Aquadopp single-point blocks even though DOLfYN already contains the</span>
+<span class="sd">        necessary field definitions elsewhere. This repair copies only the</span>
+<span class="sd">        missing known fields from ``vec_sys`` into ``vec_data``.</span>
+
+<span class="sd">    How it stays bounded</span>
+<span class="sd">        The patch is applied only for ``.aqd`` files, only when the missing</span>
+<span class="sd">        fields are found in DOLfYN&#39;s own definitions, and only inside the</span>
+<span class="sd">        context manager around a single backend read. Original DOLfYN module</span>
+<span class="sd">        state is restored in ``finally``. SeaSenseLib does not reinterpret the</span>
+<span class="sd">        binary payload here; DOLfYN still performs the actual decode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">read_nortek</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Temporarily fill missing Aquadopp 0x01 template fields if needed.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.aqd&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">module_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">read_nortek</span><span class="p">,</span> <span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">module_name</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nortek_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="n">defs_base</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">module_name</span>
+                <span class="k">if</span> <span class="n">module_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.io&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="n">module_name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">defs_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">defs_base</span><span class="si">}</span><span class="s2">.nortek_defs&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">vec_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">defs_module</span><span class="p">,</span> <span class="s2">&quot;vec_data&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">vec_sys</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">defs_module</span><span class="p">,</span> <span class="s2">&quot;vec_sys&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vec_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vec_sys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">field</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">_AQUADOPP_TEMPLATE_FIELDS</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vec_data</span> <span class="ow">and</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">vec_sys</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">patched</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">vec_data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="n">patched</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">vec_sys</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+        <span class="n">module_defs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nortek_module</span><span class="p">,</span> <span class="s2">&quot;defs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module_defs</span><span class="p">,</span> <span class="s2">&quot;vec_data&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">original_defs</span> <span class="o">=</span> <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span>
+        <span class="n">original_nortek_defs</span> <span class="o">=</span> <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span>
+        <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">patched</span>
+        <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">patched</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;aquadopp_single_point_template&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;in_memory_for_this_read&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;Adds missing timestamp and environmental variable &quot;</span>
+                    <span class="s2">&quot;definitions for classic Aquadopp 0x01 blocks when the &quot;</span>
+                    <span class="s2">&quot;backend template is incomplete.&quot;</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">defs_module</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">original_defs</span>
+            <span class="n">module_defs</span><span class="o">.</span><span class="n">vec_data</span> <span class="o">=</span> <span class="n">original_nortek_defs</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Nortek2AquadoppAverageTailRepair</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch DOLfYN&#39;s Gen2 average-record reader for one backend read call.</span>
+
+<span class="sd">    Responsibility</span>
+<span class="sd">        This class contains the scoped compatibility repair used for full</span>
+<span class="sd">        Nortek Gen2/Aquadopp2 ``.aqd`` packet streams that are otherwise decoded</span>
+<span class="sd">        by DOLfYN&#39;s Nortek2 reader.</span>
+
+<span class="sd">    What it fixes</span>
+<span class="sd">        In the validated Aquadopp Gen2 file, DOLfYN recognizes average record</span>
+<span class="sd">        packets but its private payload layout stops before the final vector</span>
+<span class="sd">        sample block. Velocity, amplitude and correlation bytes remain unread.</span>
+<span class="sd">        The next packet header is then read from the wrong file position, which</span>
+<span class="sd">        leads to DOLfYN&#39;s ``Out of sync!`` error.</span>
+
+<span class="sd">    How it works</span>
+<span class="sd">        The context manager temporarily wraps DOLfYN&#39;s private ``_read_hdr`` and</span>
+<span class="sd">        ``_read_burst`` methods. The wrapper records the current packet boundary,</span>
+<span class="sd">        lets DOLfYN decode the normal fields first, then checks whether bytes are</span>
+<span class="sd">        still left inside a supported average packet. If the unread tail matches</span>
+<span class="sd">        the guarded Aquadopp2 vector-tail layout, it writes the raw</span>
+<span class="sd">        ``vel``/``amp``/``corr`` values back into DOLfYN&#39;s arrays before DOLfYN</span>
+<span class="sd">        applies its usual scaling and dataset construction.</span>
+
+<span class="sd">    How it stays bounded</span>
+<span class="sd">        The patch is installed only during one ``read_signature()`` call and is</span>
+<span class="sd">        always removed in ``finally``. It only acts on average record ID 22, only</span>
+<span class="sd">        when DOLfYN produced ``vel``, ``amp`` and ``corr`` arrays, and only when</span>
+<span class="sd">        ``DatOffset`` plus unread packet size match the validated layout. If a</span>
+<span class="sd">        future DOLfYN release consumes the whole packet natively, no unread tail</span>
+<span class="sd">        remains and this repair becomes a no-op.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">read_signature</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Temporarily repair DOLfYN&#39;s Aquadopp2 average-record alignment.</span>
+
+<span class="sd">        This is a scoped monkey patch around DOLfYN&#39;s private Nortek2 reader</span>
+<span class="sd">        class. It exists for AD2CP/Aquadopp2 average packets where DOLfYN can</span>
+<span class="sd">        identify and start reading the packet, but its internal payload</span>
+<span class="sd">        structure is shorter than the packet size declared in the binary header.</span>
+<span class="sd">        In the validated example this leaves the final velocity, amplitude and</span>
+<span class="sd">        correlation bytes unread. Without intervention, DOLfYN then reads the</span>
+<span class="sd">        next packet header from the wrong byte position and raises</span>
+<span class="sd">        ``Out of sync!``.</span>
+
+<span class="sd">        The patch is intentionally narrow:</span>
+
+<span class="sd">        * It is installed only while one ``read_signature()`` call is running.</span>
+<span class="sd">        * The original ``_read_hdr`` and ``_read_burst`` methods are restored in</span>
+<span class="sd">          the ``finally`` block.</span>
+<span class="sd">        * It does not replace DOLfYN&#39;s decoder. DOLfYN still parses the normal</span>
+<span class="sd">          packet fields, creates the xarray structure and applies its normal</span>
+<span class="sd">          scaling.</span>
+<span class="sd">        * SeaSenseLib only records the current packet boundary and, when a</span>
+<span class="sd">          supported unread tail is present, overwrites the raw</span>
+<span class="sd">          ``vel``/``amp``/``corr`` arrays before DOLfYN&#39;s science-unit</span>
+<span class="sd">          conversion step.</span>
+
+<span class="sd">        If a future DOLfYN version reads this packet layout completely, there</span>
+<span class="sd">        will be no unread tail and this repair becomes a no-op. At that point</span>
+<span class="sd">        the compatibility context can be removed or disabled by default after</span>
+<span class="sd">        regression tests confirm the upstream decoder is correct.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">read_signature</span><span class="p">,</span> <span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">module_name</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">nortek2_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">reader_class</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nortek2_module</span><span class="p">,</span> <span class="s2">&quot;_Ad2cpReader&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reader_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">reader_class</span><span class="p">,</span> <span class="s2">&quot;_read_hdr&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">reader_class</span><span class="p">,</span> <span class="s2">&quot;_read_burst&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="kc">None</span>
+            <span class="k">return</span>
+
+        <span class="n">original_read_header</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_hdr</span>
+        <span class="n">original_read_burst</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_burst</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">patched_read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_cs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="c1"># DOLfYN returns only the parsed header, but the repair needs to</span>
+            <span class="c1"># know where the payload started so it can compare the declared</span>
+            <span class="c1"># packet size with the file pointer after the burst reader ran.</span>
+            <span class="n">header_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">original_read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_cs</span><span class="o">=</span><span class="n">do_cs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_seasenselib_last_payload_start</span> <span class="o">=</span> <span class="n">header_start</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hsz&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_seasenselib_last_header</span> <span class="o">=</span> <span class="n">header</span>
+            <span class="k">return</span> <span class="n">header</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">patched_read_burst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">payload_start</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_seasenselib_last_payload_start&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_seasenselib_last_header&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># First let DOLfYN do its ordinary decoding. The repair below only</span>
+            <span class="c1"># touches bytes DOLfYN demonstrably left unread in the same packet.</span>
+            <span class="n">original_read_burst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">payload_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_repair_tail</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">header</span><span class="p">,</span>
+                <span class="n">record_id</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="n">ensemble_index</span><span class="p">,</span>
+                <span class="n">payload_start</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_hdr</span> <span class="o">=</span> <span class="n">patched_read_header</span>
+        <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_burst</span> <span class="o">=</span> <span class="n">patched_read_burst</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;nortek2_aquadopp_average_record_tail&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;in_memory_for_this_read&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;Repairs AD2CP/Aquadopp2 average records where DOLfYN&#39;s &quot;</span>
+                    <span class="s2">&quot;layout leaves the final velocity, amplitude and &quot;</span>
+                    <span class="s2">&quot;correlation samples unread.&quot;</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_hdr</span> <span class="o">=</span> <span class="n">original_read_header</span>
+            <span class="n">reader_class</span><span class="o">.</span><span class="n">_read_burst</span> <span class="o">=</span> <span class="n">original_read_burst</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repair_tail</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">reader</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">record_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">ensemble_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">payload_start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read Aquadopp2 tail fields when DOLfYN&#39;s structure is too short.</span>
+
+<span class="sd">        DOLfYN has already populated ``data`` for the current ensemble when this</span>
+<span class="sd">        method runs. The file pointer therefore tells us how many bytes DOLfYN</span>
+<span class="sd">        consumed. The binary packet header tells us how many bytes belong to the</span>
+<span class="sd">        payload. If bytes are left inside an average data packet, this method</span>
+<span class="sd">        checks whether the tail is large enough to contain the vector sample</span>
+<span class="sd">        block:</span>
+
+<span class="sd">        ``int16 velocity`` + ``uint8 amplitude`` + ``uint8 correlation``</span>
+
+<span class="sd">        The values are written back into DOLfYN&#39;s raw arrays, not directly into</span>
+<span class="sd">        an xarray object. DOLfYN&#39;s later ``sci_data()`` step still applies the</span>
+<span class="sd">        velocity scale and amplitude half-count scale. This keeps the repair as</span>
+<span class="sd">        close as possible to DOLfYN&#39;s own processing path.</span>
+
+<span class="sd">        Unsupported packets simply return. The only hard error is a packet that</span>
+<span class="sd">        already looked repairable but then cannot provide the required tail</span>
+<span class="sd">        bytes, because silently continuing there would leave known-bad vector</span>
+<span class="sd">        values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">record_id</span> <span class="o">!=</span> <span class="n">_NORTEK2_AVERAGE_RECORD_ID</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">{</span><span class="s2">&quot;vel&quot;</span><span class="p">,</span> <span class="s2">&quot;amp&quot;</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">payload_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sz&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">payload_end</span> <span class="o">=</span> <span class="n">payload_start</span> <span class="o">+</span> <span class="n">payload_size</span>
+        <span class="n">unread_size</span> <span class="o">=</span> <span class="n">payload_end</span> <span class="o">-</span> <span class="n">reader</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">unread_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">velocity_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;vel&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">velocity_shape</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">value_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">velocity_shape</span><span class="p">))</span>
+        <span class="n">velocity_nbytes</span> <span class="o">=</span> <span class="n">value_count</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s2">&quot;&lt;i2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+        <span class="n">required_size</span> <span class="o">=</span> <span class="n">velocity_nbytes</span> <span class="o">+</span> <span class="n">value_count</span> <span class="o">+</span> <span class="n">value_count</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_is_tail_vector_layout</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">ensemble_index</span><span class="p">,</span>
+            <span class="n">unread_size</span><span class="p">,</span>
+            <span class="n">required_size</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">tail</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">unread_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">required_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unsupported Nortek Gen2 average-record layout: the unread &quot;</span>
+                <span class="s2">&quot;packet tail is too short to contain velocity, amplitude and &quot;</span>
+                <span class="s2">&quot;correlation samples.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">vector_block</span> <span class="o">=</span> <span class="n">tail</span><span class="p">[</span><span class="o">-</span><span class="n">required_size</span><span class="p">:]</span>
+        <span class="n">velocity_stop</span> <span class="o">=</span> <span class="n">velocity_nbytes</span>
+        <span class="n">amplitude_stop</span> <span class="o">=</span> <span class="n">velocity_stop</span> <span class="o">+</span> <span class="n">value_count</span>
+
+        <span class="n">velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">vector_block</span><span class="p">[:</span><span class="n">velocity_stop</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;&lt;i2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="n">velocity_shape</span>
+        <span class="p">)</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
+            <span class="n">vector_block</span><span class="p">[</span><span class="n">velocity_stop</span><span class="p">:</span><span class="n">amplitude_stop</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">velocity_shape</span><span class="p">)</span>
+        <span class="n">correlation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
+            <span class="n">vector_block</span><span class="p">[</span><span class="n">amplitude_stop</span><span class="p">:],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">velocity_shape</span><span class="p">)</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;vel&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;amp&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplitude</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;corr&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_tail_vector_layout</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">ensemble_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">unread_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">required_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True when the packet tail can contain the vector block.</span>
+
+<span class="sd">        The guard intentionally uses observed binary layout evidence instead of</span>
+<span class="sd">        a sidecar file name or a broad instrument label:</span>
+
+<span class="sd">        * ``DatOffset == 76`` identifies the Aquadopp2 average packet header</span>
+<span class="sd">          length seen in the validated Gen2 data.</span>
+<span class="sd">        * ``unread_size &gt;= required_size`` ensures the remaining packet bytes</span>
+<span class="sd">          can hold velocity, amplitude and correlation for the decoded</span>
+<span class="sd">          beam/cell shape.</span>
+
+<span class="sd">        If DOLfYN adds native support later, the unread size will be zero and</span>
+<span class="sd">        this predicate will not trigger. If another Nortek2 layout appears, this</span>
+<span class="sd">        method is the place to add a new guarded branch rather than widening the</span>
+<span class="sd">        current repair blindly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dat_offset</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_value_at_ensemble</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DatOffset&quot;</span><span class="p">),</span> <span class="n">ensemble_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dat_offset</span> <span class="o">==</span> <span class="mi">76</span> <span class="ow">and</span> <span class="n">unread_size</span> <span class="o">&gt;=</span> <span class="n">required_size</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_value_at_ensemble</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a scalar value from an ensemble-indexed backend array.</span>
+
+<span class="sd">        DOLfYN stores packet fields in numpy arrays with the ensemble dimension</span>
+<span class="sd">        last, even for fields that are scalar in the binary record. The repair</span>
+<span class="sd">        only needs the current ensemble&#39;s ``DatOffset`` value, so this helper</span>
+<span class="sd">        hides the numpy indexing details and returns ``None`` when the expected</span>
+<span class="sd">        field is absent or has an unexpected shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">ensemble_index</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="NortekRawReader">
@@ -367,9 +1211,25 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">NortekRawReader</span><span class="p">(</span><span class="n">AbstractReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read Nortek raw binary files with MHKiT DOLfYN.</span>
 
-<span class="sd">    The reader delegates binary decoding to DOLfYN and keeps the returned</span>
-<span class="sd">    xarray structure intact. SeaSenseLib adds compact provenance, raw metadata</span>
-<span class="sd">    hints, and conservative mappings for clearly identified scalar variables.</span>
+<span class="sd">    Responsibility</span>
+<span class="sd">        ``NortekRawReader`` is the public SeaSenseLib wrapper for Nortek binary</span>
+<span class="sd">        raw-like files. It keeps backend decoding as close as possible to DOLfYN</span>
+<span class="sd">        while adding SeaSenseLib provenance, conservative metadata annotations,</span>
+<span class="sd">        and safe scalar variable mappings.</span>
+
+<span class="sd">    Decode path selection</span>
+<span class="sd">        Classic Nortek files are delegated to DOLfYN&#39;s classic Nortek reader.</span>
+<span class="sd">        Gen2/AD2CP-style ``.aqd`` files are selected from the binary header. Full</span>
+<span class="sd">        Gen2 raw packet streams go through DOLfYN&#39;s Nortek2 reader, optionally</span>
+<span class="sd">        with the scoped average-record repair above. Already averaged ID 38</span>
+<span class="sd">        ``*_avgd.aqd`` products use the small SeaSenseLib fallback decoder</span>
+<span class="sd">        because current DOLfYN builds do not index that packet family.</span>
+
+<span class="sd">    Compatibility policy</span>
+<span class="sd">        The compatibility helpers are intentionally narrow and temporary: they</span>
+<span class="sd">        patch DOLfYN only in memory, only during a single read, and only after</span>
+<span class="sd">        guarded evidence from the file/backend state indicates the known layout</span>
+<span class="sd">        issue. They are not intended to replace DOLfYN as the normal decoder.</span>
 
 <span class="sd">    This reader is marked experimental because support is still being validated</span>
 <span class="sd">    across Nortek raw variants.</span>
@@ -387,8 +1247,11 @@
         <span class="n">nens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">do_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rebuild_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dual_profile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">show_decoder_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">apply_aquadopp_compatibility</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">apply_nortek2_aquadopp_compatibility</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
@@ -411,6 +1274,12 @@
 <span class="sd">        do_checksum</span>
 <span class="sd">            Ask DOLfYN to verify Nortek block checksums. ``None`` keeps the</span>
 <span class="sd">            backend default.</span>
+<span class="sd">        rebuild_index</span>
+<span class="sd">            Passed to DOLfYN&#39;s Gen2/AD2CP reader. ``None`` keeps the backend</span>
+<span class="sd">            default.</span>
+<span class="sd">        dual_profile</span>
+<span class="sd">            Passed to DOLfYN&#39;s Gen2/AD2CP reader. ``None`` keeps the backend</span>
+<span class="sd">            default.</span>
 <span class="sd">        show_decoder_output</span>
 <span class="sd">            If True, let the backend decoder write progress messages to</span>
 <span class="sd">            stdout. The default keeps SeaSenseLib reads quiet.</span>
@@ -418,6 +1287,12 @@
 <span class="sd">            Apply a small in-memory compatibility patch for DOLfYN builds where</span>
 <span class="sd">            classic Aquadopp 0x01 blocks miss timestamp/environmental template</span>
 <span class="sd">            definitions. The raw binary values are still decoded by DOLfYN.</span>
+<span class="sd">        apply_nortek2_aquadopp_compatibility</span>
+<span class="sd">            Apply a small in-memory compatibility patch for Nortek Gen2</span>
+<span class="sd">            Aquadopp average records where DOLfYN&#39;s packet layout is too short</span>
+<span class="sd">            for the recorded payload. This affects full Gen2 raw ``.aqd``</span>
+<span class="sd">            packet streams read through DOLfYN. Averaged ID 38 ``*_avgd.aqd``</span>
+<span class="sd">            products use SeaSenseLib&#39;s separate fallback decoder instead.</span>
 <span class="sd">        mapping</span>
 <span class="sd">            Additional SeaSenseLib variable mappings.</span>
 <span class="sd">        **kwargs</span>
@@ -428,8 +1303,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span> <span class="o">=</span> <span class="n">nens</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="n">debug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_checksum</span> <span class="o">=</span> <span class="n">do_checksum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_index</span> <span class="o">=</span> <span class="n">rebuild_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dual_profile</span> <span class="o">=</span> <span class="n">dual_profile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span> <span class="o">=</span> <span class="n">show_decoder_output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aquadopp_compatibility</span> <span class="o">=</span> <span class="n">apply_aquadopp_compatibility</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_nortek2_aquadopp_compatibility</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">apply_nortek2_aquadopp_compatibility</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compatibility_notes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_metadata_blocks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -444,9 +1324,18 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the Nortek raw data and return an xarray Dataset.&quot;&quot;&quot;</span>
-        <span class="n">read_nortek</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">_read_nortek_import</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="n">source</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_read_nortek</span><span class="p">(</span><span class="n">read_nortek</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_Nortek2PacketInspector</span><span class="o">.</span><span class="n">looks_like_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">_Nortek2PacketInspector</span><span class="o">.</span><span class="n">looks_like_avgd_product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="n">_NORTEK2_AVGD_DECODER</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">_Nortek2AvgdProductDecoder</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">read_nortek2</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">_read_nortek2_import</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="n">source</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_read_nortek2</span><span class="p">(</span><span class="n">read_nortek2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">read_nortek</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">_read_nortek_import</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_decoder_source</span> <span class="o">=</span> <span class="n">source</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_read_nortek</span><span class="p">(</span><span class="n">read_nortek</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;DOLfYN returned </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="si">!r}</span><span class="s2">; expected xarray.Dataset.&quot;</span>
@@ -476,6 +1365,31 @@
             <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Suppressed Nortek decoder stdout:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_call_read_nortek2</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">read_signature</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call DOLfYN&#39;s Nortek Gen2 reader while tolerating API changes.&quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_nortek2_kwargs</span><span class="p">(</span><span class="n">read_signature</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_nortek2_with_optional_compatibility</span><span class="p">(</span>
+                <span class="n">read_signature</span><span class="p">,</span>
+                <span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">captured_stdout</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">redirect_stdout</span><span class="p">(</span><span class="n">captured_stdout</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_nortek2_with_optional_compatibility</span><span class="p">(</span>
+                    <span class="n">read_signature</span><span class="p">,</span>
+                    <span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">captured_stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Suppressed Nortek Gen2 decoder stdout:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_read_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_nortek</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build backend keyword arguments accepted by this DOLfYN version.&quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -498,6 +1412,32 @@
             <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">kwargs</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_nortek2_kwargs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">read_signature</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build backend keyword arguments accepted by this DOLfYN version.&quot;&quot;&quot;</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;userdata&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_userdata</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;nens&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;rebuild_index&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_index</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;dual_profile&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dual_profile</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">read_signature</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">accepts_kwargs</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accepts_kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_read_with_optional_compatibility</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">read_nortek</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
@@ -507,10 +1447,27 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aquadopp_compatibility</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">read_nortek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">_patched_aquadopp_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="n">read_nortek</span><span class="p">)</span> <span class="k">as</span> <span class="n">note</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">_ClassicAquadoppTemplateRepair</span><span class="o">.</span><span class="n">context</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
+            <span class="n">read_nortek</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">note</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">note</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_compatibility_notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">note</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">read_nortek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_nortek2_with_optional_compatibility</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">read_signature</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the Gen2 backend reader with the optional Aquadopp2 fix.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_nortek2_aquadopp_compatibility</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">read_signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">_Nortek2AquadoppAverageTailRepair</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">read_signature</span><span class="p">)</span> <span class="k">as</span> <span class="n">note</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">note</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compatibility_notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">note</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">read_signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_annotate_decoded_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add SeaSenseLib provenance and conservative metadata defaults.&quot;&quot;&quot;</span>
@@ -518,10 +1475,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_time_attrs</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">variable_name</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="n">_NORTEK_ATTR_DEFAULTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">variable_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">ds</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">candidate_name</span> <span class="ow">in</span> <span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">_avg&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">candidate_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">ds</span><span class="p">[</span><span class="n">candidate_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_orientation_standard_names</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_annotate_environmental_sources</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
@@ -623,16 +1581,17 @@
             <span class="p">(</span><span class="s2">&quot;pitch&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">PITCH</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;roll&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">ROLL</span><span class="p">),</span>
         <span class="p">):</span>
-            <span class="k">if</span> <span class="n">variable_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">expected</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">canonical</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
-            <span class="n">current</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">current</span> <span class="ow">and</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
-                <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_standard_name&quot;</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
-            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;standard_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">expected</span>
+            <span class="k">for</span> <span class="n">candidate_name</span> <span class="ow">in</span> <span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">_avg&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">candidate_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">canonical</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">candidate_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;standard_name&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">current</span> <span class="ow">and</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+                    <span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_standard_name&quot;</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;standard_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">expected</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_source_attrs</span><span class="p">(</span>
@@ -647,8 +1606,10 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_annotate_environmental_sources</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add source annotations where Nortek metadata gives clear evidence.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;pressure&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
+        <span class="k">for</span> <span class="n">pressure_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure_avg&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pressure_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">pressure_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
             <span class="k">if</span> <span class="n">NortekRawReader</span><span class="o">.</span><span class="n">_pressure_sensor_available</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
                 <span class="n">basis</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="s2">&quot;nortek_pressure_sensor_header&quot;</span>
@@ -881,8 +1842,13 @@
             <span class="s2">&quot;nens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nens</span><span class="p">,</span>
             <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">,</span>
             <span class="s2">&quot;do_checksum&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_do_checksum</span><span class="p">,</span>
+            <span class="s2">&quot;rebuild_index&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_index</span><span class="p">,</span>
+            <span class="s2">&quot;dual_profile&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dual_profile</span><span class="p">,</span>
             <span class="s2">&quot;show_decoder_output&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_decoder_output</span><span class="p">,</span>
             <span class="s2">&quot;apply_aquadopp_compatibility&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_aquadopp_compatibility</span><span class="p">,</span>
+            <span class="s2">&quot;apply_nortek2_aquadopp_compatibility&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_apply_nortek2_aquadopp_compatibility</span>
+            <span class="p">),</span>
         <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_mapping_notes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -891,9 +1857,13 @@
         <span class="n">safe_mappings</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">canonical</span> <span class="ow">in</span> <span class="p">(</span>
             <span class="p">(</span><span class="s2">&quot;temp&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;temp_avg&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;c_sound&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;c_sound_avg&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;pressure_avg&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;batt&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">BATTERY_VOLTAGE</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;batt_avg&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">BATTERY_VOLTAGE</span><span class="p">),</span>
         <span class="p">):</span>
             <span class="k">if</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
                 <span class="n">safe_mappings</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="n">canonical</span>
@@ -906,16 +1876,19 @@
         <span class="p">):</span>
             <span class="k">if</span> <span class="n">renamed</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
                 <span class="n">not_mapped</span><span class="p">[</span><span class="n">original</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Kept as </span><span class="si">{</span><span class="n">renamed</span><span class="si">}</span><span class="s2">; not a safe measurement mapping.&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;vel&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-            <span class="n">not_mapped</span><span class="p">[</span><span class="s2">&quot;vel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Kept as vector variable vel; component splitting depends on &quot;</span>
-                <span class="s2">&quot;coord_sys and the decoded dir coordinate.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;amp&quot;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-            <span class="n">not_mapped</span><span class="p">[</span><span class="s2">&quot;amp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Kept as vector variable amp; beam/component semantics depend &quot;</span>
-                <span class="s2">&quot;on the decoded coordinate system.&quot;</span>
-            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">velocity_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;vel&quot;</span><span class="p">,</span> <span class="s2">&quot;vel_avg&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">velocity_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">not_mapped</span><span class="p">[</span><span class="n">velocity_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Kept as vector variable </span><span class="si">{</span><span class="n">velocity_name</span><span class="si">}</span><span class="s2">; component &quot;</span>
+                    <span class="s2">&quot;splitting depends on coord_sys and the decoded dir &quot;</span>
+                    <span class="s2">&quot;coordinate.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">for</span> <span class="n">amplitude_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;amp&quot;</span><span class="p">,</span> <span class="s2">&quot;amp_avg&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">amplitude_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+                <span class="n">not_mapped</span><span class="p">[</span><span class="n">amplitude_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Kept as vector variable </span><span class="si">{</span><span class="n">amplitude_name</span><span class="si">}</span><span class="s2">; beam/component &quot;</span>
+                    <span class="s2">&quot;semantics depend on the decoded coordinate system.&quot;</span>
+                <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;safe_reader_mappings&quot;</span><span class="p">:</span> <span class="n">safe_mappings</span><span class="p">,</span>
@@ -937,9 +1910,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">format_mappings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return conservative Nortek-to-SeaSenseLib variable mappings.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;temp&quot;</span><span class="p">],</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c_sound&quot;</span><span class="p">],</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">BATTERY_VOLTAGE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;batt&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">TEMPERATURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;temp&quot;</span><span class="p">,</span> <span class="s2">&quot;temp_avg&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">SPEED_OF_SOUND</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c_sound&quot;</span><span class="p">,</span> <span class="s2">&quot;c_sound_avg&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">PRESSURE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure_avg&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">BATTERY_VOLTAGE</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;batt&quot;</span><span class="p">,</span> <span class="s2">&quot;batt_avg&quot;</span><span class="p">],</span>
         <span class="p">}</span></div>
 
 

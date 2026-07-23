@@ -248,11 +248,15 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 <span class="c1"># MATLAB exports</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rbr_export.mat&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-matlab&#39;</span><span class="p">)</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rsktools_export.mat&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-matlab-rsktools&#39;</span><span class="p">)</span>
+
+<span class="c1"># RBR HEX exports require an explicit format key because .hex is also used</span>
+<span class="c1"># by SeaBird HEX files</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rbr_logger.hex&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;rbr-hex&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><em>Legacy API:</em></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">RbrRskReader</span></code> family handles RBR RSK files from moored instruments:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RbrRskAutoReader</span><span class="p">,</span> <span class="n">RbrMatlabReader</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RbrRskAutoReader</span><span class="p">,</span> <span class="n">RbrMatlabReader</span><span class="p">,</span> <span class="n">RbrHexReader</span>
 
 <span class="c1"># Auto-detect RSK format version</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrRskAutoReader</span><span class="p">(</span><span class="s2">&quot;solo_temp.rsk&quot;</span><span class="p">)</span>
@@ -260,6 +264,10 @@ seasenselib<span class="w"> </span>list<span class="w"> </span>plotters
 
 <span class="c1"># MATLAB format reader</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="n">RbrMatlabReader</span><span class="p">(</span><span class="s2">&quot;rbr_export.mat&quot;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
+
+<span class="c1"># HEX format reader</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">RbrHexReader</span><span class="p">(</span><span class="s2">&quot;rbr_logger.hex&quot;</span><span class="p">)</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>

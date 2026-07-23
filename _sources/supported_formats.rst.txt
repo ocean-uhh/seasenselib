@@ -43,10 +43,10 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``nortek-csv``
      - Nortek AquaPro CSV export format
    * - Nortek
-     - Aquadopp, Vector, AWAC
+     - Aquadopp, Aquadopp Gen2, Vector, AWAC
      - ``.aqd``, ``.VEC``, ``.wpr``
      - ``nortek-raw``
-     - Nortek raw binary files via MHKiT DOLfYN (experimental)
+     - Nortek raw binary files; Gen2 ``.aqd`` and averaged ``*_avgd.aqd`` products are detected from the binary header (experimental)
    * - RBR
      - Solo T
      - ``.rsk``

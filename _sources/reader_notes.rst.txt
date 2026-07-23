@@ -33,11 +33,17 @@ anchors and channel metadata are preserved in ``raw_metadata``.
 Nortek raw
 ----------
 
-The ``nortek-raw`` reader decodes classic Nortek raw binary files, currently
-advertised for Aquadopp ``.aqd``, Vector ``.VEC`` and AWAC ``.wpr`` files,
-with MHKiT DOLfYN. Nortek Signature ``.ad2cp`` files use a separate DOLfYN
-decoder and are not part of this reader. This reader is marked experimental
-because support is still being validated across Nortek raw variants.
+The ``nortek-raw`` reader decodes Nortek raw binary files with MHKiT DOLfYN.
+It dispatches classic Aquadopp ``.aqd``, Vector ``.VEC`` and AWAC ``.wpr``
+files to DOLfYN's classic Nortek decoder, and dispatches AD2CP/Gen2-style
+``.aqd`` files to DOLfYN's Nortek2 decoder based on the binary file header.
+Nortek2 averaged ``*_avgd.aqd`` products with ID 38 packets are decoded by a
+small SeaSenseLib fallback because the DOLfYN Nortek2 indexer does not include
+that packet family.
+
+Nortek Signature ``.ad2cp`` files use the same DOLfYN decoder family but are
+not advertised by this reader yet. This reader is marked experimental because
+support is still being validated across Nortek raw variants.
 
 Velocity is preserved as vector variable ``vel``. If ``coord_sys`` is
 ``earth``, the decoded ``dir`` coordinate usually identifies east, north and

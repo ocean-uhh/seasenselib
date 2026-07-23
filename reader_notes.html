@@ -129,11 +129,16 @@ anchors and channel metadata are preserved in <code class="docutils literal notr
 </section>
 <section id="nortek-raw">
 <h2>Nortek raw<a class="headerlink" href="#nortek-raw" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">nortek-raw</span></code> reader decodes classic Nortek raw binary files, currently
-advertised for Aquadopp <code class="docutils literal notranslate"><span class="pre">.aqd</span></code>, Vector <code class="docutils literal notranslate"><span class="pre">.VEC</span></code> and AWAC <code class="docutils literal notranslate"><span class="pre">.wpr</span></code> files,
-with MHKiT DOLfYN. Nortek Signature <code class="docutils literal notranslate"><span class="pre">.ad2cp</span></code> files use a separate DOLfYN
-decoder and are not part of this reader. This reader is marked experimental
-because support is still being validated across Nortek raw variants.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">nortek-raw</span></code> reader decodes Nortek raw binary files with MHKiT DOLfYN.
+It dispatches classic Aquadopp <code class="docutils literal notranslate"><span class="pre">.aqd</span></code>, Vector <code class="docutils literal notranslate"><span class="pre">.VEC</span></code> and AWAC <code class="docutils literal notranslate"><span class="pre">.wpr</span></code>
+files to DOLfYN’s classic Nortek decoder, and dispatches AD2CP/Gen2-style
+<code class="docutils literal notranslate"><span class="pre">.aqd</span></code> files to DOLfYN’s Nortek2 decoder based on the binary file header.
+Nortek2 averaged <code class="docutils literal notranslate"><span class="pre">*_avgd.aqd</span></code> products with ID 38 packets are decoded by a
+small SeaSenseLib fallback because the DOLfYN Nortek2 indexer does not include
+that packet family.</p>
+<p>Nortek Signature <code class="docutils literal notranslate"><span class="pre">.ad2cp</span></code> files use the same DOLfYN decoder family but are
+not advertised by this reader yet. This reader is marked experimental because
+support is still being validated across Nortek raw variants.</p>
 <p>Velocity is preserved as vector variable <code class="docutils literal notranslate"><span class="pre">vel</span></code>. If <code class="docutils literal notranslate"><span class="pre">coord_sys</span></code> is
 <code class="docutils literal notranslate"><span class="pre">earth</span></code>, the decoded <code class="docutils literal notranslate"><span class="pre">dir</span></code> coordinate usually identifies east, north and
 up components, but the reader does not split these into CF component variables
