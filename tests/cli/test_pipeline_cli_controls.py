@@ -422,7 +422,7 @@ def test_reader_factory_validates_cli_reader_kwargs():
 
 
 def test_sbe_cnv_reader_args_do_not_expose_default_latitude():
-    path = Path("seasenselib/readers/sbe_cnv_reader.py")
+path = Path(__file__).resolve().parents[2] / "seasenselib" / "readers" / "sbe_cnv_reader.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     reader_class = next(
         node for node in tree.body
