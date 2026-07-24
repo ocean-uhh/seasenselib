@@ -607,7 +607,7 @@ def _parse_nortek_csv_columns(
     units_metadata = units_metadata or {}
     columns = _build_nortek_csv_columns(df, coordinate_system, units_metadata)
     return {
-        column["variable_name"]: (["time"], df[column["source_column"]].values)
+        column["variable_name"]: ([params.TIME], df[column["source_column"]].values)
         for column in columns
     }
 
@@ -707,12 +707,12 @@ def _load_nortek_csv_dataset(
     # Extract data variables
     columns = _build_nortek_csv_columns(df, coordinate_system, units_metadata)
     data_vars = {
-        column["variable_name"]: (["time"], df[column["source_column"]].values)
+        column["variable_name"]: ([params.TIME], df[column["source_column"]].values)
         for column in columns
     }
 
     # Create dataset
-    ds = xr.Dataset(data_vars, coords={"time": times})
+    ds = xr.Dataset(data_vars, coords={params.TIME: times})
 
     # Add global metadata
     instrument_type = settings.get("instrument_type", "Nortek_Aquadopp")
@@ -783,7 +783,7 @@ def load_nortek_csv_data(
         units_file=units_file,
     )
 
-    print(f"  Nortek CSV: loaded {ds.sizes['time']} samples from {Path(file_path).name}")
+    print(f"  Nortek CSV: loaded {ds.sizes[params.TIME]} samples from {Path(file_path).name}")
 
     return ds
 
@@ -856,6 +856,42 @@ class NortekCsvReader(AbstractReader):
     def _get_valid_extensions(cls) -> tuple[str, ...]:
         """Return valid file extensions for Nortek CSV exports."""
         return (".csv",)
+
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "units_file",
+                "path",
+                None,
+                "Optional Nortek Units.csv file used to annotate variables.",
+            ),
+            cls._reader_arg(
+                "target_coordinate_system",
+                "str",
+                None,
+                "Transform velocity variables to the requested coordinate system.",
+                choices=("BEAM", "XYZ", "ENU"),
+            ),
+            cls._reader_arg(
+                "pointing_down",
+                "bool | str",
+                None,
+                "Instrument orientation for BEAM transformations; omit to infer from status data.",
+            ),
+            cls._reader_arg(
+                "coordinate_transform_keep_source",
+                "bool",
+                False,
+                "Keep original velocity variables after adding transformed variables.",
+            ),
+            cls._reader_arg(
+                "coordinate_transform_overwrite",
+                "bool",
+                False,
+                "Allow transformed velocity variables to replace existing variables.",
+            ),
+        ]
 
     def _load_data(self) -> xr.Dataset:
         """Load the Nortek CSV file and return an xarray Dataset."""

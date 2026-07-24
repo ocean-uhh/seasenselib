@@ -1227,6 +1227,65 @@ class NortekRawReader(AbstractReader):
         """Return supported Nortek raw binary extensions."""
         return _SUPPORTED_EXTENSIONS
 
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "userdata",
+                "bool | path",
+                None,
+                "Pass DOLfYN userdata handling: true to search, false to skip, or a file path.",
+            ),
+            cls._reader_arg(
+                "nens",
+                "int",
+                None,
+                "Number of ensembles to read from the raw file.",
+            ),
+            cls._reader_arg(
+                "debug",
+                "bool",
+                None,
+                "DOLfYN debug flag.",
+            ),
+            cls._reader_arg(
+                "do_checksum",
+                "bool",
+                None,
+                "Ask DOLfYN to verify Nortek block checksums.",
+            ),
+            cls._reader_arg(
+                "rebuild_index",
+                "bool",
+                None,
+                "Pass DOLfYN's Gen2/AD2CP rebuild-index option.",
+            ),
+            cls._reader_arg(
+                "dual_profile",
+                "bool",
+                None,
+                "Pass DOLfYN's Gen2/AD2CP dual-profile option.",
+            ),
+            cls._reader_arg(
+                "show_decoder_output",
+                "bool",
+                False,
+                "Allow backend decoder progress messages on stdout.",
+            ),
+            cls._reader_arg(
+                "apply_aquadopp_compatibility",
+                "bool",
+                True,
+                "Apply SeaSenseLib's classic Aquadopp compatibility patch when needed.",
+            ),
+            cls._reader_arg(
+                "apply_nortek2_aquadopp_compatibility",
+                "bool",
+                True,
+                "Apply SeaSenseLib's Nortek Gen2 Aquadopp compatibility patch when needed.",
+            ),
+        ]
+
     def _load_data(self) -> xr.Dataset:
         """Load the Nortek raw data and return an xarray Dataset."""
         if _Nortek2PacketInspector.looks_like_file(self.input_file):

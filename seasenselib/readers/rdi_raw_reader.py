@@ -323,6 +323,53 @@ class RdiRawReader(AbstractReader):
         """Return supported RDI raw binary extensions."""
         return _SUPPORTED_EXTENSIONS
 
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "userdata",
+                "bool | path",
+                None,
+                "Pass DOLfYN userdata handling: true to search, false to skip, or a file path.",
+            ),
+            cls._reader_arg(
+                "nens",
+                "int",
+                None,
+                "Number of ensembles to read from the raw file.",
+            ),
+            cls._reader_arg(
+                "debug",
+                "int",
+                None,
+                "DOLfYN debug level.",
+            ),
+            cls._reader_arg(
+                "vmdas_search",
+                "bool",
+                False,
+                "Ask DOLfYN to search for VMDAS navigation blocks.",
+            ),
+            cls._reader_arg(
+                "winriver",
+                "bool",
+                False,
+                "Force DOLfYN's WinRiver parsing path.",
+            ),
+            cls._reader_arg(
+                "search_num",
+                "int",
+                None,
+                "DOLfYN search window for backends that expose it.",
+            ),
+            cls._reader_arg(
+                "show_decoder_output",
+                "bool",
+                False,
+                "Allow backend decoder progress messages on stdout.",
+            ),
+        ]
+
     def _load_data(self) -> xr.Dataset:
         """Load the RDI raw data and return an xarray Dataset."""
         read_rdi, source = _read_rdi_import()

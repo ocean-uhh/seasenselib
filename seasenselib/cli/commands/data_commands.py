@@ -35,10 +35,8 @@ def _parse_reader_arg_value(value: str):
 
 def _build_reader_kwargs(args):
     """Build reader kwargs from CLI arguments."""
-    reader_kwargs = {
-        "sanitize_input": True,
-        "fix_missing_coords": True,
-    }
+    reader_kwargs = {}
+    validate_reader_args = bool(getattr(args, "reader_args", None))
 
     # Parse generic reader args
     for item in getattr(args, "reader_args", None) or []:
@@ -57,8 +55,10 @@ def _build_reader_kwargs(args):
     # Apply explicit flags last so they always win on conflicts
     if getattr(args, "no_sanitize", False):
         reader_kwargs["sanitize_input"] = False
-    if getattr(args, "no_fix_coords", False):
-        reader_kwargs["fix_missing_coords"] = False
+        validate_reader_args = True
+
+    if validate_reader_args:
+        reader_kwargs["_validate_reader_args"] = True
 
     return reader_kwargs
 
@@ -81,15 +81,21 @@ def _build_stage_kwargs(args):
     ValueError
         If conflicting flags are specified
     """
+    default_latitude = getattr(args, 'default_latitude', None)
+    default_longitude = getattr(args, 'default_longitude', None)
+
     # Validate: --raw-only cannot be combined with other stage controls
     if getattr(args, 'raw_only', False):
         if (getattr(args, 'pipeline_apply_stages', None) or getattr(args, 'pipeline_skip_stages', None)
                 or getattr(args, 'pipeline_profile', None)
                 or getattr(args, 'pipeline_file', None)
                 or getattr(args, 'pipeline_apply_handlers', None)
-                or getattr(args, 'pipeline_skip_handlers', None)):
+                or getattr(args, 'pipeline_skip_handlers', None)
+                or default_latitude is not None
+                or default_longitude is not None):
             raise ValueError(
-                "--raw-only cannot be combined with pipeline stage/handler controls or pipeline file/profile"
+                "--raw-only cannot be combined with pipeline stage/handler controls, "
+                "pipeline file/profile, --default-latitude, or --default-longitude"
             )
 
     # Validate: pipeline profile is exclusive with apply/skip
@@ -170,6 +176,19 @@ def _build_stage_kwargs(args):
         stage_kwargs['pipeline_config'] = apply_handler_filters(
             stage_kwargs['pipeline_config'], apply_map, skip_map
         )
+
+    if default_latitude is not None or default_longitude is not None:
+        from ...pipeline.config import (
+            PipelineConfig,
+            apply_default_latitude,
+            apply_default_longitude,
+        )
+        if 'pipeline_config' not in stage_kwargs:
+            stage_kwargs['pipeline_config'] = PipelineConfig.from_resource("default")
+        if default_latitude is not None:
+            apply_default_latitude(stage_kwargs['pipeline_config'], default_latitude)
+        if default_longitude is not None:
+            apply_default_longitude(stage_kwargs['pipeline_config'], default_longitude)
     
     return stage_kwargs
 
@@ -259,6 +278,8 @@ def _write_processing_protocol(
         "pipeline_skip_stages": getattr(args, "pipeline_skip_stages", None),
         "pipeline_apply_handlers": getattr(args, "pipeline_apply_handlers", None),
         "pipeline_skip_handlers": getattr(args, "pipeline_skip_handlers", None),
+        "default_latitude": getattr(args, "default_latitude", None),
+        "default_longitude": getattr(args, "default_longitude", None),
         "raw_only": getattr(args, "raw_only", False),
         "reader_args": getattr(args, "reader_args", None),
     }
@@ -415,7 +436,7 @@ class ConvertCommand(BaseCommand):
                 for mapping in args.mapping:
                     if '=' not in mapping:
                         raise ValidationError(
-                            f"Invalid mapping format: {mapping}. Use 'name=value'")
+                            f"Invalid mapping format: {mapping}. Use 'canonical=source'")
 
                     # CLI format is: canonical=original (e.g., temperature=tv290C)
                     # Swap to internal format: original=canonical
@@ -488,7 +509,7 @@ class ShowCommand(BaseCommand):
                 for mapping in args.mapping:
                     if '=' not in mapping:
                         raise ValidationError(
-                            f"Invalid mapping format: {mapping}. Use 'name=value'")
+                            f"Invalid mapping format: {mapping}. Use 'canonical=source'")
 
                     # CLI format is: canonical=original (e.g., temperature=tv290C)
                     # Swap to internal format: original=canonical

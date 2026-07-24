@@ -59,6 +59,10 @@ class RbrMatlabRsktoolsReader(AbstractReader):
         """Return valid file extensions for MATLAB files."""
         return ('.mat',)
 
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return []
+
     def _parse_rsk_data(self, mat_file_path : str) -> xr.Dataset:
         """
         Parse RSK MATLAB file into xarray Dataset.

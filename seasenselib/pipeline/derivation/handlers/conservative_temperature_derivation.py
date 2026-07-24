@@ -9,7 +9,15 @@ import xarray as xr
 
 from ...interfaces import IDerivation
 import seasenselib.parameters as params
-from .utils import list_variants, output_name_from_input, units_ok
+from .utils import (
+    coordinate_fallback_instruction,
+    format_coordinate_names,
+    format_defaulted_coordinates,
+    list_variants,
+    output_name_from_input,
+    resolve_lat_lon,
+    units_ok,
+)
 
 _GSW = None
 
@@ -33,6 +41,18 @@ class ConservativeTemperatureDerivation(IDerivation):
     Conservative temperature (CT) is computed from practical salinity, in-situ temperature,
     pressure, and geographic position.
     """
+
+    def __init__(
+        self,
+        default_latitude: Optional[float] = None,
+        default_longitude: Optional[float] = None,
+    ):
+        self.default_latitude = (
+            None if default_latitude is None else float(default_latitude)
+        )
+        self.default_longitude = (
+            None if default_longitude is None else float(default_longitude)
+        )
 
     @staticmethod
     def output_parameter() -> str:
@@ -93,12 +113,29 @@ class ConservativeTemperatureDerivation(IDerivation):
             )
             return outputs, warnings
 
-        lat, lon = self._get_lat_lon(dataset)
+        lat, lon, defaulted = resolve_lat_lon(
+            dataset,
+            default_latitude=self.default_latitude,
+            default_longitude=self.default_longitude,
+        )
         if lat is None or lon is None:
+            missing = [
+                name
+                for name, value in (("latitude", lat), ("longitude", lon))
+                if value is None
+            ]
+            verb = "is" if len(missing) == 1 else "are"
             warnings.append(
-                "Conservative temperature not derived: latitude/longitude required to compute absolute salinity."
+                f"Conservative temperature not derived: {format_coordinate_names(missing)} "
+                f"{verb} missing. {coordinate_fallback_instruction(missing)}"
             )
             return outputs, warnings
+        if defaulted:
+            warnings.append(
+                "Conservative temperature used explicit default "
+                f"{format_defaulted_coordinates(defaulted)} because "
+                f"{format_coordinate_names(list(defaulted))} missing."
+            )
 
         sal = dataset[sal_name].values
         pres = dataset[pres_name].values
@@ -132,6 +169,14 @@ class ConservativeTemperatureDerivation(IDerivation):
                     ),
                 },
             )
+            if defaulted:
+                comment = ct_da.attrs.get("comment", "")
+                note = (
+                    f"{format_coordinate_names(list(defaulted), title=True)} missing; "
+                    f"explicit default {format_defaulted_coordinates(defaulted)} "
+                    "used for conservative temperature derivation"
+                )
+                ct_da.attrs["comment"] = f"{comment}; {note}".strip("; ")
             outputs[output_name] = ct_da
 
         return outputs, warnings
@@ -144,32 +189,3 @@ class ConservativeTemperatureDerivation(IDerivation):
                 "Missing derivation metadata for 'conservative_temperature' in pipeline/derivation/derivations.json"
             )
         return data["conservative_temperature"]
-
-    @staticmethod
-    def _get_lat_lon(dataset: xr.Dataset) -> Tuple[Optional[object], Optional[object]]:
-        def _find_value(names: List[str]) -> Optional[object]:
-            for name in names:
-                if name in dataset.coords:
-                    return dataset.coords[name].values
-                if name in dataset.data_vars:
-                    return dataset[name].values
-                if name in dataset.attrs:
-                    return dataset.attrs[name]
-            return None
-
-        lat = _find_value([params.LATITUDE, "lat", "latitude"])
-        lon = _find_value([params.LONGITUDE, "lon", "longitude"])
-
-        if lat is None or lon is None:
-            for name, var in dataset.coords.items():
-                if var.attrs.get("standard_name") == "latitude" and lat is None:
-                    lat = var.values
-                if var.attrs.get("standard_name") == "longitude" and lon is None:
-                    lon = var.values
-            for name, var in dataset.data_vars.items():
-                if var.attrs.get("standard_name") == "latitude" and lat is None:
-                    lat = var.values
-                if var.attrs.get("standard_name") == "longitude" and lon is None:
-                    lon = var.values
-
-        return lat, lon

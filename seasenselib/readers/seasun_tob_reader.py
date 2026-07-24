@@ -89,6 +89,17 @@ class SeasunTobReader(AbstractReader):
         """ASCII formats can have various extensions, so warn only."""
         return False
 
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "encoding",
+                "str",
+                "latin-1",
+                "Character encoding used when reading the TOB text file.",
+            ),
+        ]
+
     def _load_data(self) -> xr.Dataset:
         """ Reads a TOB file from Sea & Sun CTD into a xarray dataset. 
         
@@ -101,8 +112,6 @@ class SeasunTobReader(AbstractReader):
         xr.Dataset
             The loaded dataset.
         """
-
-        import gsw
 
         # Read the file
         with open(self.input_file, 'r', encoding=self._encoding) as file:
@@ -140,13 +149,6 @@ class SeasunTobReader(AbstractReader):
         for index, name in enumerate(column_names):
             if name in ds and units[index]:
                 ds[name].attrs['units'] = units[index]
-
-        # Convert pressure to depth if available
-        if 'Press' in ds:
-            pressure_in_dbar = ds['Press'].values
-            depth_in_meters = gsw.z_from_p(pressure_in_dbar, lat=53.8187)  # TODO latitude is for Cuxhaven
-            ds['depth'] = (('time',), depth_in_meters)
-            ds['depth'].attrs['units'] = "m"
 
         # Ensure 'time' coordinate is datetime type
         if params.TIME in ds.coords:

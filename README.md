@@ -20,6 +20,7 @@ SeaSenseLib is a library for reading and standardizing different raw oceanograph
 - [CLI Usage](#cli-usage)
   - [Example Data](#example-data)
   - [Converting a File to netCDF](#converting-a-file-to-netcdf)
+  - [Reader-Specific Options](#reader-specific-options)
   - [Parameter Mapping](#parameter-mapping)
   - [Metadata Enrichment](#metadata-enrichment)
   - [Pipeline Control](#pipeline-control)
@@ -139,7 +140,7 @@ following table gives a short overview of the available commands.
 
 | Command | Description |
 |---|---|
-| `list` | Display supported readers, writers, plotters, parameters, pipeline stages, handlers, and profiles. |
+| `list` | Display supported readers, writers, plotters, parameters, reader arguments, pipeline stages, handlers, and profiles. |
 | `convert` | Converts a file of a specific instrument format to a netCDF, CSV, or Excel file. |
 | `show` | Shows the summary for a input file of a specific instrument format.  |
 | `plot` | Plots data from the input file using a specified plot type. |
@@ -188,6 +189,37 @@ seasenselib convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2
 # Enable verbose logging to a file
 seasenselib convert -i examples/sea-practical-2023.cnv -o output/sea-practical-2023.nc --verbose-log run.log --verbose-level debug
 ```
+
+### Reader-Specific Options
+
+Some formats expose additional reader options. Discover them with:
+
+```bash
+seasenselib list reader-args
+seasenselib list reader-args --filter nortek-csv
+```
+
+Pass a listed option with `--reader-arg`:
+
+```bash
+seasenselib convert -i "Average Velocity.csv" -f nortek-csv -o output.nc --reader-arg units-file=Units.csv
+```
+
+Reader argument names are validated for the selected or detected input format.
+
+### Explicit Fallback Coordinates
+
+SeaSenseLib does not guess missing coordinates by default. If you want derivations
+to use fallback coordinates when the input data has none, provide them explicitly:
+
+```bash
+seasenselib convert -i mooring.cnv -o output.nc --default-latitude 54.0 --default-longitude 10.0 --processing-protocol
+```
+
+These values are treated as processing assumptions, not as instrument metadata.
+Pressure-to-depth derivation only needs latitude. TEOS-10 absolute salinity and
+conservative temperature need both latitude and longitude. Use a processing
+protocol to record the assumptions for reproducibility.
 
 ### Parameter Mapping
 

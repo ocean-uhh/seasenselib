@@ -58,9 +58,7 @@ class DataIOManager:
             Reader-specific parameters passed through to the reader.
             Common parameters:
             - sanitize_input : bool (for CNV files, default=True)
-            - fix_missing_coords : bool (for CNV files, default=True)
             - encoding : str (for TOB files)
-            - time_dim : str (for ADCP readers)
             - mapping : dict (variable name mapping)
             
         Returns:
@@ -81,10 +79,15 @@ class DataIOManager:
         format_key = self.format_detector.detect_format(input_file, format_hint)
 
         return_metadata = bool(kwargs.pop('return_metadata', False))
+        validate_reader_args = bool(kwargs.pop('_validate_reader_args', False))
 
         # Create reader and get data
         reader = self.reader_factory.create_reader(
-            format_key, input_file, header_input_file, **kwargs
+            format_key,
+            input_file,
+            header_input_file,
+            validate_reader_args=validate_reader_args,
+            **kwargs,
         )
         data = reader.data
 

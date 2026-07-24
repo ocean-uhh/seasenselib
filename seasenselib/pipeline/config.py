@@ -10,6 +10,7 @@ from pathlib import Path
 import logging
 from importlib import resources
 import json
+import math
 
 
 logger = logging.getLogger(__name__)
@@ -256,4 +257,71 @@ class PipelineConfig:
         return f"PipelineConfig(stages={len(self.pipeline)}, enabled={enabled})"
 
 
-__all__ = ["StageConfig", "PipelineConfig"]
+def apply_default_latitude(config: PipelineConfig, default_latitude: float) -> PipelineConfig:
+    """Configure the derivation stage to use an explicit fallback latitude.
+
+    The fallback is only valid for processing stages that explicitly opt into it.
+    It must never be treated as metadata from the instrument or input file.
+    """
+    try:
+        latitude = float(default_latitude)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("default_latitude must be a numeric latitude in degrees north") from exc
+
+    if not math.isfinite(latitude) or latitude < -90.0 or latitude > 90.0:
+        raise ValueError("default_latitude must be between -90 and 90 degrees")
+
+    derivation_stage = None
+    for stage in config.pipeline:
+        if stage.name == "derivation":
+            derivation_stage = stage
+            break
+
+    if derivation_stage is None or not derivation_stage.enabled:
+        raise ValueError("default_latitude requires an enabled derivation stage")
+
+    depth_config = derivation_stage.config.get("depth", {})
+    if depth_config is None:
+        depth_config = {}
+    if not isinstance(depth_config, dict):
+        raise ValueError("derivation.depth config must be a mapping")
+
+    updated_depth_config = dict(depth_config)
+    updated_depth_config["use_default_latitude"] = True
+    updated_depth_config["default_latitude"] = latitude
+    derivation_stage.config["default_latitude"] = latitude
+    derivation_stage.config["depth"] = updated_depth_config
+
+    return config
+
+
+def apply_default_longitude(config: PipelineConfig, default_longitude: float) -> PipelineConfig:
+    """Configure the derivation stage to use an explicit fallback longitude."""
+    try:
+        longitude = float(default_longitude)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("default_longitude must be a numeric longitude in degrees east") from exc
+
+    if not math.isfinite(longitude) or longitude < -180.0 or longitude > 180.0:
+        raise ValueError("default_longitude must be between -180 and 180 degrees")
+
+    derivation_stage = None
+    for stage in config.pipeline:
+        if stage.name == "derivation":
+            derivation_stage = stage
+            break
+
+    if derivation_stage is None or not derivation_stage.enabled:
+        raise ValueError("default_longitude requires an enabled derivation stage")
+
+    derivation_stage.config["default_longitude"] = longitude
+
+    return config
+
+
+__all__ = [
+    "StageConfig",
+    "PipelineConfig",
+    "apply_default_latitude",
+    "apply_default_longitude",
+]

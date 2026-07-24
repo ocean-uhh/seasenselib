@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
+import inspect
 import re
 import warnings
 import logging
@@ -78,6 +79,101 @@ class AbstractReader(ABC):
     get_data() -> xr.Dataset | None
             Returns the processed data as an xarray Dataset (deprecated, use `data` property).
     """
+
+    _READER_ARG_EXCLUDE = frozenset({
+        "self",
+        "input_file",
+        "dat_file_path",
+        "mapping",
+        "input_header_file",
+        "header_file_path",
+        "perform_default_postprocessing",
+        "rename_variables",
+        "assign_metadata",
+        "sort_variables",
+        "use_steps",
+        "pipeline_config",
+        "user_metadata",
+        "kwargs",
+    })
+
+    @classmethod
+    def _reader_arg(
+        cls,
+        name: str,
+        type_name: str = "",
+        default: Any = None,
+        description: str = "",
+        choices: list[str] | tuple[str, ...] | None = None,
+        required: bool = False,
+        cli_name: str | None = None,
+        source: str = "declared",
+    ) -> dict[str, Any]:
+        """Build a structured reader argument description for CLI discovery."""
+        spec = {
+            "name": name,
+            "cli_name": cli_name or name.replace("_", "-"),
+            "type": type_name,
+            "default": default,
+            "required": bool(required),
+            "description": description,
+            "source": source,
+        }
+        if choices:
+            spec["choices"] = list(choices)
+        return spec
+
+    @classmethod
+    def _format_reader_arg_annotation(cls, annotation: Any) -> str:
+        """Return a compact type label for an introspected reader argument."""
+        if annotation is inspect.Signature.empty:
+            return ""
+        if isinstance(annotation, str):
+            return annotation.replace("typing.", "")
+        name = getattr(annotation, "__name__", None)
+        if name:
+            return name
+        return str(annotation).replace("typing.", "")
+
+    @classmethod
+    def reader_args(cls) -> list[dict[str, Any]]:
+        """
+        Return CLI-discoverable reader-specific arguments.
+
+        Reader subclasses should override this when they can provide concise,
+        user-facing descriptions. The fallback introspects explicit constructor
+        parameters, which keeps plugin readers discoverable even without a custom
+        metadata hook.
+        """
+        try:
+            signature = inspect.signature(cls.__init__)
+        except (TypeError, ValueError):
+            return []
+
+        specs: list[dict[str, Any]] = []
+        for name, parameter in signature.parameters.items():
+            if name in cls._READER_ARG_EXCLUDE:
+                continue
+            if parameter.kind in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            ):
+                continue
+
+            required = parameter.default is inspect.Signature.empty
+            default = None if required else parameter.default
+            specs.append(
+                cls._reader_arg(
+                    name=name,
+                    type_name=cls._format_reader_arg_annotation(parameter.annotation),
+                    default=default,
+                    required=required,
+                    description="Reader constructor argument inferred from the reader signature.",
+                    source="signature",
+                )
+            )
+
+        return specs
 
     def __init__(self, input_file: str, mapping: dict | None = None,
                  input_header_file: str | None = None,
@@ -772,12 +868,12 @@ class AbstractReader(ABC):
                 
                 # Create pipeline (custom or default)
                 if self._pipeline_config is not None:
-                    if hasattr(self, "_fix_missing_coords"):
+                    if getattr(self, "_default_latitude_configured", False):
                         if any(stage.name == "derivation" for stage in self._pipeline_config.pipeline):
                             self._pipeline_config.upsert_stage('derivation', config={
                                 'depth': {
-                                    'use_default_latitude': bool(getattr(self, "_fix_missing_coords")),
-                                    'default_latitude': 45.0,
+                                    'use_default_latitude': bool(getattr(self, "_use_default_latitude")),
+                                    'default_latitude': float(getattr(self, "_default_latitude", 45.0)),
                                 }
                             })
                     pipeline = create_pipeline(config=self._pipeline_config)
@@ -795,11 +891,11 @@ class AbstractReader(ABC):
                         'preserve_original': True
                     })
 
-                    if hasattr(self, "_fix_missing_coords"):
+                    if getattr(self, "_default_latitude_configured", False):
                         config.upsert_stage('derivation', config={
                             'depth': {
-                                'use_default_latitude': bool(getattr(self, "_fix_missing_coords")),
-                                'default_latitude': 45.0,
+                                'use_default_latitude': bool(getattr(self, "_use_default_latitude")),
+                                'default_latitude': float(getattr(self, "_default_latitude", 45.0)),
                             }
                         })
                     

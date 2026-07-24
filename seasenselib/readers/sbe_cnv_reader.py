@@ -48,11 +48,8 @@ class SbeCnvReader(AbstractReader):
     sensor data. The provided data is expected to be in a CNV format, and this reader
     is designed to parse that format correctly.
 
-    The reader includes automatic fixing capabilities for common issues:
-    - File sanitization: Fixes trailing whitespace and malformed lines that cause pycnv errors
-    - Coordinate defaults: Uses 45 degrees latitude when missing (common for moored instruments)
-    
-    These behaviors can be controlled via the sanitize_input and fix_missing_coords parameters.
+    The reader includes automatic file sanitization for common issues such as
+    trailing whitespace and malformed lines that cause pycnv errors.
 
     Attributes
     ----------
@@ -64,12 +61,9 @@ class SbeCnvReader(AbstractReader):
         A mapping dictionary for renaming variables or attributes in the dataset.
     sanitize_input : bool
         Whether to automatically fix file format issues (default: True).
-    fix_missing_coords : bool
-        Whether to use default values for missing coordinates (default: True).
-
     Methods
     -------
-    __init__(input_file, sanitize_input=True, fix_missing_coords=True, mapping=None, **kwargs):
+    __init__(input_file, sanitize_input=True, use_default_latitude=None, default_latitude=None, mapping=None, **kwargs):
         Initializes the CnvReader with the input file and configuration options.
     data():
         Returns the xarray Dataset containing the sensor data.
@@ -83,9 +77,6 @@ class SbeCnvReader(AbstractReader):
     >>> # Default behavior (auto-fix enabled)
     >>> reader = SbeCnvReader('mooring_data.cnv')
     >>> ds = reader.data
-    
-    >>> # Disable automatic coordinate fixing
-    >>> reader = SbeCnvReader('mooring_data.cnv', fix_missing_coords=False)
     
     >>> # Disable file sanitization (stricter parsing)
     >>> reader = SbeCnvReader('data.cnv', sanitize_input=False)
@@ -116,7 +107,8 @@ class SbeCnvReader(AbstractReader):
 
     def __init__(self, input_file: str,
                  sanitize_input: bool = True,
-                 fix_missing_coords: bool = True,
+                 use_default_latitude: bool | None = None,
+                 default_latitude: float | None = None,
                  mapping: dict | None = None,
                  **kwargs):
         """Initialize SbeCnvReader with configuration options.
@@ -128,11 +120,13 @@ class SbeCnvReader(AbstractReader):
         sanitize_input : bool, default=True
             Whether to automatically fix known file format issues (e.g., trailing
             whitespace in start_time lines). When False, files with format issues
-            may fail to load. CLI flag: --no-sanitize
-        fix_missing_coords : bool, default=True
-            Whether to automatically use default values for missing coordinates
-            (e.g., 45 degrees latitude for depth calculation). When False, missing
-            coordinates will result in NaN values. CLI flag: --no-fix-coords
+            may fail to load. CLI: --reader-arg sanitize-input=false
+        use_default_latitude : bool, optional
+            Programmatic compatibility option for enabling fallback latitude use.
+            The CLI exposes this as the global --default-latitude option instead.
+        default_latitude : float, optional
+            Latitude used for pressure-to-depth derivation when latitude is missing
+            and fallback latitude use is enabled.
         mapping : dict, optional
             Variable name mapping dictionary.
         **kwargs
@@ -149,15 +143,40 @@ class SbeCnvReader(AbstractReader):
             - sort_variables : bool, default=True
                 Whether to sort variables alphabetically.
         """
+        default_latitude_configured = (
+            use_default_latitude is not None
+            or default_latitude is not None
+            or "fix_missing_coords" in kwargs
+        )
+        if "fix_missing_coords" in kwargs:
+            use_default_latitude = bool(kwargs.pop("fix_missing_coords"))
+
         super().__init__(input_file, mapping, **kwargs)
         self._sanitize_input = sanitize_input
-        self._fix_missing_coords = fix_missing_coords
+        self._default_latitude_configured = default_latitude_configured
+        self._use_default_latitude = (
+            bool(use_default_latitude)
+            if use_default_latitude is not None
+            else default_latitude is not None
+        )
+        self._default_latitude = 45.0 if default_latitude is None else default_latitude
         self._validate_file()
 
     @classmethod
     def _get_valid_extensions(cls) -> tuple[str, ...]:
         """Return valid file extensions for CNV files."""
         return ('.cnv',)
+
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "sanitize_input",
+                "bool",
+                True,
+                "Automatically fix known CNV formatting issues before parsing.",
+            ),
+        ]
 
     def __get_scan_interval_in_seconds(self, string):
         pattern = r'^# interval = seconds: ([\d.]+)$'

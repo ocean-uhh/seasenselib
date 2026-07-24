@@ -15,7 +15,7 @@ class AdcpMatlabRdadcpReader(AbstractReader):
     """Reader which converts ADCP data stored in MATLAB .mat files converted from binary with rdadcp into an xarray Dataset."""
 
     def __init__(self, input_file: str,
-                 time_dim: str = "time",
+                 time_dim: str = params.TIME,
                  bin_dim: str = "bin",
                  beam_dim: str = "beam",
                  mapping: dict | None = None,
@@ -26,7 +26,7 @@ class AdcpMatlabRdadcpReader(AbstractReader):
         ----------
         input_file : str
             Path to the MAT file.
-        time_dim : str, default="time"
+        time_dim : str, default=params.TIME
             Name of the time dimension in the output dataset.
         bin_dim : str, default="bin"
             Name of the bin dimension in the output dataset.
@@ -59,6 +59,10 @@ class AdcpMatlabRdadcpReader(AbstractReader):
     def _get_valid_extensions(cls) -> tuple[str, ...] | None:
         """Return valid file extensions for MATLAB files."""
         return ('.mat',)
+
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return []
 
     @staticmethod
     def _matlab_datenum_to_datetime64(dnums: np.ndarray) -> np.ndarray:
@@ -206,18 +210,39 @@ class AdcpMatlabRdadcpReader(AbstractReader):
         self._orientation = orientation
         self._dropped_zero_mtime = dropped  # for attrs
 
-        return dict(
-            time=time, nt=nt, n_cells=n_cells, bin_idx=np.arange(1, n_cells+1),
-            ranges=ranges, z_2d=z_2d,
-            east=east, north=north, vert=vert,
-            depth_pd=depth_pd, pressure=pressure,
-            number=number, heading=heading, pitch=pitch, roll=roll,
-            heading_std=heading_std, pitch_std=pitch_std, roll_std=roll_std,
-            temperature=temperature, salinity=salinity, pressure_std=pressure_std,
-            corr=corr, status=status, intens=intens, perc_good=perc_good,
-            bt_range=bt_range, bt_vel=bt_vel, bt_corr=bt_corr, bt_ampl=bt_ampl, bt_perc_good=bt_perc_good,
-            pres_units=pres_units
-        )
+        return {
+            params.TIME: time,
+            "nt": nt,
+            "n_cells": n_cells,
+            "bin_idx": np.arange(1, n_cells+1),
+            "ranges": ranges,
+            "z_2d": z_2d,
+            "east": east,
+            "north": north,
+            "vert": vert,
+            "depth_pd": depth_pd,
+            "pressure": pressure,
+            "number": number,
+            "heading": heading,
+            "pitch": pitch,
+            "roll": roll,
+            "heading_std": heading_std,
+            "pitch_std": pitch_std,
+            "roll_std": roll_std,
+            "temperature": temperature,
+            "salinity": salinity,
+            "pressure_std": pressure_std,
+            "corr": corr,
+            "status": status,
+            "intens": intens,
+            "perc_good": perc_good,
+            "bt_range": bt_range,
+            "bt_vel": bt_vel,
+            "bt_corr": bt_corr,
+            "bt_ampl": bt_ampl,
+            "bt_perc_good": bt_perc_good,
+            "pres_units": pres_units,
+        }
 
 
     # ---------- dataset creation ----------
@@ -225,7 +250,7 @@ class AdcpMatlabRdadcpReader(AbstractReader):
         n_cells, nt = P["n_cells"], P["nt"]
 
         coords = {
-            self._time_dim: (self._time_dim, P["time"]),
+            self._time_dim: (self._time_dim, P[params.TIME]),
             self._bin_dim: (self._bin_dim, P["bin_idx"]),
             "range": (self._bin_dim, P["ranges"]),  # cell-center distance from transducer [m]
         }
@@ -285,8 +310,8 @@ class AdcpMatlabRdadcpReader(AbstractReader):
                 "xducer_misalign_deg": float(getattr(self._cfg, "xducer_misalign", 0.0)),
                 "magnetic_variation_deg": float(getattr(self._cfg, "magnetic_var", 0.0)),
                 "ranges_definition": "cell center range from transducer [m]",
-                "time_coverage_start": self._iso_ms(P["time"][0]),
-                "time_coverage_end": self._iso_ms(P["time"][-1]),
+                "time_coverage_start": self._iso_ms(P[params.TIME][0]),
+                "time_coverage_end": self._iso_ms(P[params.TIME][-1]),
                 "vertical_velocity_converted_from_cm_s": bool(self._vert_converted_from_cm),
                 "pressure_original_units": self._orig_pres_units,
             },

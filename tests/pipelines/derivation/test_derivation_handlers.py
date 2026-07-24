@@ -12,6 +12,7 @@ import seasenselib.pipeline.derivation.handlers.potential_temperature_derivation
 import seasenselib.pipeline.derivation.handlers.conservative_temperature_derivation as ct_mod
 import seasenselib.pipeline.derivation.handlers.sound_speed_derivation as ss_mod
 import seasenselib.pipeline.derivation.handlers.depth_derivation as depth_mod
+import seasenselib.pipeline.derivation.handlers.absolute_salinity_derivation as as_mod
 
 
 def _base_dataset():
@@ -87,7 +88,72 @@ def test_conservative_temperature_derivation_requires_lat_lon():
     derivation = ct_mod.ConservativeTemperatureDerivation()
     outputs, warnings = derivation.derive(ds)
     assert outputs == {}
-    assert any("latitude/longitude" in w for w in warnings)
+    assert any("latitude and longitude are missing" in w for w in warnings)
+    assert any("--default-latitude" in w and "--default-longitude" in w for w in warnings)
+
+
+def test_conservative_temperature_derivation_treats_nan_lat_lon_as_missing():
+    ds = _base_dataset()
+    ds = ds.assign_coords(latitude=np.nan, longitude=np.nan)
+    derivation = ct_mod.ConservativeTemperatureDerivation()
+    outputs, warnings = derivation.derive(ds)
+
+    assert outputs == {}
+    assert any("latitude and longitude are missing" in w for w in warnings)
+
+
+def test_conservative_temperature_derivation_uses_default_latitude_with_longitude():
+    if ct_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["longitude"] = 10.0
+    derivation = ct_mod.ConservativeTemperatureDerivation(default_latitude=54.0)
+    outputs, warnings = derivation.derive(ds)
+
+    assert "conservative_temperature" in outputs
+    assert any("default latitude 54.0" in w for w in warnings)
+    assert "explicit default latitude 54.0 degrees" in outputs["conservative_temperature"].attrs["comment"]
+
+
+def test_conservative_temperature_derivation_uses_default_longitude_with_latitude():
+    if ct_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["latitude"] = 54.0
+    derivation = ct_mod.ConservativeTemperatureDerivation(default_longitude=10.0)
+    outputs, warnings = derivation.derive(ds)
+
+    assert "conservative_temperature" in outputs
+    assert any("default longitude 10.0" in w for w in warnings)
+    assert "explicit default longitude 10.0" in outputs["conservative_temperature"].attrs["comment"]
+
+
+def test_conservative_temperature_missing_longitude_points_to_default_longitude():
+    if ct_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["latitude"] = 54.0
+    derivation = ct_mod.ConservativeTemperatureDerivation()
+    outputs, warnings = derivation.derive(ds)
+
+    assert outputs == {}
+    assert any("longitude is missing" in w for w in warnings)
+    assert any("--default-longitude" in w for w in warnings)
+
+
+def test_conservative_temperature_derivation_uses_default_coordinates():
+    if ct_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    derivation = ct_mod.ConservativeTemperatureDerivation(
+        default_latitude=54.0,
+        default_longitude=10.0,
+    )
+    outputs, warnings = derivation.derive(ds)
+
+    assert "conservative_temperature" in outputs
+    assert any("default latitude 54.0 degrees and longitude 10.0 degrees" in w for w in warnings)
+    assert "Latitude and longitude missing" in outputs["conservative_temperature"].attrs["comment"]
 
 
 def test_conservative_temperature_derivation_positive_if_gsw_available():
@@ -103,6 +169,70 @@ def test_conservative_temperature_derivation_positive_if_gsw_available():
     result = outputs["conservative_temperature"]
     assert result.dims == ds["temperature"].dims
     assert "standard_name" in result.attrs
+
+
+def test_absolute_salinity_derivation_treats_nan_lat_lon_as_missing():
+    ds = _base_dataset()
+    ds = ds.assign_coords(latitude=np.nan, longitude=np.nan)
+    derivation = as_mod.AbsoluteSalinityDerivation()
+    outputs, warnings = derivation.derive(ds)
+
+    assert outputs == {}
+    assert any("latitude and longitude are missing" in w for w in warnings)
+
+
+def test_absolute_salinity_derivation_uses_default_latitude_with_longitude():
+    if as_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["longitude"] = 10.0
+    derivation = as_mod.AbsoluteSalinityDerivation(default_latitude=54.0)
+    outputs, warnings = derivation.derive(ds)
+
+    assert "absolute_salinity" in outputs
+    assert any("default latitude 54.0" in w for w in warnings)
+    assert "explicit default latitude 54.0 degrees" in outputs["absolute_salinity"].attrs["comment"]
+
+
+def test_absolute_salinity_derivation_uses_default_longitude_with_latitude():
+    if as_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["latitude"] = 54.0
+    derivation = as_mod.AbsoluteSalinityDerivation(default_longitude=10.0)
+    outputs, warnings = derivation.derive(ds)
+
+    assert "absolute_salinity" in outputs
+    assert any("default longitude 10.0" in w for w in warnings)
+    assert "explicit default longitude 10.0" in outputs["absolute_salinity"].attrs["comment"]
+
+
+def test_absolute_salinity_missing_longitude_points_to_default_longitude():
+    if as_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    ds.attrs["latitude"] = 54.0
+    derivation = as_mod.AbsoluteSalinityDerivation()
+    outputs, warnings = derivation.derive(ds)
+
+    assert outputs == {}
+    assert any("longitude is missing" in w for w in warnings)
+    assert any("--default-longitude" in w for w in warnings)
+
+
+def test_absolute_salinity_derivation_uses_default_coordinates():
+    if as_mod._get_gsw() is None:
+        pytest.skip("GSW not available")
+    ds = _base_dataset()
+    derivation = as_mod.AbsoluteSalinityDerivation(
+        default_latitude=54.0,
+        default_longitude=10.0,
+    )
+    outputs, warnings = derivation.derive(ds)
+
+    assert "absolute_salinity" in outputs
+    assert any("default latitude 54.0 degrees and longitude 10.0 degrees" in w for w in warnings)
+    assert "Latitude and longitude missing" in outputs["absolute_salinity"].attrs["comment"]
 
 
 def test_sound_speed_derivation_negative_missing_inputs():
@@ -144,7 +274,7 @@ def test_salinity_derivations_accept_cf_generic_salinity_units():
     assert units_ok(ds, "salinity", "salinity") is True
 
 
-def test_depth_derivation_default_latitude_behavior(monkeypatch):
+def test_depth_derivation_default_latitude_behavior():
     ds = xr.Dataset({"pressure": (["time"], [10.0, 12.0])})
     ds["pressure"].attrs["units"] = "dbar"
     derivation = depth_mod.DepthDerivation(use_default_latitude=True, default_latitude=45.0)
@@ -154,17 +284,29 @@ def test_depth_derivation_default_latitude_behavior(monkeypatch):
 
     outputs, warnings = derivation.derive(ds)
     assert "depth" in outputs
+    assert any("explicit default latitude of 45.0 degrees" in warning for warning in warnings)
     result = outputs["depth"]
     assert "comment" in result.attrs
-    assert "default 45.0" in result.attrs["comment"]
+    assert "explicit default latitude 45.0 degrees" in result.attrs["comment"]
     assert "latitude" not in ds.coords
+
+    warning_text = "\n".join(warnings)
+    assert "reader-arg" not in warning_text
+    assert "explicit default latitude of 45.0 degrees" in warning_text
+    assert "Omit the fallback latitude option" in warning_text
 
 
 def test_depth_derivation_missing_latitude_no_default():
     ds = xr.Dataset({"pressure": (["time"], [10.0, 12.0])})
     ds["pressure"].attrs["units"] = "dbar"
     derivation = depth_mod.DepthDerivation(use_default_latitude=False)
-    assert derivation.can_derive(ds) is False
+    assert derivation.can_derive(ds) is True
+
+    outputs, warnings = derivation.derive(ds)
+
+    assert outputs == {}
+    assert any("Depth not derived" in warning for warning in warnings)
+    assert any("--default-latitude" in warning for warning in warnings)
 
 
 def test_depth_derivation_import_error(monkeypatch):

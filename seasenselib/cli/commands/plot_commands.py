@@ -5,7 +5,40 @@ Plotting commands (plot, plot-ts, plot-profile, plot-series).
 import argparse
 from ...core.exceptions import ValidationError
 from .base import BaseCommand, CommandResult
-from .data_commands import _build_reader_kwargs
+from .data_commands import (
+    _build_reader_kwargs,
+    _build_stage_kwargs,
+    _parse_user_metadata,
+    _resolve_protocol_path,
+    _write_processing_protocol,
+)
+
+
+def _build_mapping_kwargs(args: argparse.Namespace) -> dict:
+    """Build internal mapping kwargs from CLI canonical=source pairs."""
+    mapping_args = getattr(args, "mapping", None)
+    if not mapping_args:
+        return {}
+
+    import seasenselib.parameters as params
+
+    allowed_parameters = params.allowed_parameters()
+    mapping_dict = {}
+    for mapping in mapping_args:
+        if "=" not in mapping:
+            raise ValidationError(
+                f"Invalid mapping format: {mapping}. Use 'canonical=source'"
+            )
+
+        canonical, original = mapping.split("=", 1)
+        if canonical not in allowed_parameters:
+            raise ValidationError(
+                f"Unknown parameter name: {canonical}. "
+                f"Allowed parameters are: {', '.join(allowed_parameters)}"
+            )
+        mapping_dict[original] = canonical
+
+    return {"mapping": mapping_dict}
 
 
 class PlotCommand(BaseCommand):
@@ -44,14 +77,27 @@ class PlotCommand(BaseCommand):
                             "Use 'seasenselib list plotters' for more details."
                 )
             
-            # Read data with reader-specific kwargs
+            # Read data with reader, mapping, metadata, and pipeline kwargs
             reader_kwargs = _build_reader_kwargs(args)
+            reader_kwargs.update(_build_mapping_kwargs(args))
+            reader_kwargs.update(_build_stage_kwargs(args))
+            user_metadata = _parse_user_metadata(args)
+            if user_metadata:
+                reader_kwargs['user_metadata'] = user_metadata
+
+            want_protocol = getattr(args, 'processing_protocol', None) is not None
+            if want_protocol:
+                reader_kwargs['return_metadata'] = True
+
             data = self.io.read_data(
                 args.input, 
                 args.input_format, 
                 args.header_input,
                 **reader_kwargs
             )
+            metadata = None
+            if want_protocol and isinstance(data, tuple):
+                data, metadata = data
             
             if not data:
                 raise ValidationError('No data found in file.')
@@ -68,6 +114,15 @@ class PlotCommand(BaseCommand):
             message = f"Plot created successfully using {plotter_class.__name__}"
             if args.output:
                 message += f" and saved to {args.output}"
+
+            if want_protocol:
+                default_protocol_path = (
+                    f"{args.output}.processing.protocol.json"
+                    if args.output
+                    else f"{args.input}.plot.processing.protocol.json"
+                )
+                protocol_path = _resolve_protocol_path(args, default_protocol_path)
+                _write_processing_protocol(protocol_path, metadata, data, args, "plot")
             
             return CommandResult(success=True, message=message)
         
@@ -89,7 +144,12 @@ class PlotCommand(BaseCommand):
         # Skip internal/common arguments that aren't for the plotter
         skip_args = {
             'plotter', 'input', 'input_format', 'header_input', 'command',
-            'list_plotters', 'no_sanitize', 'no_fix_coords', 'reader_args'
+            'list_plotters', 'no_sanitize', 'reader_args', 'mapping',
+            'metadata', 'metadata_file', 'processing_protocol',
+            'raw_only', 'pipeline_apply_stages', 'pipeline_skip_stages',
+            'pipeline_profile', 'pipeline_file', 'pipeline_apply_handlers',
+            'pipeline_skip_handlers', 'default_latitude', 'default_longitude',
+            'verbose', 'verbose_level', 'verbose_log',
         }
         
         for key, value in args_dict.items():
