@@ -115,9 +115,11 @@ class CLIRouter:
             self._configure_logging(parsed_args)
 
             # Create command instance
-            command = self.command_factory.create_command(
-                command_name, self._get_io_manager()
-            )
+            if command_name in {'list', 'formats'}:
+                io_manager = None
+            else:
+                io_manager = self._get_io_manager()
+            command = self.command_factory.create_command(command_name, io_manager)
 
             # Execute command
             result = command.execute(parsed_args)

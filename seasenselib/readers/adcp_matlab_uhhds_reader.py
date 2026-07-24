@@ -171,20 +171,20 @@ class AdcpMatlabUhhdsReader(AbstractReader):
         if fmt == "v17":
             depth_bins = self._raw_matlab_data['dat_binrange'].flatten()
             coords = {
-            "time": time,
+            ctdparams.TIME: time,
             "bin": depth_bins,
         }
             data_vars = {
-                ctdparams.EAST_VELOCITY: (("time", "bin"), self._raw_matlab_data["dat_u"]),
-                ctdparams.NORTH_VELOCITY: (("time", "bin"), self._raw_matlab_data["dat_v"]),
-                ctdparams.UP_VELOCITY: (("time", "bin"), self._raw_matlab_data["dat_w"]),
-                ctdparams.TEMPERATURE: (("time"), self._raw_matlab_data['dat_t'].flatten()),
-                ctdparams.ECHO_INTENSITY: (("time", "bin"), self._raw_matlab_data['dat_echoa']),
-                ctdparams.CORRELATION: (("time", "bin"), self._raw_matlab_data['dat_corra']), 
-                ctdparams.PITCH: (("time"), self._raw_matlab_data['dat_pitch'].flatten()),
-                ctdparams.ROLL: (("time"), self._raw_matlab_data['dat_roll'].flatten()),
-                ctdparams.HEADING: (("time"), self._raw_matlab_data['dat_head'].flatten()),
-                ctdparams.BATTERY_VOLTAGE: (("time"), self._raw_matlab_data['dat_batt'].flatten()),
+                ctdparams.EAST_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data["dat_u"]),
+                ctdparams.NORTH_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data["dat_v"]),
+                ctdparams.UP_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data["dat_w"]),
+                ctdparams.TEMPERATURE: (ctdparams.TIME, self._raw_matlab_data['dat_t'].flatten()),
+                ctdparams.ECHO_INTENSITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['dat_echoa']),
+                ctdparams.CORRELATION: ((ctdparams.TIME, "bin"), self._raw_matlab_data['dat_corra']),
+                ctdparams.PITCH: (ctdparams.TIME, self._raw_matlab_data['dat_pitch'].flatten()),
+                ctdparams.ROLL: (ctdparams.TIME, self._raw_matlab_data['dat_roll'].flatten()),
+                ctdparams.HEADING: (ctdparams.TIME, self._raw_matlab_data['dat_head'].flatten()),
+                ctdparams.BATTERY_VOLTAGE: (ctdparams.TIME, self._raw_matlab_data['dat_batt'].flatten()),
             }
         
         elif fmt == "v13":
@@ -195,23 +195,23 @@ class AdcpMatlabUhhdsReader(AbstractReader):
             depth = bin1_mid + bin_size * np.arange(num_bins)
             
             coords = {
-            "time": time,
+            ctdparams.TIME: time,
             "bin": depth,
         }
             
             data_vars = {
-                ctdparams.EAST_VELOCITY: (("time", "bin"), self._raw_matlab_data['SerEmmpersec'] / 1000),  # mm/s to m/s
-                ctdparams.NORTH_VELOCITY: (("time", "bin"), self._raw_matlab_data['SerNmmpersec'] / 1000),
-                ctdparams.UP_VELOCITY: (("time", "bin"), self._raw_matlab_data['SerVmmpersec'] / 1000),
-                ctdparams.TEMPERATURE: (("time"), self._raw_matlab_data['AnT100thDeg'].flatten() / 100),
-                ctdparams.ECHO_INTENSITY: (("time", "bin"), self._raw_matlab_data['SerEA1cnt']),
-                ctdparams.CORRELATION: (("time", "bin"), self._raw_matlab_data['SerC1cnt']),
-                ctdparams.DIRECTION: (("time", "bin"), self._raw_matlab_data['SerDir10thDeg'] / 10),  # 10th degrees to degrees
-                ctdparams.MAGNITUDE: (("time", "bin"), self._raw_matlab_data['SerMagmmpersec'] / 1000),
-                ctdparams.PITCH: (("time"), self._raw_matlab_data['AnP100thDeg'].flatten() / 100),
-                ctdparams.ROLL: (("time"), self._raw_matlab_data['AnR100thDeg'].flatten() / 100),
-                ctdparams.HEADING: (("time"), self._raw_matlab_data['AnH100thDeg'].flatten() / 100),
-                ctdparams.BATTERY_VOLTAGE: (("time"), self._raw_matlab_data['AnBatt'].flatten() / 10),  # Tenths of volts
+                ctdparams.EAST_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerEmmpersec'] / 1000),  # mm/s to m/s
+                ctdparams.NORTH_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerNmmpersec'] / 1000),
+                ctdparams.UP_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerVmmpersec'] / 1000),
+                ctdparams.TEMPERATURE: (ctdparams.TIME, self._raw_matlab_data['AnT100thDeg'].flatten() / 100),
+                ctdparams.ECHO_INTENSITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerEA1cnt']),
+                ctdparams.CORRELATION: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerC1cnt']),
+                ctdparams.DIRECTION: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerDir10thDeg'] / 10),  # 10th degrees to degrees
+                ctdparams.MAGNITUDE: ((ctdparams.TIME, "bin"), self._raw_matlab_data['SerMagmmpersec'] / 1000),
+                ctdparams.PITCH: (ctdparams.TIME, self._raw_matlab_data['AnP100thDeg'].flatten() / 100),
+                ctdparams.ROLL: (ctdparams.TIME, self._raw_matlab_data['AnR100thDeg'].flatten() / 100),
+                ctdparams.HEADING: (ctdparams.TIME, self._raw_matlab_data['AnH100thDeg'].flatten() / 100),
+                ctdparams.BATTERY_VOLTAGE: (ctdparams.TIME, self._raw_matlab_data['AnBatt'].flatten() / 10),  # Tenths of volts
         }
             
     
@@ -219,21 +219,21 @@ class AdcpMatlabUhhdsReader(AbstractReader):
 
             depth_bins = self._raw_matlab_data['DS_19_12_binrange'].flatten()
             coords = {
-            "time": time,
+            ctdparams.TIME: time,
             "bin": depth_bins,
         }
             
             data_vars = {
-                ctdparams.EAST_VELOCITY: (("time", "bin"), self._raw_matlab_data['DS_19_12_u']),
-                ctdparams.NORTH_VELOCITY: (("time", "bin"), self._raw_matlab_data['DS_19_12_v']),
-                ctdparams.UP_VELOCITY: (("time", "bin"), self._raw_matlab_data['DS_19_12_w']),
-                ctdparams.TEMPERATURE: (("time"), self._raw_matlab_data['DS_19_12_t'].flatten()),
-                ctdparams.ECHO_INTENSITY: (("time", "bin"), self._raw_matlab_data['DS_19_12_echoa']),
-                ctdparams.CORRELATION: (("time", "bin"), self._raw_matlab_data['DS_19_12_corra']),
-                ctdparams.PITCH: (("time"), self._raw_matlab_data['DS_19_12_pitch'].flatten()),
-                ctdparams.ROLL: (("time"), self._raw_matlab_data['DS_19_12_roll'].flatten()),
-                ctdparams.HEADING: (("time"), self._raw_matlab_data['DS_19_12_head'].flatten()),
-                ctdparams.BATTERY_VOLTAGE: (("time"), self._raw_matlab_data['DS_19_12_batt'].flatten()),
+                ctdparams.EAST_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['DS_19_12_u']),
+                ctdparams.NORTH_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['DS_19_12_v']),
+                ctdparams.UP_VELOCITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['DS_19_12_w']),
+                ctdparams.TEMPERATURE: (ctdparams.TIME, self._raw_matlab_data['DS_19_12_t'].flatten()),
+                ctdparams.ECHO_INTENSITY: ((ctdparams.TIME, "bin"), self._raw_matlab_data['DS_19_12_echoa']),
+                ctdparams.CORRELATION: ((ctdparams.TIME, "bin"), self._raw_matlab_data['DS_19_12_corra']),
+                ctdparams.PITCH: (ctdparams.TIME, self._raw_matlab_data['DS_19_12_pitch'].flatten()),
+                ctdparams.ROLL: (ctdparams.TIME, self._raw_matlab_data['DS_19_12_roll'].flatten()),
+                ctdparams.HEADING: (ctdparams.TIME, self._raw_matlab_data['DS_19_12_head'].flatten()),
+                ctdparams.BATTERY_VOLTAGE: (ctdparams.TIME, self._raw_matlab_data['DS_19_12_batt'].flatten()),
         }
 
         elif fmt == "v11":
@@ -261,19 +261,19 @@ class AdcpMatlabUhhdsReader(AbstractReader):
 
             depth_bins = wt_struct.r.flatten()
             coords = {
-                "time": time,
+                ctdparams.TIME: time,
                 "depth_bin": depth_bins[:east_velocity.shape[1]],
             }
 
             # Organize data variables to return
             data_vars = {
-                ctdparams.EAST_VELOCITY: (("time", "depth_bin"), east_velocity),
-                ctdparams.TEMPERATURE: (("time"), temperature),
-                ctdparams.SALINITY: (("time"), salinity),
-                ctdparams.PITCH: (("time"), pitch),
-                ctdparams.ROLL: (("time"), roll),
-                ctdparams.HEADING: (("time"), heading),
-                ctdparams.BATTERY_VOLTAGE: (("time"), battery_voltage),
+                ctdparams.EAST_VELOCITY: ((ctdparams.TIME, "depth_bin"), east_velocity),
+                ctdparams.TEMPERATURE: (ctdparams.TIME, temperature),
+                ctdparams.SALINITY: (ctdparams.TIME, salinity),
+                ctdparams.PITCH: (ctdparams.TIME, pitch),
+                ctdparams.ROLL: (ctdparams.TIME, roll),
+                ctdparams.HEADING: (ctdparams.TIME, heading),
+                ctdparams.BATTERY_VOLTAGE: (ctdparams.TIME, battery_voltage),
             }
 
         return data_vars, coords

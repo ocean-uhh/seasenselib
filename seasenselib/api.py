@@ -21,6 +21,9 @@ def read(filename: str, file_format: Optional[str] = None,
          pipeline_file: Optional[str] = None,
          pipeline_apply_handlers: Optional[List[str]] = None,
          pipeline_skip_handlers: Optional[List[str]] = None,
+         default_latitude: Optional[float] = None,
+         default_longitude: Optional[float] = None,
+         mapping: Optional[Dict[str, str]] = None,
          metadata: Optional[Dict[str, Any]] = None,
          metadata_file: Optional[str] = None,
          step_config: Optional[Dict[str, Any]] = None,
@@ -61,6 +64,18 @@ def read(filename: str, file_format: Optional[str] = None,
         Handlers to apply, in the form ['stage:handler', ...].
     pipeline_skip_handlers : List[str], optional
         Handlers to skip, in the form ['stage:handler', ...].
+    default_latitude : float, optional
+        Explicit fallback latitude in degrees north for derivations when the
+        input data has no latitude. If omitted, no latitude is guessed.
+        Depth derivation needs latitude only. TEOS-10 salinity/temperature
+        derivations require longitude from the data or ``default_longitude``.
+    default_longitude : float, optional
+        Explicit fallback longitude in degrees east for derivations when the
+        input data has no longitude. If omitted, no longitude is guessed.
+        Used with latitude/default_latitude for TEOS-10 absolute salinity and
+        conservative temperature derivations.
+    mapping : Dict[str, str], optional
+        Variable name mapping in the internal form {original_name: canonical_name}.
     metadata : Dict[str, Any], optional
         User metadata overrides with sections {"global": {...}, "variables": {...}}.
     metadata_file : str, optional
@@ -71,10 +86,7 @@ def read(filename: str, file_format: Optional[str] = None,
     **kwargs
         Additional reader-specific parameters. Examples:
         - sanitize_input : bool (for SBE CNV files, default=True)
-        - fix_missing_coords : bool (for SBE CNV files, default=True)
         - encoding : str (for Sea&Sun TOB files, default='latin-1')
-        - time_dim : str (for ADCP readers, default='time')
-        - mapping : dict (variable name mapping for all readers)
         
     Returns
     -------
@@ -132,6 +144,16 @@ def read(filename: str, file_format: Optional[str] = None,
 
     ```python
     ds = ssl.read('data.cnv', pipeline_file='my_profile.json')
+    ```
+
+    Use explicit fallback coordinates for derivations:
+
+    ```python
+    ds = ssl.read(
+        'mooring.cnv',
+        default_latitude=54.0,
+        default_longitude=10.0,
+    )
     ```
 
     Provide user metadata directly:
@@ -214,6 +236,21 @@ def read(filename: str, file_format: Optional[str] = None,
             pipeline_config = PipelineConfig.from_resource("default")
         pipeline_config = apply_handler_filters(pipeline_config, apply_map, skip_map)
 
+    if default_latitude is not None or default_longitude is not None:
+        if not use_steps:
+            raise ValueError("default latitude/longitude cannot be used when use_steps=False")
+        from seasenselib.pipeline import (
+            PipelineConfig,
+            apply_default_latitude,
+            apply_default_longitude,
+        )
+        if pipeline_config is None:
+            pipeline_config = PipelineConfig.from_resource("default")
+        if default_latitude is not None:
+            apply_default_latitude(pipeline_config, default_latitude)
+        if default_longitude is not None:
+            apply_default_longitude(pipeline_config, default_longitude)
+
     # Load user metadata (file + inline)
     user_metadata = None
     if metadata_file is not None:
@@ -231,12 +268,16 @@ def read(filename: str, file_format: Optional[str] = None,
 
     try:
         # Use the existing I/O infrastructure to read the data
+        reader_kwargs = dict(kwargs)
+        if mapping is not None:
+            reader_kwargs["mapping"] = mapping
+
         data = io_manager.read_data(
             filename, file_format, header_file,
             use_steps=use_steps,
             pipeline_config=pipeline_config,
             user_metadata=user_metadata,
-            **kwargs
+            **reader_kwargs
         )
         return data
 

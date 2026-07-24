@@ -5,6 +5,8 @@ Information commands (list, formats).
 import argparse
 import csv
 import json
+import shutil
+import textwrap
 from io import StringIO
 from .base import BaseCommand, CommandResult
 
@@ -23,6 +25,12 @@ class ListCommand(BaseCommand):
                 self._apply_filters_and_sort(all_data, args, resource_type)
                 self._output_parameters(all_data, args)
                 return CommandResult(success=True, message="Parameter list displayed successfully")
+
+            if resource_type == 'reader-args':
+                all_data = self._list_reader_args()
+                self._apply_filters_and_sort(all_data, args, resource_type)
+                self._output_reader_args(all_data, args)
+                return CommandResult(success=True, message="Reader argument list displayed successfully")
 
             if resource_type == 'pipeline-stages':
                 all_data = self._list_stages()
@@ -90,6 +98,57 @@ class ListCommand(BaseCommand):
             }
             result.append(item)
         return result
+
+    @staticmethod
+    def _format_value(value):
+        """Format reader argument defaults for compact table and CSV output."""
+        if value is None:
+            return ''
+        if isinstance(value, bool):
+            return 'true' if value else 'false'
+        return str(value)
+
+    def _list_reader_args(self):
+        """List reader-specific arguments accepted by --reader-arg."""
+        from ...core.autodiscovery import ReaderDiscovery
+        discovery = ReaderDiscovery()
+        classes = discovery.discover_classes()
+        plugin_classes = discovery.get_plugin_classes()
+
+        rows = []
+        for class_name, class_obj in classes.items():
+            try:
+                reader_key = class_obj.format_key()
+                reader_name = class_obj.format_name()
+                specs = class_obj.reader_args()
+            except Exception:
+                continue
+
+            for spec in specs or []:
+                name = spec.get('name')
+                if not name:
+                    continue
+                cli_name = spec.get('cli_name') or str(name).replace('_', '-')
+                choices = spec.get('choices') or []
+                default = spec.get('default')
+                rows.append({
+                    'reader': reader_key,
+                    'reader_name': reader_name,
+                    'argument': name,
+                    'cli_name': cli_name,
+                    'type': spec.get('type', ''),
+                    'default': default,
+                    'default_text': self._format_value(default),
+                    'choices': choices,
+                    'choices_text': ', '.join(str(choice) for choice in choices),
+                    'required': bool(spec.get('required', False)),
+                    'description': spec.get('description', ''),
+                    'source': spec.get('source', 'declared'),
+                    'class': class_name,
+                    'is_plugin': class_name in plugin_classes,
+                })
+
+        return rows
 
     def _list_parameters(self):
         """List canonical parameter names."""
@@ -169,6 +228,16 @@ class ListCommand(BaseCommand):
                        filter_term in item.get('description', '').lower() or
                        filter_term in item.get('file', '').lower()
                 ]
+            elif resource_type == 'reader-args':
+                data[:] = [
+                    item for item in data
+                    if filter_term in item.get('reader', '').lower() or
+                       filter_term in item.get('reader_name', '').lower() or
+                       filter_term in item.get('argument', '').lower() or
+                       filter_term in item.get('cli_name', '').lower() or
+                       filter_term in item.get('description', '').lower() or
+                       filter_term in item.get('class', '').lower()
+                ]
             else:
                 data[:] = [
                     item for item in data
@@ -197,6 +266,22 @@ class ListCommand(BaseCommand):
         elif resource_type == 'pipeline-profiles':
             if sort_key == 'name':
                 data.sort(key=lambda x: x.get('name', '').lower(), reverse=args.reverse)
+        elif resource_type == 'reader-args':
+            if sort_key in ['name', 'reader', 'key']:
+                data.sort(
+                    key=lambda x: (x.get('reader', '').lower(), x.get('argument', '').lower()),
+                    reverse=args.reverse,
+                )
+            elif sort_key == 'argument':
+                data.sort(
+                    key=lambda x: (x.get('argument', '').lower(), x.get('reader', '').lower()),
+                    reverse=args.reverse,
+                )
+            elif sort_key == 'class':
+                data.sort(
+                    key=lambda x: (x.get('class', '').lower(), x.get('argument', '').lower()),
+                    reverse=args.reverse,
+                )
         else:
             if sort_key == 'name':
                 data.sort(key=lambda x: x['name'].lower(), reverse=args.reverse)
@@ -304,6 +389,26 @@ class ListCommand(BaseCommand):
         else:
             self._output_parameters_table(data, args)
 
+    def _output_reader_args(self, data, args):
+        """Output reader argument list in the requested format."""
+        output_format = args.output
+
+        if output_format == 'json':
+            print(json.dumps(data, indent=2, default=str))
+        elif output_format == 'yaml':
+            try:
+                # pylint: disable=C0415
+                import yaml
+                print(yaml.dump(data, default_flow_style=False))
+            except ImportError:
+                print("Error: PyYAML not installed. Install with: pip install PyYAML")
+                print("Falling back to JSON format:")
+                print(json.dumps(data, indent=2, default=str))
+        elif output_format == 'csv':
+            self._output_reader_args_csv(data, args)
+        else:
+            self._output_reader_args_table(data, args)
+
     def _output_stages(self, data, args):
         """Output stage list in the requested format."""
         output_format = args.output
@@ -368,6 +473,31 @@ class ListCommand(BaseCommand):
         """Output parameter data as CSV."""
         output = StringIO()
         fieldnames = ['name', 'description']
+        writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore')
+        if not args.no_header:
+            writer.writeheader()
+        for item in data:
+            row = {k: item.get(k, '') for k in fieldnames}
+            writer.writerow(row)
+        print(output.getvalue().rstrip())
+
+    def _output_reader_args_csv(self, data, args):
+        """Output reader argument data as CSV."""
+        output = StringIO()
+        fieldnames = [
+            'reader',
+            'reader_name',
+            'cli_name',
+            'argument',
+            'type',
+            'default_text',
+            'choices_text',
+            'required',
+            'description',
+        ]
+        if getattr(args, 'list_details', False):
+            fieldnames.extend(['class', 'source', 'is_plugin'])
+
         writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore')
         if not args.no_header:
             writer.writeheader()
@@ -451,6 +581,107 @@ class ListCommand(BaseCommand):
         if not args.no_header:
             print(border)
             print(f"\nTotal: {len(data)} parameter(s)")
+
+    def _output_reader_args_table(self, data, args):
+        """Output reader argument data as a wrapped help-style listing."""
+        if not data:
+            print("No reader arguments found matching the criteria.")
+            return
+
+        if not args.no_header:
+            print("Reader-specific arguments")
+            print("Use with: --reader-arg NAME=VALUE")
+            print()
+
+        width = max(40, shutil.get_terminal_size(fallback=(88, 24)).columns)
+        current_reader = None
+        for item in data:
+            reader = item.get('reader', '')
+            if reader != current_reader:
+                if current_reader is not None:
+                    print()
+                reader_name = item.get('reader_name') or reader
+                print(f"{reader_name} ({reader}):")
+                current_reader = reader
+
+            invocation = self._reader_arg_invocation(item)
+            description = self._reader_arg_description(
+                item,
+                include_details=getattr(args, 'list_details', False),
+            )
+            self._print_reader_arg_option(invocation, description, width)
+
+        if not args.no_header:
+            print(f"\nTotal: {len(data)} reader argument(s)")
+
+    @staticmethod
+    def _reader_arg_invocation(item):
+        """Return a compact NAME=VALUE form for --reader-arg help output."""
+        choices = item.get('choices') or []
+        if choices:
+            value_hint = "{" + ",".join(str(choice) for choice in choices) + "}"
+        else:
+            type_name = str(item.get('type') or '').lower()
+            if 'bool' in type_name and 'path' in type_name:
+                value_hint = 'BOOL|PATH'
+            elif 'bool' in type_name and 'str' in type_name:
+                value_hint = 'BOOL|TEXT'
+            elif type_name == 'bool':
+                value_hint = 'BOOL'
+            elif type_name == 'int':
+                value_hint = 'INT'
+            elif type_name == 'float':
+                value_hint = 'FLOAT'
+            elif type_name == 'path':
+                value_hint = 'PATH'
+            elif type_name == 'str':
+                value_hint = 'TEXT'
+            else:
+                value_hint = 'VALUE'
+        return f"{item.get('cli_name', item.get('argument', 'NAME'))}={value_hint}"
+
+    @staticmethod
+    def _reader_arg_description(item, include_details=False):
+        """Return a wrapped help description for a reader argument."""
+        description = item.get('description', '')
+        details = []
+        type_name = item.get('type')
+        if type_name:
+            details.append(f"type: {type_name}")
+        choices_text = item.get('choices_text')
+        if choices_text:
+            details.append(f"choices: {choices_text}")
+        default_text = item.get('default_text')
+        if default_text:
+            details.append(f"default: {default_text}")
+        if item.get('required'):
+            details.append("required")
+        if include_details:
+            details.extend([
+                f"python: {item.get('argument', '')}",
+                f"source: {item.get('source', '')}",
+                f"class: {item.get('class', '')}",
+            ])
+        if details:
+            suffix = "; ".join(detail for detail in details if detail)
+            if description:
+                return f"{description} ({suffix})"
+            return suffix
+        return description
+
+    @staticmethod
+    def _print_reader_arg_option(invocation, description, width):
+        """Print one reader argument in an argparse-like wrapped layout."""
+        option_indent = "  "
+        help_indent = "      "
+        print(f"{option_indent}{invocation}")
+        if description:
+            print(textwrap.fill(
+                description,
+                width=width,
+                initial_indent=help_indent,
+                subsequent_indent=help_indent,
+            ))
 
     def _output_stages_table(self, data, args):
         """Output stage data as a formatted table."""
@@ -678,6 +909,7 @@ class ListCommand(BaseCommand):
                 print("\nTip: Use 'seasenselib list readers', 'list writers', or 'list plotters'")
                 print("     to show only specific resource types.")
                 print("     Use 'seasenselib list parameters' to list canonical variable names.")
+                print("     Use 'seasenselib list reader-args' to list reader-specific options.")
                 print("     Use 'seasenselib list pipeline-stages' or 'list pipeline-handlers' for pipeline components.")
                 print("     Use 'seasenselib list pipeline-profiles' to list built-in pipeline profiles.")
                 print("     Use --help for more options (filtering, sorting, output formats).")

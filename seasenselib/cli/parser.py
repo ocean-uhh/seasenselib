@@ -80,6 +80,16 @@ class ArgumentParser:
         self._input_formats = None
         self._output_formats = None
         self._default_profiles = ['default', 'minimal', 'full']
+        self._default_stages = [
+            "mapping",
+            "unit_handling",
+            "transformation",
+            "derivation",
+            "metadata_extraction",
+            "metadata_enrichment",
+            "validation",
+            "finalization",
+        ]
 
     @property
     def INPUT_FORMATS(self):
@@ -99,9 +109,9 @@ class ArgumentParser:
 
     def _get_available_stages(self, lightweight: bool = False):
         """Get list of available stage names."""
-        from ..pipeline.registry import StageRegistry
         if lightweight:
-            return StageRegistry.default_stage_names()
+            return list(self._default_stages)
+        from ..pipeline.registry import StageRegistry
         try:
             registry = StageRegistry.get_instance()
             return registry.list_stages()
@@ -178,15 +188,12 @@ class ArgumentParser:
                     help='Path of output file if plot shall be written')
         parser.add_argument('-t', '--title', type=str,
                     help='Title of the plot')
-        
-        # Reader configuration flags (for SeaBird CNV and similar formats)
-        parser.add_argument('--no-sanitize', action='store_true', default=False,
-                    help='Disable automatic file format fixes (stricter parsing)')
-        parser.add_argument('--no-fix-coords', action='store_true', default=False,
-                    help='Disable automatic coordinate defaults (require explicit lat/lon)')
-        parser.add_argument('--reader-arg', action='append', default=[],
-                    metavar='NAME=VALUE', dest='reader_args',
-                    help='Pass a reader-specific option. Can be repeated, e.g. --reader-arg latitude=30.0')
+        parser.add_argument('-m', '--mapping', nargs='+',
+                    help='Map source variables to canonical parameter names (canonical=source).')
+        parser.add_argument('--processing-protocol', nargs='?', const=True, default=None,
+                    help='Write a processing protocol (JSON) next to the plot or input (optionally specify path)')
+        self._add_reader_config_args(parser)
+        self._add_stage_control_args(parser)
         
         # Try to let the plotter class declare its own CLI args (plugins supported)
         try:
@@ -270,12 +277,14 @@ class ArgumentParser:
             Parser to add arguments to
         """
         parser.add_argument('--no-sanitize', action='store_true', default=False,
-                    help='Disable automatic file format fixes (stricter parsing)')
-        parser.add_argument('--no-fix-coords', action='store_true', default=False,
-                    help='Disable automatic coordinate defaults (require explicit lat/lon)')
+                    help=argparse.SUPPRESS)
         parser.add_argument('--reader-arg', action='append', default=[],
                     metavar='NAME=VALUE', dest='reader_args',
-                    help='Pass a reader-specific option. Can be repeated, e.g. --reader-arg latitude=30.0')
+                    help=(
+                        'Pass a reader-specific option. Can be repeated; '
+                        'names are validated for the selected reader. '
+                        'Use "seasenselib list reader-args --filter FORMAT" to discover names.'
+                    ))
         parser.add_argument('--metadata-file', type=str,
                     help='Path to a metadata JSON file with sections "global" and "variables"')
         parser.add_argument('--metadata', type=str,
@@ -335,21 +344,37 @@ class ArgumentParser:
         parser.add_argument('--pipeline-skip-handlers', type=str,
                     dest='pipeline_skip_handlers',
                     help='Skip specified handlers (comma-separated, format: stage:handler)')
+        parser.add_argument('--default-latitude', type=float,
+                    dest='default_latitude',
+                    help=(
+                        'Fallback latitude in degrees north for derivations '
+                        'when input data has no latitude. Used by depth, and by '
+                        'TEOS-10 salinity/temperature together with longitude. '
+                        'Omit to avoid guessing.'
+                    ))
+        parser.add_argument('--default-longitude', type=float,
+                    dest='default_longitude',
+                    help=(
+                        'Fallback longitude in degrees east for derivations '
+                        'when input data has no longitude. Used by TEOS-10 '
+                        'salinity/temperature together with latitude. '
+                        'Omit to avoid guessing.'
+                    ))
 
     def _add_convert_parser(self, subparsers, lightweight: bool = False):
         """Add convert command parser."""
         if lightweight:
-            mapping_help = 'Map CNV column names to standard parameter names (name=value).'
+            mapping_help = 'Map source variables to canonical parameter names (canonical=source).'
         else:
             # We'll import parameters only when needed
             try:
                 # pylint: disable=C0415
                 import seasenselib.parameters as params
-                mapping_help = ('Map CNV column names to standard parameter names in the '
-                               'format name=value. Allowed parameter names are: ' +
+                mapping_help = ('Map source variables to canonical parameter names in the '
+                               'format canonical=source. Allowed parameter names are: ' +
                                ', \n'.join(f"{k}" for k, v in params.allowed_parameters().items()))
             except ImportError:
-                mapping_help = 'Map CNV column names to standard parameter names'
+                mapping_help = 'Map source variables to canonical parameter names'
 
         if lightweight:
             format_help = 'Choose the output format (use "seasenselib list writers" to see options).'
@@ -393,19 +418,19 @@ class ArgumentParser:
     def _add_show_parser(self, subparsers, lightweight: bool = False):
         """Add show command parser."""
         if lightweight:
-            mapping_help = ('Map file-specific column names to standard parameter names '
-                            '(format: original=canonical)')
+            mapping_help = ('Map source variables to canonical parameter names '
+                            '(format: canonical=source)')
             input_choices = None
         else:
             # We'll import parameters only when needed
             try:
                 # pylint: disable=C0415
                 import seasenselib.parameters as params
-                mapping_help = ('Map file-specific column names to standard parameter names in the '
-                               'format original=canonical (e.g., tv290C=temperature). Allowed parameter names are: ' +
+                mapping_help = ('Map source variables to canonical parameter names in the '
+                               'format canonical=source (e.g., temperature=tv290C). Allowed parameter names are: ' +
                                ', \n'.join(f"{k}" for k, v in params.allowed_parameters().items()))
             except ImportError:
-                mapping_help = 'Map file-specific column names to standard parameter names (format: original=canonical)'
+                mapping_help = 'Map source variables to canonical parameter names (format: canonical=source)'
             input_choices = self.INPUT_FORMATS
 
         if subparsers is None:
@@ -454,6 +479,7 @@ class ArgumentParser:
                         'writers',
                         'plotters',
                         'parameters',
+                        'reader-args',
                         'pipeline-stages',
                         'pipeline-handlers',
                         'pipeline-profiles',
@@ -465,7 +491,17 @@ class ArgumentParser:
         list_parser.add_argument('--filter', '-f', type=str,
                     help='Filter by name or extension (case-insensitive)')
         list_parser.add_argument('--sort', '-s', type=str,
-                    choices=['name', 'key', 'extension', 'type', 'stage', 'class'], default='name',
+                    choices=[
+                        'name',
+                        'key',
+                        'extension',
+                        'type',
+                        'stage',
+                        'class',
+                        'reader',
+                        'argument',
+                    ],
+                    default='name',
                     help='Sort by field (default: name)')
         list_parser.add_argument('--reverse', '-r', action='store_true',
                     help='Reverse sort order')

@@ -6,7 +6,12 @@ Public API for building and executing processing pipelines.
 
 from .base import Stage, StageContext
 from .pipeline import Pipeline
-from .config import PipelineConfig, StageConfig
+from .config import (
+    PipelineConfig,
+    StageConfig,
+    apply_default_latitude,
+    apply_default_longitude,
+)
 from .registry import StageRegistry
 from .interfaces import ITransformation, TransformationRecord
 from .transformation import TransformationStage
@@ -23,6 +28,8 @@ __all__ = [
     "Pipeline",
     "PipelineConfig",
     "StageConfig",
+    "apply_default_latitude",
+    "apply_default_longitude",
     "StageRegistry",
     "ITransformation",
     "TransformationRecord",

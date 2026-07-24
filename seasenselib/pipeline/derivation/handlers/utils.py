@@ -9,8 +9,10 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 import re
 
+import numpy as np
 import xarray as xr
 
+import seasenselib.parameters as params
 from ...unit_handling.handlers.utils import get_unit_aliases, get_unit_normalizations
 from ....knowledge.loader import load_json
 
@@ -91,6 +93,108 @@ def units_ok(dataset: xr.Dataset, var_name: str, base: str) -> bool:
     return canonical_unit(unit) in allowed
 
 
+def usable_coordinate_value(value) -> Optional[object]:
+    """Return coordinate value unless it is empty or entirely NaN."""
+    if value is None:
+        return None
+    try:
+        arr = np.asarray(value)
+        if arr.size == 0:
+            return None
+        numeric = arr.astype(float)
+        if np.all(np.isnan(numeric)):
+            return None
+    except (TypeError, ValueError):
+        pass
+    return value
+
+
+def resolve_lat_lon(
+    dataset: xr.Dataset,
+    default_latitude: Optional[float] = None,
+    default_longitude: Optional[float] = None,
+) -> Tuple[Optional[object], Optional[object], Dict[str, float]]:
+    """Resolve latitude/longitude from data, attrs, CF names, or explicit defaults."""
+    def _find_value(names: List[str]) -> Optional[object]:
+        for name in names:
+            if name in dataset.coords:
+                value = usable_coordinate_value(dataset.coords[name].values)
+                if value is not None:
+                    return value
+            if name in dataset.data_vars:
+                value = usable_coordinate_value(dataset[name].values)
+                if value is not None:
+                    return value
+            if name in dataset.attrs:
+                value = usable_coordinate_value(dataset.attrs[name])
+                if value is not None:
+                    return value
+        return None
+
+    lat = _find_value([params.LATITUDE, "lat", "latitude"])
+    lon = _find_value([params.LONGITUDE, "lon", "longitude"])
+
+    if lat is None or lon is None:
+        for var in dataset.coords.values():
+            if var.attrs.get("standard_name") == "latitude" and lat is None:
+                lat = usable_coordinate_value(var.values)
+            if var.attrs.get("standard_name") == "longitude" and lon is None:
+                lon = usable_coordinate_value(var.values)
+        for var in dataset.data_vars.values():
+            if var.attrs.get("standard_name") == "latitude" and lat is None:
+                lat = usable_coordinate_value(var.values)
+            if var.attrs.get("standard_name") == "longitude" and lon is None:
+                lon = usable_coordinate_value(var.values)
+
+    defaulted: Dict[str, float] = {}
+    if lat is None and default_latitude is not None:
+        lat = float(default_latitude)
+        defaulted["latitude"] = float(lat)
+    if lon is None and default_longitude is not None:
+        lon = float(default_longitude)
+        defaulted["longitude"] = float(lon)
+
+    return lat, lon, defaulted
+
+
+def format_coordinate_value(value: float) -> str:
+    """Format a user-supplied coordinate without unnecessary rounding."""
+    return str(float(value))
+
+
+def format_defaulted_coordinates(defaulted: Dict[str, float]) -> str:
+    parts = []
+    if "latitude" in defaulted:
+        parts.append(f"latitude {format_coordinate_value(defaulted['latitude'])} degrees")
+    if "longitude" in defaulted:
+        parts.append(f"longitude {format_coordinate_value(defaulted['longitude'])} degrees")
+    return " and ".join(parts)
+
+
+def format_coordinate_names(names: List[str], title: bool = False) -> str:
+    text = " and ".join(names)
+    return f"{text[:1].upper()}{text[1:]}" if title and text else text
+
+
+def coordinate_fallback_instruction(missing: List[str]) -> str:
+    """Return a CLI/API hint for explicitly supplying missing coordinates."""
+    if missing == ["latitude"]:
+        return (
+            "Provide latitude in the input data or pass --default-latitude LAT "
+            "(API: default_latitude=LAT)."
+        )
+    if missing == ["longitude"]:
+        return (
+            "Provide longitude in the input data or pass --default-longitude LON "
+            "(API: default_longitude=LON)."
+        )
+    return (
+        "Provide latitude and longitude in the input data or pass "
+        "--default-latitude LAT and --default-longitude LON "
+        "(API: default_latitude=LAT, default_longitude=LON)."
+    )
+
+
 __all__ = [
     "get_input_units",
     "list_variants",
@@ -98,4 +202,10 @@ __all__ = [
     "output_name_from_input",
     "canonical_unit",
     "units_ok",
+    "usable_coordinate_value",
+    "resolve_lat_lon",
+    "format_coordinate_value",
+    "format_defaulted_coordinates",
+    "format_coordinate_names",
+    "coordinate_fallback_instruction",
 ]

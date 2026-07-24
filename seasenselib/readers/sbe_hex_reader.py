@@ -993,7 +993,7 @@ def sbe37_hex_reader(
                 units="C",
                 use_mv_r=False,
             )
-            data_vars["temp"] = ("time", temperature)
+            data_vars["temp"] = (params.TIME, temperature)
 
         pressure_info = sensor_configs.get("pressure")
         if pressure_info and "pressure" in raw_data.columns:
@@ -1032,7 +1032,7 @@ def sbe37_hex_reader(
                 coefs=press_coefs,
                 units="dbar",
             )
-            data_vars["press"] = ("time", pressure)
+            data_vars["press"] = (params.TIME, pressure)
 
         conductivity_info = sensor_configs.get("conductivity")
         if conductivity_info and "conductivity" in raw_data.columns:
@@ -1055,7 +1055,7 @@ def sbe37_hex_reader(
                 coefs=cond_coefs,
             )
             # Convert from S/m to mS/cm.
-            data_vars["cond"] = ("time", conductivity * 10.0)
+            data_vars["cond"] = (params.TIME, conductivity * 10.0)
 
         oxygen_info = sensor_configs.get("oxygen")
         if oxygen_info and "SBE63 oxygen phase" in raw_data.columns:
@@ -1110,20 +1110,20 @@ def sbe37_hex_reader(
                     )
 
                     # 1 ml/L O2 = 44.66 umol/L at STP.
-                    data_vars["oxygen"] = ("time", oxygen_ml_per_l * 44.66)
-                    data_vars["oxygen_ml_l"] = ("time", oxygen_ml_per_l)
+                    data_vars["oxygen"] = (params.TIME, oxygen_ml_per_l * 44.66)
+                    data_vars["oxygen_ml_l"] = (params.TIME, oxygen_ml_per_l)
                 else:
-                    data_vars["oxygen_phase"] = ("time", oxygen_phase)
-                    data_vars["oxygen_temp"] = ("time", oxygen_temp)
+                    data_vars["oxygen_phase"] = (params.TIME, oxygen_phase)
+                    data_vars["oxygen_temp"] = (params.TIME, oxygen_temp)
 
             except Exception as e:
                 logger.warning("Could not apply oxygen calibration: %s", e)
                 data_vars["oxygen_phase"] = (
-                    "time",
+                    params.TIME,
                     raw_data["SBE63 oxygen phase"].values,
                 )
                 data_vars["oxygen_temp"] = (
-                    "time",
+                    params.TIME,
                     raw_data["SBE63 oxygen temperature"].values,
                 )
     else:
@@ -1132,22 +1132,22 @@ def sbe37_hex_reader(
 
         # Add available sensors from raw_data
         if "temperature" in raw_data.columns:
-            data_vars["temp"] = ("time", raw_data["temperature"].values)
+            data_vars["temp"] = (params.TIME, raw_data["temperature"].values)
         if "conductivity" in raw_data.columns:
-            data_vars["cond"] = ("time", raw_data["conductivity"].values)
+            data_vars["cond"] = (params.TIME, raw_data["conductivity"].values)
         if "pressure" in raw_data.columns:
-            data_vars["press"] = ("time", raw_data["pressure"].values)
+            data_vars["press"] = (params.TIME, raw_data["pressure"].values)
         # Handle SBE63 oxygen data (phase and temperature)
         if "SBE63 oxygen phase" in raw_data.columns:
-            data_vars["oxygen_phase"] = ("time", raw_data["SBE63 oxygen phase"].values)
+            data_vars["oxygen_phase"] = (params.TIME, raw_data["SBE63 oxygen phase"].values)
         if "SBE63 oxygen temperature" in raw_data.columns:
             data_vars["oxygen_temp"] = (
-                "time",
+                params.TIME,
                 raw_data["SBE63 oxygen temperature"].values,
             )
 
     # Create dataset
-    ds = xr.Dataset(data_vars, coords={"time": times})
+    ds = xr.Dataset(data_vars, coords={params.TIME: times})
 
     # Add units as variable attributes
     if "temp" in data_vars:

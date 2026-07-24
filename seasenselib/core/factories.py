@@ -40,12 +40,29 @@ class AbstractWriter(Protocol):
 class ReaderFactory:
     """Factory for creating reader instances with autodiscovery."""
 
+    _COMMON_READER_KWARGS = frozenset({
+        "mapping",
+        "input_header_file",
+        "perform_default_postprocessing",
+        "rename_variables",
+        "assign_metadata",
+        "sort_variables",
+        "use_steps",
+        "pipeline_config",
+        "user_metadata",
+    })
+
     def __init__(self):
         self._discovery = ReaderDiscovery()
 
-    def create_reader(self, format_key: str, input_file: str, 
-                     header_file: Optional[str] = None,
-                     **kwargs) -> AbstractReader:
+    def create_reader(
+        self,
+        format_key: str,
+        input_file: str,
+        header_file: Optional[str] = None,
+        validate_reader_args: bool = False,
+        **kwargs,
+    ) -> AbstractReader:
         """Create a reader instance for the given format using signature introspection.
         
         This method uses Python inspect module to automatically match provided
@@ -65,9 +82,7 @@ class ReaderFactory:
             signature. Common parameters:
             - mapping : dict (variable name mapping, supported by all readers)
             - sanitize_input : bool (for CNV readers)
-            - fix_missing_coords : bool (for CNV readers)
             - encoding : str (for TOB readers)
-            - time_dim : str (for ADCP readers)
             - Any custom parameters for plugin readers
             
         Returns
@@ -93,10 +108,24 @@ class ReaderFactory:
             )
 
         # Use signature introspection to match parameters
-        return self._instantiate_reader(reader_class, input_file, header_file, **kwargs)
+        return self._instantiate_reader(
+            reader_class,
+            input_file,
+            header_file,
+            format_key=format_key,
+            validate_reader_args=validate_reader_args,
+            **kwargs,
+        )
 
-    def _instantiate_reader(self, reader_class: type, input_file: str,
-                          header_file: Optional[str], **kwargs) -> AbstractReader:
+    def _instantiate_reader(
+        self,
+        reader_class: type,
+        input_file: str,
+        header_file: Optional[str],
+        format_key: str | None = None,
+        validate_reader_args: bool = False,
+        **kwargs,
+    ) -> AbstractReader:
         """
         Instantiate reader using signature introspection.
         
@@ -104,6 +133,9 @@ class ReaderFactory:
         parameters that the reader actually accepts, enabling automatic support
         for plugin readers with custom parameters.
         """
+        if validate_reader_args:
+            self._validate_reader_kwargs(reader_class, kwargs, format_key)
+
         # Get the constructor signature
         sig = inspect.signature(reader_class.__init__)
         params = sig.parameters
@@ -133,6 +165,44 @@ class ReaderFactory:
         
         # Instantiate with matched parameters
         return reader_class(input_file, **matched_kwargs)
+
+    @classmethod
+    def _validate_reader_kwargs(
+        cls,
+        reader_class: type,
+        kwargs: dict[str, Any],
+        format_key: str | None = None,
+    ) -> None:
+        """Validate CLI-provided reader kwargs against the reader metadata contract."""
+        if not kwargs:
+            return
+
+        allowed = set(cls._COMMON_READER_KWARGS)
+        try:
+            specs = reader_class.reader_args()
+        except Exception:
+            specs = []
+
+        for spec in specs or []:
+            name = spec.get("name")
+            if name:
+                allowed.add(str(name))
+
+        unknown = sorted(name for name in kwargs if name not in allowed)
+        if not unknown:
+            return
+
+        display_format = format_key
+        if display_format is None:
+            try:
+                display_format = reader_class.format_key()
+            except Exception:
+                display_format = reader_class.__name__
+        rendered_unknown = ", ".join(name.replace("_", "-") for name in unknown)
+        raise ReaderError(
+            f"Unsupported reader argument(s) for {display_format}: {rendered_unknown}. "
+            f"Use 'seasenselib list reader-args --filter {display_format}' to see supported options."
+        )
 
 
 class WriterFactory:

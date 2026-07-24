@@ -8,6 +8,7 @@ import pandas as pd
 import xarray as xr
 from datetime import datetime
 from seasenselib.readers.base import AbstractReader
+import seasenselib.parameters as params
 
 
 def _parse_start_end(s: str) -> np.datetime64:
@@ -48,7 +49,7 @@ class RbrMatlabLegacyReader(AbstractReader):
     """Reader which converts RBR data stored in MATLAB .mat files into an xarray Dataset."""
 
     def __init__(self, input_file: str,
-                 time_dim: str = "time",
+                 time_dim: str = params.TIME,
                  mapping: dict | None = None,
                  **kwargs):
         """Initialize RbrMatlabLegacyReader.
@@ -57,7 +58,7 @@ class RbrMatlabLegacyReader(AbstractReader):
         ----------
         input_file : str
             Path to the MAT file.
-        time_dim : str, default="time"
+        time_dim : str, default=params.TIME
             Name of the time dimension in the output dataset.
         mapping : dict, optional
             Variable name mapping dictionary.
@@ -94,6 +95,10 @@ class RbrMatlabLegacyReader(AbstractReader):
     def _get_valid_extensions(cls) -> tuple[str, ...] | None:
         """Return valid file extensions for MATLAB files."""
         return ('.mat',)
+
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return []
 
     # ---------- internals ----------
     def _parse_data(self, mat_file_path) -> pd.DataFrame:

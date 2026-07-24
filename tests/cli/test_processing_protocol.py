@@ -20,6 +20,8 @@ def test_processing_protocol_written(tmp_path):
         pipeline_skip_stages=None,
         pipeline_apply_handlers=None,
         pipeline_skip_handlers=None,
+        default_latitude=54.0,
+        default_longitude=10.0,
         raw_only=False,
         processing_protocol=str(output_path),
     )
@@ -48,6 +50,8 @@ def test_processing_protocol_written(tmp_path):
     assert payload["input_file"] == "input.cnv"
     assert payload["output_file"] == "out.nc"
     assert payload["pipeline_profile"] == "default"
+    assert payload["default_latitude"] == 54.0
+    assert payload["default_longitude"] == 10.0
     assert payload["stages_applied"] == ["mapping", "finalization"]
     assert payload["unit_conversions"] == {"temperature": ["degC -> K"]}
     assert payload["transformations"][0]["transformation"] == "example_transform"
@@ -76,7 +80,6 @@ def test_show_writes_processing_protocol(tmp_path):
         schema="summary",
         mapping=None,
         no_sanitize=False,
-        no_fix_coords=False,
         raw_only=False,
         pipeline_profile=None,
         pipeline_file=None,
@@ -84,6 +87,8 @@ def test_show_writes_processing_protocol(tmp_path):
         pipeline_skip_stages=None,
         pipeline_apply_handlers=None,
         pipeline_skip_handlers=None,
+        default_latitude=None,
+        default_longitude=None,
         metadata=None,
         metadata_file=None,
         processing_protocol=str(output_path),
@@ -132,7 +137,6 @@ def test_show_example_uses_bounded_xarray_preview(monkeypatch, capsys):
         schema="example",
         mapping=None,
         no_sanitize=False,
-        no_fix_coords=False,
         raw_only=False,
         pipeline_profile=None,
         pipeline_file=None,
@@ -140,6 +144,8 @@ def test_show_example_uses_bounded_xarray_preview(monkeypatch, capsys):
         pipeline_skip_stages=None,
         pipeline_apply_handlers=None,
         pipeline_skip_handlers=None,
+        default_latitude=None,
+        default_longitude=None,
         metadata=None,
         metadata_file=None,
         reader_args=None,

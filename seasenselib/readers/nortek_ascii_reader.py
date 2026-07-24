@@ -147,6 +147,36 @@ class NortekAsciiReader(AbstractReader):
         """ASCII formats can have various extensions, so warn only."""
         return False
 
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "target_coordinate_system",
+                "str",
+                None,
+                "Transform velocity variables to the requested coordinate system.",
+                choices=("BEAM", "XYZ", "ENU"),
+            ),
+            cls._reader_arg(
+                "pointing_down",
+                "bool | str",
+                None,
+                "Instrument orientation for BEAM transformations; omit to infer from status data.",
+            ),
+            cls._reader_arg(
+                "coordinate_transform_keep_source",
+                "bool",
+                False,
+                "Keep original velocity variables after adding transformed variables.",
+            ),
+            cls._reader_arg(
+                "coordinate_transform_overwrite",
+                "bool",
+                False,
+                "Allow transformed velocity variables to replace existing variables.",
+            ),
+        ]
+
     def _read_header_settings(self, hdr_file_path):
         """Reads the .hdr file to extract instrument settings."""
         settings = {}
