@@ -105,6 +105,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -173,6 +174,104 @@
 <span class="sd">    get_data() -&gt; xr.Dataset | None</span>
 <span class="sd">            Returns the processed data as an xarray Dataset (deprecated, use `data` property).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_READER_ARG_EXCLUDE</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+        <span class="s2">&quot;self&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;input_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dat_file_path&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mapping&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;input_header_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;header_file_path&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;perform_default_postprocessing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rename_variables&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;assign_metadata&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sort_variables&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;use_steps&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pipeline_config&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_metadata&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;kwargs&quot;</span><span class="p">,</span>
+    <span class="p">})</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reader_arg</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cli_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;declared&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a structured reader argument description for CLI discovery.&quot;&quot;&quot;</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;cli_name&quot;</span><span class="p">:</span> <span class="n">cli_name</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">type_name</span><span class="p">,</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">default</span><span class="p">,</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">required</span><span class="p">),</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">choices</span><span class="p">:</span>
+            <span class="n">spec</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spec</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_reader_arg_annotation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a compact type label for an introspected reader argument.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">annotation</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">annotation</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;typing.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;typing.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbstractReader.reader_args">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.base.AbstractReader.reader_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reader_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return CLI-discoverable reader-specific arguments.</span>
+
+<span class="sd">        Reader subclasses should override this when they can provide concise,</span>
+<span class="sd">        user-facing descriptions. The fallback introspects explicit constructor</span>
+<span class="sd">        parameters, which keeps plugin readers discoverable even without a custom</span>
+<span class="sd">        metadata hook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">specs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_READER_ARG_EXCLUDE</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span>
+                <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">required</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Signature</span><span class="o">.</span><span class="n">empty</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">required</span> <span class="k">else</span> <span class="n">parameter</span><span class="o">.</span><span class="n">default</span>
+            <span class="n">specs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">type_name</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_format_reader_arg_annotation</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">annotation</span><span class="p">),</span>
+                    <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+                    <span class="n">required</span><span class="o">=</span><span class="n">required</span><span class="p">,</span>
+                    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Reader constructor argument inferred from the reader signature.&quot;</span><span class="p">,</span>
+                    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;signature&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">specs</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">input_header_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -878,12 +977,12 @@
                 
                 <span class="c1"># Create pipeline (custom or default)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_default_latitude_configured&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
                         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;derivation&quot;</span> <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="o">.</span><span class="n">pipeline</span><span class="p">):</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="o">.</span><span class="n">upsert_stage</span><span class="p">(</span><span class="s1">&#39;derivation&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span>
                                 <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="p">{</span>
-                                    <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">)),</span>
-                                    <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span>
+                                    <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_use_default_latitude&quot;</span><span class="p">)),</span>
+                                    <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_default_latitude&quot;</span><span class="p">,</span> <span class="mf">45.0</span><span class="p">)),</span>
                                 <span class="p">}</span>
                             <span class="p">})</span>
                     <span class="n">pipeline</span> <span class="o">=</span> <span class="n">create_pipeline</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pipeline_config</span><span class="p">)</span>
@@ -901,11 +1000,11 @@
                         <span class="s1">&#39;preserve_original&#39;</span><span class="p">:</span> <span class="kc">True</span>
                     <span class="p">})</span>
 
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_default_latitude_configured&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
                         <span class="n">config</span><span class="o">.</span><span class="n">upsert_stage</span><span class="p">(</span><span class="s1">&#39;derivation&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span>
                             <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_fix_missing_coords&quot;</span><span class="p">)),</span>
-                                <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="mf">45.0</span><span class="p">,</span>
+                                <span class="s1">&#39;use_default_latitude&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_use_default_latitude&quot;</span><span class="p">)),</span>
+                                <span class="s1">&#39;default_latitude&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_default_latitude&quot;</span><span class="p">,</span> <span class="mf">45.0</span><span class="p">)),</span>
                             <span class="p">}</span>
                         <span class="p">})</span>
                     

@@ -143,11 +143,8 @@
 <span class="sd">    sensor data. The provided data is expected to be in a CNV format, and this reader</span>
 <span class="sd">    is designed to parse that format correctly.</span>
 
-<span class="sd">    The reader includes automatic fixing capabilities for common issues:</span>
-<span class="sd">    - File sanitization: Fixes trailing whitespace and malformed lines that cause pycnv errors</span>
-<span class="sd">    - Coordinate defaults: Uses 45 degrees latitude when missing (common for moored instruments)</span>
-<span class="sd">    </span>
-<span class="sd">    These behaviors can be controlled via the sanitize_input and fix_missing_coords parameters.</span>
+<span class="sd">    The reader includes automatic file sanitization for common issues such as</span>
+<span class="sd">    trailing whitespace and malformed lines that cause pycnv errors.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -159,12 +156,9 @@
 <span class="sd">        A mapping dictionary for renaming variables or attributes in the dataset.</span>
 <span class="sd">    sanitize_input : bool</span>
 <span class="sd">        Whether to automatically fix file format issues (default: True).</span>
-<span class="sd">    fix_missing_coords : bool</span>
-<span class="sd">        Whether to use default values for missing coordinates (default: True).</span>
-
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
-<span class="sd">    __init__(input_file, sanitize_input=True, fix_missing_coords=True, mapping=None, **kwargs):</span>
+<span class="sd">    __init__(input_file, sanitize_input=True, use_default_latitude=None, default_latitude=None, mapping=None, **kwargs):</span>
 <span class="sd">        Initializes the CnvReader with the input file and configuration options.</span>
 <span class="sd">    data():</span>
 <span class="sd">        Returns the xarray Dataset containing the sensor data.</span>
@@ -178,9 +172,6 @@
 <span class="sd">    &gt;&gt;&gt; # Default behavior (auto-fix enabled)</span>
 <span class="sd">    &gt;&gt;&gt; reader = SbeCnvReader(&#39;mooring_data.cnv&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; ds = reader.data</span>
-<span class="sd">    </span>
-<span class="sd">    &gt;&gt;&gt; # Disable automatic coordinate fixing</span>
-<span class="sd">    &gt;&gt;&gt; reader = SbeCnvReader(&#39;mooring_data.cnv&#39;, fix_missing_coords=False)</span>
 <span class="sd">    </span>
 <span class="sd">    &gt;&gt;&gt; # Disable file sanitization (stricter parsing)</span>
 <span class="sd">    &gt;&gt;&gt; reader = SbeCnvReader(&#39;data.cnv&#39;, sanitize_input=False)</span>
@@ -211,7 +202,8 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">sanitize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">fix_missing_coords</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">use_default_latitude</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">default_latitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SbeCnvReader with configuration options.</span>
@@ -223,11 +215,13 @@
 <span class="sd">        sanitize_input : bool, default=True</span>
 <span class="sd">            Whether to automatically fix known file format issues (e.g., trailing</span>
 <span class="sd">            whitespace in start_time lines). When False, files with format issues</span>
-<span class="sd">            may fail to load. CLI flag: --no-sanitize</span>
-<span class="sd">        fix_missing_coords : bool, default=True</span>
-<span class="sd">            Whether to automatically use default values for missing coordinates</span>
-<span class="sd">            (e.g., 45 degrees latitude for depth calculation). When False, missing</span>
-<span class="sd">            coordinates will result in NaN values. CLI flag: --no-fix-coords</span>
+<span class="sd">            may fail to load. CLI: --reader-arg sanitize-input=false</span>
+<span class="sd">        use_default_latitude : bool, optional</span>
+<span class="sd">            Programmatic compatibility option for enabling fallback latitude use.</span>
+<span class="sd">            The CLI exposes this as the global --default-latitude option instead.</span>
+<span class="sd">        default_latitude : float, optional</span>
+<span class="sd">            Latitude used for pressure-to-depth derivation when latitude is missing</span>
+<span class="sd">            and fallback latitude use is enabled.</span>
 <span class="sd">        mapping : dict, optional</span>
 <span class="sd">            Variable name mapping dictionary.</span>
 <span class="sd">        **kwargs</span>
@@ -244,15 +238,43 @@
 <span class="sd">            - sort_variables : bool, default=True</span>
 <span class="sd">                Whether to sort variables alphabetically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_latitude_configured</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">use_default_latitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">default_latitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="s2">&quot;fix_missing_coords&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;fix_missing_coords&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">use_default_latitude</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fix_missing_coords&quot;</span><span class="p">))</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_input</span> <span class="o">=</span> <span class="n">sanitize_input</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fix_missing_coords</span> <span class="o">=</span> <span class="n">fix_missing_coords</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_latitude_configured</span> <span class="o">=</span> <span class="n">default_latitude_configured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_default_latitude</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">bool</span><span class="p">(</span><span class="n">use_default_latitude</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_default_latitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">default_latitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_latitude</span> <span class="o">=</span> <span class="mf">45.0</span> <span class="k">if</span> <span class="n">default_latitude</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">default_latitude</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_file</span><span class="p">()</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_valid_extensions</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return valid file extensions for CNV files.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;.cnv&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SbeCnvReader.reader_args">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SbeCnvReader.reader_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reader_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;sanitize_input&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;Automatically fix known CNV formatting issues before parsing.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__get_scan_interval_in_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
         <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^# interval = seconds: ([\d.]+)$&#39;</span>

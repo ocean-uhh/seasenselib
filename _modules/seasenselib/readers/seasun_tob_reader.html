@@ -184,6 +184,20 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ASCII formats can have various extensions, so warn only.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">False</span>
 
+<div class="viewcode-block" id="SeasunTobReader.reader_args">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.SeasunTobReader.reader_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reader_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;encoding&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;latin-1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Character encoding used when reading the TOB text file.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Reads a TOB file from Sea &amp; Sun CTD into a xarray dataset. </span>
 <span class="sd">        </span>
@@ -196,8 +210,6 @@
 <span class="sd">        xr.Dataset</span>
 <span class="sd">            The loaded dataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="kn">import</span><span class="w"> </span><span class="nn">gsw</span>
 
         <span class="c1"># Read the file</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoding</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -235,13 +247,6 @@
         <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_names</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
                 <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-        <span class="c1"># Convert pressure to depth if available</span>
-        <span class="k">if</span> <span class="s1">&#39;Press&#39;</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
-            <span class="n">pressure_in_dbar</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;Press&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-            <span class="n">depth_in_meters</span> <span class="o">=</span> <span class="n">gsw</span><span class="o">.</span><span class="n">z_from_p</span><span class="p">(</span><span class="n">pressure_in_dbar</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">53.8187</span><span class="p">)</span>  <span class="c1"># TODO latitude is for Cuxhaven</span>
-            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;time&#39;</span><span class="p">,),</span> <span class="n">depth_in_meters</span><span class="p">)</span>
-            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
 
         <span class="c1"># Ensure &#39;time&#39; coordinate is datetime type</span>
         <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">TIME</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>

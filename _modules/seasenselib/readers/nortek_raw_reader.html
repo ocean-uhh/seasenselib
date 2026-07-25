@@ -1322,6 +1322,68 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return supported Nortek raw binary extensions.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_SUPPORTED_EXTENSIONS</span>
 
+<div class="viewcode-block" id="NortekRawReader.reader_args">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.readers.NortekRawReader.reader_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reader_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;userdata&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool | path&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;Pass DOLfYN userdata handling: true to search, false to skip, or a file path.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;nens&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;Number of ensembles to read from the raw file.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;DOLfYN debug flag.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;do_checksum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;Ask DOLfYN to verify Nortek block checksums.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;rebuild_index&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;Pass DOLfYN&#39;s Gen2/AD2CP rebuild-index option.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;dual_profile&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;Pass DOLfYN&#39;s Gen2/AD2CP dual-profile option.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;show_decoder_output&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;Allow backend decoder progress messages on stdout.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;apply_aquadopp_compatibility&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;Apply SeaSenseLib&#39;s classic Aquadopp compatibility patch when needed.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_reader_arg</span><span class="p">(</span>
+                <span class="s2">&quot;apply_nortek2_aquadopp_compatibility&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;Apply SeaSenseLib&#39;s Nortek Gen2 Aquadopp compatibility patch when needed.&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the Nortek raw data and return an xarray Dataset.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">_Nortek2PacketInspector</span><span class="o">.</span><span class="n">looks_like_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>

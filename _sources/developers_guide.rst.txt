@@ -568,6 +568,10 @@ SeaSenseLib provides a command-line interface for common tasks:
    # List supported formats
    seasenselib formats
 
+   # List reader-specific options accepted by --reader-arg
+   seasenselib list reader-args
+   seasenselib list reader-args --filter nortek-csv
+
 **Data Conversion**
 
 .. code-block:: bash
@@ -577,7 +581,18 @@ SeaSenseLib provides a command-line interface for common tasks:
    
    # Convert with parameter mapping
    seasenselib convert -i input.cnv -o output.nc -m temperature=tv290C pressure=prdM
-   
+
+   # Convert with a reader-specific option
+   seasenselib convert -i input.csv -f nortek-csv -o output.nc --reader-arg units-file=Units.csv
+
+   # Reader argument names are validated for the selected or detected format.
+
+   # Explicitly use fallback coordinates for derivations when coordinates are missing
+   seasenselib convert -i input.cnv -o output.nc --default-latitude 54.0 --default-longitude 10.0 --processing-protocol
+
+   # Fallback coordinates are processing assumptions, not reader metadata.
+   # Depth only needs latitude; TEOS-10 salinity/temperature derivations need both.
+
    # Convert to CSV
    seasenselib convert -i input.nc -o output.csv
 
