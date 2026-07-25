@@ -75,7 +75,7 @@ class DepthDerivation(IDerivation):
 
         return True
 
-def derive(self, dataset: xr.Dataset) -> Tuple[Dict[str, xr.DataArray], List[str]]:
+    def derive(self, dataset: xr.Dataset) -> Tuple[Dict[str, xr.DataArray], List[str]]:
         """Derive depth from pressure and latitude."""
         gsw = _get_gsw()
         if gsw is None:
