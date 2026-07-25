@@ -65,10 +65,12 @@ def test_sbe_hex_reader_loads_through_wrapped_function(tmp_path, monkeypatch):
                     "device_type": None,
                     "sample_length": None,
                     "tx_real_time": None,
+                    "reference_pressure": None,
                     "output_flags": {},
                 },
                 "xmlcon_info": None,
                 "xmlcon_path": None,
+                "create_pressure_from_reference_pressure": False,
             },
         )
     ]
@@ -117,6 +119,7 @@ def test_parse_hex_header_sensors_detects_sensors_and_coefficients(tmp_path):
                 "*</HardwareData>",
                 "*<SampleLength>21</SampleLength>",
                 "*<TxRealTime>yes</TxRealTime>",
+                "*<ReferencePressure>8.740000e+02</ReferencePressure>",
                 "*<CalibrationCoefficients>",
                 "*  <Calibration id='Temperature' format='TEMP'>",
                 "*    <A0>1.0</A0>",
@@ -144,6 +147,7 @@ def test_parse_hex_header_sensors_detects_sensors_and_coefficients(tmp_path):
     assert info["device_type"] == "SBE37SMP-ODO"
     assert info["sample_length"] == 21
     assert info["tx_real_time"] is True
+    assert info["reference_pressure"] == 874.0
     assert (
         info["calibration_coefficients"]["temperature"]["coefficients"]["a0"] == 1.0
     )
@@ -346,6 +350,83 @@ def test_detect_sbe_hex_layout_names_current_format0_temp_cond_layout():
         "conductivity",
         "date time",
     ]
+
+
+def test_detect_sbe_hex_layout_accepts_non_realtime_matching_row_layout():
+    id = _seabird_instrument_data()
+
+    layout = detect_sbe_hex_layout(
+        {
+            "device_type": "SBE37SM-RS232",
+            "sample_length": 10,
+            "tx_real_time": False,
+        },
+        ["temperature", "conductivity"],
+        id.InstrumentType.SBE37SM,
+    )
+
+    assert layout.name == "sbe37_format0_temp_cond_time"
+    assert layout.expected_hex_chars == 20
+
+
+def test_sbe_hex_reader_can_create_pressure_from_reference_pressure(tmp_path):
+    _seabird_instrument_data()
+
+    hex_file = tmp_path / "microcat.hex"
+    hex_file.write_text(
+        "\n".join(
+            [
+                "* Sea-Bird SBE37SM-RS232 Data File:",
+                '*<HardwareData DeviceType="SBE37SM-RS232" SerialNumber="03706105">',
+                '*  <Sensor id="Temperature"/>',
+                '*  <Sensor id="Conductivity"/>',
+                "*</HardwareData>",
+                "*<SampleLength>10</SampleLength>",
+                "*<TxRealTime>no</TxRealTime>",
+                "*<ReferencePressure>8.740000e+02</ReferencePressure>",
+                "*<CalibrationCoefficients>",
+                '*  <Calibration id="Temperature" format="TEMP1">',
+                "*    <A0>7.623170e-05</A0>",
+                "*    <A1>2.609968e-04</A1>",
+                "*    <A2>-1.417782e-06</A2>",
+                "*    <A3>1.248235e-07</A3>",
+                "*  </Calibration>",
+                '*  <Calibration id="Conductivity" format="WBCOND0">',
+                "*    <G>-1.010095e+00</G>",
+                "*    <H>1.329295e-01</H>",
+                "*    <I>-1.301659e-04</I>",
+                "*    <J>2.642814e-05</J>",
+                "*    <PCOR>-9.570000e-08</PCOR>",
+                "*    <TCOR>3.250000e-06</TCOR>",
+                "*    <WBOTC>2.416966e-07</WBOTC>",
+                "*  </Calibration>",
+                "*</CalibrationCoefficients>",
+                "*END*",
+                "0914DE168CE931E4B481",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    without_reference_pressure = SbeHexReader(
+        str(hex_file),
+        perform_default_postprocessing=False,
+    ).data
+    with_reference_pressure = SbeHexReader(
+        str(hex_file),
+        perform_default_postprocessing=False,
+        create_pressure_from_reference_pressure=True,
+    ).data
+
+    assert "press" not in without_reference_pressure
+    assert "press" in with_reference_pressure
+    assert with_reference_pressure["press"].values.tolist() == [874.0]
+    assert (
+        with_reference_pressure["press"].attrs["sensor_source_basis"]
+        == "sbe_header_reference_pressure"
+    )
+    assert abs(float(with_reference_pressure["cond"].values[0]) - 34.245203) < 1e-6
+    assert abs(float(without_reference_pressure["cond"].values[0]) - 34.245203) > 1e-3
 
 
 def test_read_hex_file_fast_uses_seabird_line_decoder(tmp_path):

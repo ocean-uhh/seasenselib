@@ -105,6 +105,42 @@ def test_show_writes_processing_protocol(tmp_path):
     assert payload["stages_applied"] == ["mapping"]
 
 
+def test_show_command_returns_errors_without_printing(capsys):
+    class DummyIO:
+        def read_data(self, *args, **kwargs):
+            raise ValueError("reader failed")
+
+    args = argparse.Namespace(
+        input="input.cnv",
+        input_format=None,
+        header_input=None,
+        schema="summary",
+        mapping=None,
+        no_sanitize=False,
+        raw_only=False,
+        pipeline_profile=None,
+        pipeline_file=None,
+        pipeline_apply_stages=None,
+        pipeline_skip_stages=None,
+        pipeline_apply_handlers=None,
+        pipeline_skip_handlers=None,
+        default_latitude=None,
+        default_longitude=None,
+        metadata=None,
+        metadata_file=None,
+        reader_args=None,
+        processing_protocol=None,
+    )
+
+    result = ShowCommand(DummyIO()).execute(args)
+
+    captured = capsys.readouterr()
+    assert not captured.out
+    assert not captured.err
+    assert not result.success
+    assert result.message == "reader failed"
+
+
 def test_show_example_uses_bounded_xarray_preview(monkeypatch, capsys):
     dataset = xr.Dataset(
         {
