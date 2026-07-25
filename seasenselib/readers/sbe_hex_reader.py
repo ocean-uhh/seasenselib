@@ -88,17 +88,17 @@ def detect_sbe_hex_layout(
     Only the SBE37 format-0 family is implemented so far because that is what
     seabirdscientific currently decodes for SBE37 variants. This small detector
     gives future developers a clear extension point for new row structures.
+
+    ``TxRealTime`` is treated as acquisition metadata, not as a layout by
+    itself. Some recovered files have ``TxRealTime=no`` but still store the same
+    temperature/conductivity/time rows. The actual safety checks are therefore
+    the enabled sensors, the header ``SampleLength`` value, and the per-line hex
+    length validation in ``_read_hex_file_fast()``.
     """
     if not _is_sbe37_instrument_type(instrument_type):
         raise ValueError(
             f"No SBE HEX layout detector is implemented for {instrument_type}. "
             "Add a new SbeHexLayout detector/decoder for this instrument family."
-        )
-
-    if header_info.get("tx_real_time") is False:
-        raise ValueError(
-            "Unsupported SBE37 HEX layout: TxRealTime=no. "
-            "Add a non-realtime SbeHexLayout decoder before reading this file."
         )
 
     fields = [
@@ -185,6 +185,14 @@ def _parse_bool_text(value: str) -> bool | None:
     if value in {"no", "false", "0"}:
         return False
     return None
+
+
+def _parse_float_text(value: str) -> float | None:
+    """Parse a numeric SBE header value, returning None if unavailable."""
+    try:
+        return float(value.strip())
+    except (TypeError, ValueError):
+        return None
 
 
 def _read_sbe_hex_raw_header(hex_file: Union[str, Path]) -> str | None:
@@ -275,6 +283,7 @@ def _sbe_hex_raw_metadata_blocks(
         "device_type": header_info.get("device_type"),
         "sample_length": header_info.get("sample_length"),
         "tx_real_time": header_info.get("tx_real_time"),
+        "reference_pressure": header_info.get("reference_pressure"),
     }
     attributes = {
         key: value
@@ -672,6 +681,7 @@ def parse_hex_header_sensors(hex_file: Union[str, Path]) -> Dict:
     device_type = None
     sample_length = None
     tx_real_time = None
+    reference_pressure = None
     output_flags = {}
 
     # Read the header and extract XML content
@@ -706,6 +716,8 @@ def parse_hex_header_sensors(hex_file: Union[str, Path]) -> Dict:
                     sample_length = None
             elif tag == "TxRealTime":
                 tx_real_time = _parse_bool_text(value)
+            elif tag == "ReferencePressure":
+                reference_pressure = _parse_float_text(value)
             elif tag in {
                 "OutputTemperature",
                 "OutputConductivity",
@@ -807,6 +819,7 @@ def parse_hex_header_sensors(hex_file: Union[str, Path]) -> Dict:
         "device_type": device_type,
         "sample_length": sample_length,
         "tx_real_time": tx_real_time,
+        "reference_pressure": reference_pressure,
         "output_flags": output_flags,
     }
 
@@ -822,6 +835,7 @@ def sbe37_hex_reader(
     header_info: dict | None = None,
     xmlcon_info: dict | None = None,
     xmlcon_path: Union[str, Path] | None = None,
+    create_pressure_from_reference_pressure: bool = False,
 ) -> xr.Dataset:
     """
     Read SBE37 hex file using seabirdscientific library.
@@ -841,6 +855,11 @@ def sbe37_hex_reader(
         Pre-parsed XMLCON metadata from :func:`sbe37_xmlcon_reader`.
     xmlcon_path : Union[str, Path], optional
         Path to the companion XMLCON file that produced ``xmlcon_info``.
+    create_pressure_from_reference_pressure : bool, default False
+        If True and no pressure sensor data are decoded, create a constant
+        pressure variable from the header ``ReferencePressure`` value. This is
+        explicit because reference pressure is deployment/configuration
+        metadata, not a measured pressure time series.
 
     Returns
     -------
@@ -859,6 +878,7 @@ def sbe37_hex_reader(
     enabled_sensors_list = header_info["enabled_sensors"]
     calibration_coeffs = header_info.get("calibration_coefficients", {})
     device_type = header_info.get("device_type")
+    reference_pressure = header_info.get("reference_pressure")
 
     # Fallback: Look for corresponding xmlcon file if header parsing fails
     if not enabled_sensors_list:
@@ -951,6 +971,7 @@ def sbe37_hex_reader(
 
     # Convert to xarray Dataset
     data_vars = {}
+    pressure_from_reference_pressure = False
 
     # Extract time coordinate from raw data
     if raw_data.empty:
@@ -1033,6 +1054,17 @@ def sbe37_hex_reader(
                 units="dbar",
             )
             data_vars["press"] = (params.TIME, pressure)
+
+        if (
+            create_pressure_from_reference_pressure
+            and "press" not in data_vars
+            and reference_pressure is not None
+        ):
+            data_vars["press"] = (
+                params.TIME,
+                np.full(n_samples, float(reference_pressure), dtype=float),
+            )
+            pressure_from_reference_pressure = True
 
         conductivity_info = sensor_configs.get("conductivity")
         if conductivity_info and "conductivity" in raw_data.columns:
@@ -1137,6 +1169,16 @@ def sbe37_hex_reader(
             data_vars["cond"] = (params.TIME, raw_data["conductivity"].values)
         if "pressure" in raw_data.columns:
             data_vars["press"] = (params.TIME, raw_data["pressure"].values)
+        if (
+            create_pressure_from_reference_pressure
+            and "press" not in data_vars
+            and reference_pressure is not None
+        ):
+            data_vars["press"] = (
+                params.TIME,
+                np.full(n_samples, float(reference_pressure), dtype=float),
+            )
+            pressure_from_reference_pressure = True
         # Handle SBE63 oxygen data (phase and temperature)
         if "SBE63 oxygen phase" in raw_data.columns:
             data_vars["oxygen_phase"] = (params.TIME, raw_data["SBE63 oxygen phase"].values)
@@ -1158,7 +1200,17 @@ def sbe37_hex_reader(
         ds["cond"].attrs["long_name"] = "Conductivity"
     if "press" in data_vars:
         ds["press"].attrs["units"] = "dbar"
-        ds["press"].attrs["long_name"] = "Pressure"
+        if pressure_from_reference_pressure:
+            ds["press"].attrs["long_name"] = "Reference Pressure"
+            ds["press"].attrs["measurement_type"] = "Configured"
+            ds["press"].attrs["sensor_source"] = "configured"
+            ds["press"].attrs["sensor_source_basis"] = "sbe_header_reference_pressure"
+            ds["press"].attrs["comment"] = (
+                "Constant pressure created from the SBE header ReferencePressure "
+                "value because create_pressure_from_reference_pressure=True."
+            )
+        else:
+            ds["press"].attrs["long_name"] = "Pressure"
     if "oxygen" in data_vars:
         ds["oxygen"].attrs["units"] = "umol/L"
         ds["oxygen"].attrs["long_name"] = "Dissolved Oxygen"
@@ -1189,6 +1241,13 @@ def sbe37_hex_reader(
     ds.attrs["hex_layout_expected_chars"] = layout.expected_hex_chars
     ds.attrs["hex_layout_fields"] = ", ".join(field.name for field in layout.fields)
     ds.attrs["data_type"] = "calibrated" if (calibration_coeffs or xmlcon_info) else "raw"
+    if reference_pressure is not None:
+        ds.attrs["reference_pressure"] = reference_pressure
+    ds.attrs["create_pressure_from_reference_pressure"] = (
+        create_pressure_from_reference_pressure
+    )
+    if pressure_from_reference_pressure:
+        ds.attrs["pressure_source"] = "header_reference_pressure"
 
     # Add sensor information as attributes
     if xmlcon_info:
@@ -1231,6 +1290,9 @@ class SbeHexReader(AbstractReader):
                 "frequency_channels_suppressed", 0
             ),
             "voltage_words_suppressed": kwargs.pop("voltage_words_suppressed", 0),
+            "create_pressure_from_reference_pressure": kwargs.pop(
+                "create_pressure_from_reference_pressure", False
+            ),
         }
         super().__init__(input_file, mapping, **kwargs)
         self._raw_header = None
@@ -1242,6 +1304,47 @@ class SbeHexReader(AbstractReader):
     def _get_valid_extensions(cls) -> tuple[str, ...]:
         """Return valid file extensions for SBE HEX files."""
         return (".hex",)
+
+    @classmethod
+    def reader_args(cls) -> list[dict]:
+        return [
+            cls._reader_arg(
+                "instrument_type",
+                "str",
+                None,
+                "Override the SBE37 instrument type used by seabirdscientific.",
+            ),
+            cls._reader_arg(
+                "moored_mode",
+                "bool",
+                False,
+                "Pass seabirdscientific's moored-mode option to the hex decoder.",
+            ),
+            cls._reader_arg(
+                "is_shallow",
+                "bool",
+                True,
+                "Pass seabirdscientific's shallow-water option to the hex decoder.",
+            ),
+            cls._reader_arg(
+                "frequency_channels_suppressed",
+                "int",
+                0,
+                "Number of suppressed frequency channels for the hex decoder.",
+            ),
+            cls._reader_arg(
+                "voltage_words_suppressed",
+                "int",
+                0,
+                "Number of suppressed voltage words for the hex decoder.",
+            ),
+            cls._reader_arg(
+                "create_pressure_from_reference_pressure",
+                "bool",
+                False,
+                "Create a constant pressure variable from the SBE header ReferencePressure value.",
+            ),
+        ]
 
     def _load_data(self) -> xr.Dataset:
         """Load the SBE HEX file using the original standalone function."""
@@ -1279,6 +1382,16 @@ class SbeHexReader(AbstractReader):
             ).items()
             if name in ds.data_vars
         }
+        if (
+            "press" in ds.data_vars
+            and "press" not in self._raw_metadata_variables
+            and ds.attrs.get("pressure_source") == "header_reference_pressure"
+        ):
+            self._raw_metadata_variables["press"] = {
+                "sensor_type": "pressure",
+                "source": "header_reference_pressure",
+                "reference_pressure": header_info.get("reference_pressure"),
+            }
 
         return ds
 

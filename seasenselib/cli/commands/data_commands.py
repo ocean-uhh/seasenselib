@@ -565,7 +565,6 @@ class ShowCommand(BaseCommand):
             return CommandResult(success=True, message="Data displayed successfully")
 
         except Exception as e:
-            print(f"{e}")
             return CommandResult(success=False, message=str(e))
 
 
