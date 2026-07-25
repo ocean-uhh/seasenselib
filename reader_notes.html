@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="supported_formats.html">Supported File Formats</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Reader Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#seabird-sbe-hex">SeaBird SBE HEX</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rbr-hex">RBR HEX</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nortek-raw">Nortek raw</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rdi-raw-adcp">RDI raw ADCP</a><ul>
@@ -107,6 +108,30 @@
 <p>This page documents reader-specific interpretation choices that affect the
 scientific meaning of decoded variables. The supported formats overview stays
 short; details live here when a raw format needs extra care.</p>
+<section id="seabird-sbe-hex">
+<h2>SeaBird SBE HEX<a class="headerlink" href="#seabird-sbe-hex" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code> reader uses Sea-Bird SBE37 header metadata to detect the raw
+hex row layout, then decodes rows with <code class="docutils literal notranslate"><span class="pre">seabirdscientific</span></code>. <code class="docutils literal notranslate"><span class="pre">TxRealTime</span></code> is
+preserved as metadata but is not treated as a layout by itself: recovered files
+can contain <code class="docutils literal notranslate"><span class="pre">TxRealTime=no</span></code> while still storing the same
+temperature/conductivity/time row structure. The reader validates the detected
+layout against <code class="docutils literal notranslate"><span class="pre">SampleLength</span></code> and each data row’s hex length instead.</p>
+<p>For MicroCAT files without a pressure sensor, the header may contain
+<code class="docutils literal notranslate"><span class="pre">ReferencePressure</span></code>. This is deployment/configuration metadata, not a
+measured pressure time series, so SeaSenseLib does not create a pressure
+variable from it by default. Users can explicitly opt in when they want the
+reference pressure to be represented as a constant pressure variable and used
+for conductivity pressure correction:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seasenselib<span class="w"> </span>show<span class="w"> </span>-i<span class="w"> </span>microcat.hex<span class="w"> </span>--reader-arg<span class="w"> </span>create-pressure-from-reference-pressure<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+    <span class="s2">&quot;microcat.hex&quot;</span><span class="p">,</span>
+    <span class="n">create_pressure_from_reference_pressure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="rbr-hex">
 <h2>RBR HEX<a class="headerlink" href="#rbr-hex" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">rbr-hex</span></code> reader decodes RBR TR-1050 style binary HEX exports with a

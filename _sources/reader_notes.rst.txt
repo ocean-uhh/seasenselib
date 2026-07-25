@@ -5,6 +5,34 @@ This page documents reader-specific interpretation choices that affect the
 scientific meaning of decoded variables. The supported formats overview stays
 short; details live here when a raw format needs extra care.
 
+SeaBird SBE HEX
+---------------
+
+The ``sbe-hex`` reader uses Sea-Bird SBE37 header metadata to detect the raw
+hex row layout, then decodes rows with ``seabirdscientific``. ``TxRealTime`` is
+preserved as metadata but is not treated as a layout by itself: recovered files
+can contain ``TxRealTime=no`` while still storing the same
+temperature/conductivity/time row structure. The reader validates the detected
+layout against ``SampleLength`` and each data row's hex length instead.
+
+For MicroCAT files without a pressure sensor, the header may contain
+``ReferencePressure``. This is deployment/configuration metadata, not a
+measured pressure time series, so SeaSenseLib does not create a pressure
+variable from it by default. Users can explicitly opt in when they want the
+reference pressure to be represented as a constant pressure variable and used
+for conductivity pressure correction:
+
+.. code-block:: bash
+
+   seasenselib show -i microcat.hex --reader-arg create-pressure-from-reference-pressure=true
+
+.. code-block:: python
+
+   dataset = ssl.read(
+       "microcat.hex",
+       create_pressure_from_reference_pressure=True,
+   )
+
 RBR HEX
 -------
 
