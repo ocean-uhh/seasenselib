@@ -1,12 +1,14 @@
 import argparse
 import ast
 from pathlib import Path
+import re
 
 import pytest
 
 from seasenselib.cli.commands.data_commands import (
     _build_reader_kwargs,
     _build_stage_kwargs,
+    _build_writer_kwargs,
 )
 from seasenselib.cli.commands.info_commands import ListCommand
 from seasenselib.cli.commands.plot_commands import PlotCommand
@@ -152,6 +154,18 @@ def test_build_reader_kwargs_rejects_invalid_reader_arg():
         _build_reader_kwargs(args)
 
 
+def test_build_writer_kwargs_uses_default_netcdf_name_sanitizing():
+    args = argparse.Namespace(sanitize_netcdf_names=True)
+
+    assert _build_writer_kwargs(args) == {}
+
+
+def test_build_writer_kwargs_can_disable_netcdf_name_sanitizing():
+    args = argparse.Namespace(sanitize_netcdf_names=False)
+
+    assert _build_writer_kwargs(args) == {"sanitize_names": False}
+
+
 def test_convert_parser_accepts_reader_arg():
     parser = ArgumentParser().create_command_parser("convert", lightweight=True)
 
@@ -165,6 +179,33 @@ def test_convert_parser_accepts_reader_arg():
     ])
 
     assert args.reader_args == ["latitude=30.0", "round_digits=10"]
+
+
+def test_convert_parser_sanitizes_netcdf_names_by_default():
+    parser = ArgumentParser().create_command_parser("convert", lightweight=True)
+
+    args = parser.parse_args([
+        "-i", "file.cnv",
+        "-f", "sbe-cnv",
+        "-o", "out.nc",
+        "-F", "netcdf",
+    ])
+
+    assert args.sanitize_netcdf_names is True
+
+
+def test_convert_parser_accepts_no_sanitize_netcdf_names():
+    parser = ArgumentParser().create_command_parser("convert", lightweight=True)
+
+    args = parser.parse_args([
+        "-i", "file.cnv",
+        "-f", "sbe-cnv",
+        "-o", "out.nc",
+        "-F", "netcdf",
+        "--no-sanitize-netcdf-names",
+    ])
+
+    assert args.sanitize_netcdf_names is False
 
 
 def test_convert_parser_accepts_default_latitude():
@@ -297,7 +338,7 @@ def test_reader_arg_help_points_to_discovery_command(capsys):
     output = capsys.readouterr().out
     assert "seasenselib list reader-args --filter FORMAT" in output
     assert "names are validated for the selected reader" in output
-    assert "--no-sanitize" not in output
+    assert re.search(r"(?<![\w-])--no-sanitize(?![\w-])", output) is None
     assert "--no-fix-coords" not in output
 
 

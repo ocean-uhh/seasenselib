@@ -71,8 +71,10 @@ def _validate_netcdf_names(ds):
         "NetCDF output cannot be created because these names contain '/': "
         f"{details}. NetCDF/HDF5 uses '/' as a group separator. Rename or map "
         "these variables before writing, for example map 'cond0S/m' to "
-        "'conductivity'. Alternatively, pass sanitize_names=True (or "
-        "--sanitize-netcdf-names in the CLI) to replace '/' with '_' automatically."
+        "'conductivity'. NetCDF name sanitization is enabled by default; if you "
+        "disabled it, pass sanitize_names=True in the API or omit "
+        "--no-sanitize-netcdf-names in the CLI to replace '/' with '_' "
+        "automatically."
     )
 
 
@@ -86,6 +88,17 @@ def _dataset_with_netcdf_safe_names(ds):
     for original_name, safe_name in name_map.items():
         if safe_name in renamed.data_vars or safe_name in renamed.coords:
             renamed[safe_name].attrs.setdefault("original_name", str(original_name))
+    logger.info(
+        "Sanitized %d NetCDF name(s) by replacing '/' with '_': %s",
+        len(name_map),
+        ", ".join(
+            f"{original_name!r} -> {safe_name!r}"
+            for original_name, safe_name in sorted(
+                name_map.items(),
+                key=lambda item: str(item[0]),
+            )
+        ),
+    )
     return renamed
 
 
@@ -171,7 +184,7 @@ class NetCdfWriter(AbstractWriter):
         The default file extension for this writer, which is '.nc'.
     """
 
-    def write(self, file_name: str, sanitize_names: bool = False, **kwargs):
+    def write(self, file_name: str, sanitize_names: bool = True, **kwargs):
         """ Writes the xarray Dataset to a netCDF file with the specified file name.
 
         Parameters:
@@ -180,7 +193,7 @@ class NetCdfWriter(AbstractWriter):
             The name of the output netCDF file where the data will be saved.
         sanitize_names : bool, optional
             If True, replace slashes in NetCDF dimension, coordinate, and variable
-            names with underscores before writing.
+            names with underscores before writing. Enabled by default.
         """
 
         ds = self.data

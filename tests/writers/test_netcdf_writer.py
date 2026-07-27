@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -8,14 +10,30 @@ from seasenselib.core.exceptions import WriterError
 from seasenselib.writers.netcdf_writer import NetCdfWriter
 
 
-def test_netcdf_writer_rejects_slashes_before_creating_file(tmp_path):
+def test_netcdf_writer_sanitizes_slashes_by_default(tmp_path):
     ds = xr.Dataset({"cond0S/m": ("time", np.array([1.0, 2.0]))})
-    output = tmp_path / "bad.nc"
+    output = tmp_path / "sanitized_by_default.nc"
 
-    with pytest.raises(WriterError, match="--sanitize-netcdf-names"):
+    NetCdfWriter(ds).write(str(output))
+
+    assert "cond0S/m" in ds.data_vars
+    with xr.open_dataset(output) as written:
+        assert "cond0S_m" in written.data_vars
+        assert written["cond0S_m"].attrs["original_name"] == "cond0S/m"
+
+
+def test_netcdf_writer_logs_when_names_are_sanitized(tmp_path, caplog):
+    ds = xr.Dataset({"cond0S/m": ("time", np.array([1.0, 2.0]))})
+    output = tmp_path / "sanitized_log.nc"
+
+    with caplog.at_level(
+        logging.INFO,
+        logger="seasenselib.writers.netcdf_writer",
+    ):
         NetCdfWriter(ds).write(str(output))
 
-    assert not output.exists()
+    assert "Sanitized 1 NetCDF name(s)" in caplog.text
+    assert "'cond0S/m' -> 'cond0S_m'" in caplog.text
 
 
 def test_netcdf_writer_preserves_existing_file_when_validation_fails(tmp_path):
@@ -27,7 +45,7 @@ def test_netcdf_writer_preserves_existing_file_when_validation_fails(tmp_path):
     invalid = xr.Dataset({"cond0S/m": ("time", np.array([1.0, 2.0]))})
 
     with pytest.raises(WriterError, match="NetCDF output cannot be created"):
-        NetCdfWriter(invalid).write(str(output))
+        NetCdfWriter(invalid).write(str(output), sanitize_names=False)
 
     assert output.read_bytes() == original_bytes
 
@@ -60,7 +78,7 @@ def test_netcdf_writer_sanitized_name_collision_fails_cleanly(tmp_path):
     output = tmp_path / "collision.nc"
 
     with pytest.raises(WriterError, match="duplicate name 'cond0S_m'"):
-        NetCdfWriter(ds).write(str(output), sanitize_names=True)
+        NetCdfWriter(ds).write(str(output))
 
     assert not output.exists()
 

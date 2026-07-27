@@ -222,8 +222,8 @@ def _parse_user_metadata(args):
 def _build_writer_kwargs(args):
     """Build writer kwargs from CLI arguments."""
     writer_kwargs = {}
-    if getattr(args, "sanitize_netcdf_names", False):
-        writer_kwargs["sanitize_names"] = True
+    if getattr(args, "sanitize_netcdf_names", True) is False:
+        writer_kwargs["sanitize_names"] = False
     return writer_kwargs
 
 

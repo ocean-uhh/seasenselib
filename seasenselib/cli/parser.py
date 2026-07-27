@@ -293,13 +293,24 @@ class ArgumentParser:
 
     def _add_writer_config_args(self, parser):
         """Add writer configuration arguments."""
-        parser.add_argument(
+        parser.set_defaults(sanitize_netcdf_names=True)
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
             '--sanitize-netcdf-names',
             action='store_true',
-            default=False,
+            dest='sanitize_netcdf_names',
             help=(
                 "Replace '/' with '_' in NetCDF dimension, coordinate, and "
-                "variable names before writing."
+                "variable names before writing. This is the default."
+            ),
+        )
+        group.add_argument(
+            '--no-sanitize-netcdf-names',
+            action='store_false',
+            dest='sanitize_netcdf_names',
+            help=(
+                "Disable automatic NetCDF name sanitization and fail if a "
+                "dimension, coordinate, or variable name contains '/'."
             ),
         )
 
