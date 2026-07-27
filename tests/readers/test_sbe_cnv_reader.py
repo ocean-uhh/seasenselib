@@ -155,14 +155,20 @@ def test_capture_pycnv_stdout_routes_prints_to_debug(caplog, capsys):
 
 def test_controlled_pycnv_logging_filters_and_restores_logger(caplog):
     pycnv_logger = logging.getLogger("pycnv")
+    pycnv_logger.setLevel(logging.WARNING)
+    pycnv_logger.propagate = True
 
     with caplog.at_level(
         logging.DEBUG,
         logger="seasenselib.readers.sbe_cnv_reader",
     ):
         with sbe_cnv_reader._controlled_pycnv_logging(logging.ERROR):  # noqa: SLF001
+            assert pycnv_logger.level == logging.NOTSET
+            assert pycnv_logger.propagate is False
             pycnv_logger.info("hidden info")
             pycnv_logger.error("visible error")
+            pycnv_logger.setLevel(logging.WARNING)
+            pycnv_logger.propagate = True
 
     assert "hidden info" not in caplog.text
     assert "pycnv: visible error" in caplog.text

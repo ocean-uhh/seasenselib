@@ -94,6 +94,30 @@ _pycnv_handler_install_lock = threading.Lock()
 _pycnv_thread_local_handler: _ThreadLocalPycnvHandler | None = None
 
 
+def _ensure_controlled_pycnv_logger(pycnv_logger: logging.Logger) -> None:
+    """Install and reassert the SeaSenseLib-owned pycnv logging state.
+
+    pycnv mutates its logger level during normal reads.  Because the handler is
+    intentionally persistent and thread-local, every guarded call must restore
+    the controlled logger state instead of only doing it at first installation.
+    """
+    global _pycnv_thread_local_handler
+
+    with _pycnv_handler_install_lock:
+        if _pycnv_thread_local_handler is None:
+            _pycnv_thread_local_handler = _ThreadLocalPycnvHandler()
+
+        for handler in list(pycnv_logger.handlers):
+            if handler is not _pycnv_thread_local_handler:
+                pycnv_logger.removeHandler(handler)
+
+        if _pycnv_thread_local_handler not in pycnv_logger.handlers:
+            pycnv_logger.addHandler(_pycnv_thread_local_handler)
+
+        pycnv_logger.setLevel(logging.NOTSET)
+        pycnv_logger.propagate = False
+
+
 @contextlib.contextmanager
 def _controlled_pycnv_logging(level: int):
     """Route pycnv logging through this module, thread-safely.
@@ -103,17 +127,8 @@ def _controlled_pycnv_logging(level: int):
     update thread-local state, so concurrent readers never interfere with each
     other's log configuration.
     """
-    global _pycnv_thread_local_handler
     pycnv_logger = logging.getLogger("pycnv")
-
-    with _pycnv_handler_install_lock:
-        if _pycnv_thread_local_handler is None:
-            _pycnv_thread_local_handler = _ThreadLocalPycnvHandler()
-            for h in list(pycnv_logger.handlers):
-                pycnv_logger.removeHandler(h)
-            pycnv_logger.setLevel(logging.NOTSET)
-            pycnv_logger.propagate = False
-            pycnv_logger.addHandler(_pycnv_thread_local_handler)
+    _ensure_controlled_pycnv_logger(pycnv_logger)
 
     forwarder = _PycnvLogForwarder(level=level)
     _pycnv_thread_local_handler.set_active_forwarder(forwarder)
@@ -121,6 +136,7 @@ def _controlled_pycnv_logging(level: int):
         yield
     finally:
         _pycnv_thread_local_handler.set_active_forwarder(None)
+        _ensure_controlled_pycnv_logger(pycnv_logger)
 
 
 _stdout_capture_lock = threading.Lock()
