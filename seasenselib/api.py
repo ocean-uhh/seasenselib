@@ -5,27 +5,43 @@ This module provides simple programmatic access to SeaSenseLib functionality
 without requiring knowledge of the internal CLI structure.
 """
 
-from typing import List, Dict, Optional, TYPE_CHECKING, Any
+import os
+from typing import List, Dict, Optional, TYPE_CHECKING, Any, Union
+
 from .core import DataIOManager
 from ._version import get_version
 
 if TYPE_CHECKING:
     import xarray as xr
 
+PathInput = Union[str, os.PathLike]
 
-def read(filename: str, file_format: Optional[str] = None,
-         header_file: Optional[str] = None, use_steps: bool = True,
+
+def _path_to_str(path: PathInput) -> str:
+    """Return a filesystem path as a string, accepting pathlib.Path objects."""
+    return os.fsdecode(os.fspath(path))
+
+
+def _optional_path_to_str(path: Optional[PathInput]) -> Optional[str]:
+    """Return an optional filesystem path as a string."""
+    if path is None:
+        return None
+    return _path_to_str(path)
+
+
+def read(filename: PathInput, file_format: Optional[str] = None,
+         header_file: Optional[PathInput] = None, use_steps: bool = True,
          pipeline_apply_stages: Optional[List[str]] = None,
          pipeline_skip_stages: Optional[List[str]] = None,
          pipeline_profile: Optional[str] = None,
-         pipeline_file: Optional[str] = None,
+         pipeline_file: Optional[PathInput] = None,
          pipeline_apply_handlers: Optional[List[str]] = None,
          pipeline_skip_handlers: Optional[List[str]] = None,
          default_latitude: Optional[float] = None,
          default_longitude: Optional[float] = None,
          mapping: Optional[Dict[str, str]] = None,
          metadata: Optional[Dict[str, Any]] = None,
-         metadata_file: Optional[str] = None,
+         metadata_file: Optional[PathInput] = None,
          step_config: Optional[Dict[str, Any]] = None,
          **kwargs) -> 'xr.Dataset':
     """
@@ -37,14 +53,14 @@ def read(filename: str, file_format: Optional[str] = None,
     
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         Path to the input file to read
     file_format : str, optional
         Format key to override automatic format detection.
         Use ssl.formats() to see available formats.
         Common formats: 'sbe-cnv', 'rbr-rsk', 'netcdf', 'csv'
         If None, format will be auto-detected from file extension.
-    header_file : str, optional
+    header_file : str or os.PathLike, optional
         Path to header file (required for Nortek ASCII files)
     use_steps : bool, default=True
         Whether to use the processing step pipeline system.
@@ -57,7 +73,7 @@ def read(filename: str, file_format: Optional[str] = None,
     pipeline_profile : str, optional
         Use a predefined pipeline profile (e.g., 'default', 'minimal').
         This is mutually exclusive with pipeline_apply_stages / pipeline_skip_stages.
-    pipeline_file : str, optional
+    pipeline_file : str or os.PathLike, optional
         Path to a pipeline configuration file (.json/.yaml/.toml).
         This is mutually exclusive with pipeline_profile and pipeline_apply_stages/pipeline_skip_stages.
     pipeline_apply_handlers : List[str], optional
@@ -78,7 +94,7 @@ def read(filename: str, file_format: Optional[str] = None,
         Variable name mapping in the internal form {original_name: canonical_name}.
     metadata : Dict[str, Any], optional
         User metadata overrides with sections {"global": {...}, "variables": {...}}.
-    metadata_file : str, optional
+    metadata_file : str or os.PathLike, optional
         Path to a metadata JSON file with sections {"global": {...}, "variables": {...}}.
     step_config : Dict[str, Any], optional
         Configuration for specific processing stages.
@@ -181,6 +197,12 @@ def read(filename: str, file_format: Optional[str] = None,
     print(df.head())
     ```
     """
+
+    # Convert paths to strings for internal use
+    filename = _path_to_str(filename)
+    header_file = _optional_path_to_str(header_file)
+    pipeline_file = _optional_path_to_str(pipeline_file)
+    metadata_file = _optional_path_to_str(metadata_file)
 
     # Initialize the I/O manager
     io_manager = DataIOManager()
@@ -300,7 +322,7 @@ def read(filename: str, file_format: Optional[str] = None,
             raise RuntimeError(f"Error reading file {filename}: {e}") from e
 
 
-def write(dataset: 'xr.Dataset', filename: str, 
+def write(dataset: 'xr.Dataset', filename: PathInput,
           file_format: Optional[str] = None, **kwargs) -> None:
     """
     Write a xarray Dataset to a file in the specified format.
@@ -312,7 +334,7 @@ def write(dataset: 'xr.Dataset', filename: str,
     ----------
     dataset : xarray.Dataset
         The dataset to write to file
-    filename : str
+    filename : str or os.PathLike
         Path to the output file
     file_format : str, optional
         Output format. If None, format will be detected from file extension.
@@ -343,6 +365,9 @@ def write(dataset: 'xr.Dataset', filename: str,
     ssl.write(ds, 'output.csv', file_format='csv')
     ```
     """
+
+    # Convert paths to strings for internal use
+    filename = _path_to_str(filename)
 
     # Initialize the I/O manager
     io_manager = DataIOManager()
@@ -615,7 +640,7 @@ def plot(plotter_key: str, dataset: 'xr.Dataset', **kwargs) -> None:
         or `seasenselib plot <plotter-key> -h` in the CLI to see available options.
         
         Common arguments:
-        - output_file : str, optional - Path to save the plot. If None, displays interactively.
+        - output_file : str or os.PathLike, optional - Path to save the plot. If None, displays interactively.
         - title : str, optional - Custom plot title
         
     Returns
@@ -695,6 +720,10 @@ def plot(plotter_key: str, dataset: 'xr.Dataset', **kwargs) -> None:
 
     # Instantiate the plotter with the dataset
     plotter = plotter_class(dataset)
+
+    kwargs = dict(kwargs)
+    if "output_file" in kwargs:
+        kwargs["output_file"] = _optional_path_to_str(kwargs["output_file"])
 
     # Call the plotter's plot method with provided kwargs
     try:
