@@ -63,33 +63,64 @@ class _PycnvLogForwarder(logging.Handler):
         logger.log(record.levelno, "pycnv: %s", record.getMessage())
 
 
+class _ThreadLocalPycnvHandler(logging.Handler):
+    """Log handler installed once on the pycnv logger; routes records per-thread.
+
+    Each thread that calls :func:`_controlled_pycnv_logging` sets its own
+    forwarder in thread-local storage.  Records arriving on threads that have
+    no active forwarder are silently dropped, so pycnv noise never escapes
+    this module unintentionally.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(level=logging.NOTSET)
+        self._local = threading.local()
+
+    def get_active_forwarder(self) -> logging.Handler | None:
+        """Return the active forwarder for the current thread, or ``None``."""
+        return getattr(self._local, "forwarder", None)
+
+    def set_active_forwarder(self, handler: logging.Handler | None) -> None:
+        """Activate *handler* for the current thread (or clear it when ``None``)."""
+        self._local.forwarder = handler
+
+    def emit(self, record: logging.LogRecord) -> None:
+        forwarder = self.get_active_forwarder()
+        if forwarder is not None and record.levelno >= forwarder.level:
+            forwarder.emit(record)
+
+
+_pycnv_handler_install_lock = threading.Lock()
+_pycnv_thread_local_handler: _ThreadLocalPycnvHandler | None = None
+
+
 @contextlib.contextmanager
 def _controlled_pycnv_logging(level: int):
-    """Route pycnv logging through this module and restore its logger after use."""
+    """Route pycnv logging through this module, thread-safely.
+
+    A single :class:`_ThreadLocalPycnvHandler` is installed on the ``pycnv``
+    logger the first time this context manager runs.  Subsequent calls only
+    update thread-local state, so concurrent readers never interfere with each
+    other's log configuration.
+    """
+    global _pycnv_thread_local_handler
     pycnv_logger = logging.getLogger("pycnv")
-    original_level = pycnv_logger.level
-    original_handlers = list(pycnv_logger.handlers)
-    original_propagate = pycnv_logger.propagate
+
+    with _pycnv_handler_install_lock:
+        if _pycnv_thread_local_handler is None:
+            _pycnv_thread_local_handler = _ThreadLocalPycnvHandler()
+            for h in list(pycnv_logger.handlers):
+                pycnv_logger.removeHandler(h)
+            pycnv_logger.setLevel(logging.NOTSET)
+            pycnv_logger.propagate = False
+            pycnv_logger.addHandler(_pycnv_thread_local_handler)
+
     forwarder = _PycnvLogForwarder(level=level)
-
-    for handler in original_handlers:
-        pycnv_logger.removeHandler(handler)
-    pycnv_logger.setLevel(level)
-    pycnv_logger.propagate = False
-    pycnv_logger.addHandler(forwarder)
-
+    _pycnv_thread_local_handler.set_active_forwarder(forwarder)
     try:
         yield
     finally:
-        pycnv_logger.removeHandler(forwarder)
-        for handler in list(pycnv_logger.handlers):
-            if handler not in original_handlers:
-                pycnv_logger.removeHandler(handler)
-        for handler in original_handlers:
-            if handler not in pycnv_logger.handlers:
-                pycnv_logger.addHandler(handler)
-        pycnv_logger.setLevel(original_level)
-        pycnv_logger.propagate = original_propagate
+        _pycnv_thread_local_handler.set_active_forwarder(None)
 
 
 _stdout_capture_lock = threading.Lock()

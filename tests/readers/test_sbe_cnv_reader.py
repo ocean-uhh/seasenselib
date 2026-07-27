@@ -155,9 +155,6 @@ def test_capture_pycnv_stdout_routes_prints_to_debug(caplog, capsys):
 
 def test_controlled_pycnv_logging_filters_and_restores_logger(caplog):
     pycnv_logger = logging.getLogger("pycnv")
-    original_level = pycnv_logger.level
-    original_handlers = list(pycnv_logger.handlers)
-    original_propagate = pycnv_logger.propagate
 
     with caplog.at_level(
         logging.DEBUG,
@@ -169,6 +166,9 @@ def test_controlled_pycnv_logging_filters_and_restores_logger(caplog):
 
     assert "hidden info" not in caplog.text
     assert "pycnv: visible error" in caplog.text
-    assert pycnv_logger.level == original_level
-    assert pycnv_logger.handlers == original_handlers
-    assert pycnv_logger.propagate == original_propagate
+    handler = sbe_cnv_reader._pycnv_thread_local_handler  # noqa: SLF001
+    assert handler is not None
+    assert handler in pycnv_logger.handlers
+    assert handler.get_active_forwarder() is None
+    assert pycnv_logger.propagate is False
+    assert pycnv_logger.level == logging.NOTSET
