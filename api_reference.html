@@ -3403,7 +3403,7 @@ writer.write(“output_file.nc”)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="seasenselib.writers.NetCdfWriter.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seasenselib/writers/netcdf_writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seasenselib.writers.NetCdfWriter.write" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seasenselib/writers/netcdf_writer.html#NetCdfWriter.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#seasenselib.writers.NetCdfWriter.write" title="Link to this definition"></a></dt>
 <dd><p>Writes the xarray Dataset to a netCDF file with the specified file name.</p>
 <section id="id163">
 <h5>Parameters:<a class="headerlink" href="#id163" title="Link to this heading"></a></h5>
@@ -3411,7 +3411,7 @@ writer.write(“output_file.nc”)</p>
 <dt>file_name (str):</dt><dd><p>The name of the output netCDF file where the data will be saved.</p>
 </dd>
 <dt>sanitize_names<span class="classifier">bool, optional</span></dt><dd><p>If True, replace slashes in NetCDF dimension, coordinate, and variable
-names with underscores before writing.</p>
+names with underscores before writing. Enabled by default.</p>
 </dd>
 </dl>
 </section>

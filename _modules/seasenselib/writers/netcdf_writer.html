@@ -164,8 +164,10 @@
         <span class="s2">&quot;NetCDF output cannot be created because these names contain &#39;/&#39;: &quot;</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">details</span><span class="si">}</span><span class="s2">. NetCDF/HDF5 uses &#39;/&#39; as a group separator. Rename or map &quot;</span>
         <span class="s2">&quot;these variables before writing, for example map &#39;cond0S/m&#39; to &quot;</span>
-        <span class="s2">&quot;&#39;conductivity&#39;. Alternatively, pass sanitize_names=True (or &quot;</span>
-        <span class="s2">&quot;--sanitize-netcdf-names in the CLI) to replace &#39;/&#39; with &#39;_&#39; automatically.&quot;</span>
+        <span class="s2">&quot;&#39;conductivity&#39;. NetCDF name sanitization is enabled by default; if you &quot;</span>
+        <span class="s2">&quot;disabled it, pass sanitize_names=True in the API or omit &quot;</span>
+        <span class="s2">&quot;--no-sanitize-netcdf-names in the CLI to replace &#39;/&#39; with &#39;_&#39; &quot;</span>
+        <span class="s2">&quot;automatically.&quot;</span>
     <span class="p">)</span>
 
 
@@ -179,6 +181,17 @@
     <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">name_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">data_vars</span> <span class="ow">or</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
             <span class="n">renamed</span><span class="p">[</span><span class="n">safe_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;original_name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">original_name</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;Sanitized </span><span class="si">%d</span><span class="s2"> NetCDF name(s) by replacing &#39;/&#39; with &#39;_&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">name_map</span><span class="p">),</span>
+        <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">original_name</span><span class="si">!r}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">safe_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">original_name</span><span class="p">,</span> <span class="n">safe_name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">name_map</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">renamed</span>
 
 
@@ -268,7 +281,7 @@
 
 <div class="viewcode-block" id="NetCdfWriter.write">
 <a class="viewcode-back" href="../../../api_reference.html#seasenselib.writers.NetCdfWriter.write">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sanitize_names</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sanitize_names</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the xarray Dataset to a netCDF file with the specified file name.</span>
 
 <span class="sd">        Parameters:</span>
@@ -277,7 +290,7 @@
 <span class="sd">            The name of the output netCDF file where the data will be saved.</span>
 <span class="sd">        sanitize_names : bool, optional</span>
 <span class="sd">            If True, replace slashes in NetCDF dimension, coordinate, and variable</span>
-<span class="sd">            names with underscores before writing.</span>
+<span class="sd">            names with underscores before writing. Enabled by default.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
