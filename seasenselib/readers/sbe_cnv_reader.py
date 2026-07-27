@@ -8,6 +8,7 @@ import io
 import logging
 import re
 import sys
+import threading
 import types
 import warnings
 from datetime import datetime
@@ -91,14 +92,58 @@ def _controlled_pycnv_logging(level: int):
         pycnv_logger.propagate = original_propagate
 
 
+_stdout_capture_lock = threading.Lock()
+
+
+class _ThreadLocalStdoutProxy:
+    """sys.stdout proxy that routes writes to a per-thread capture buffer when active."""
+
+    def __init__(self, original):
+        self._original = original
+        self._local = threading.local()
+
+    def get_capture_stream(self):
+        """Return the active capture stream for the current thread, or None."""
+        return getattr(self._local, "stream", None)
+
+    def set_capture_stream(self, stream):
+        """Set the capture stream for the current thread."""
+        self._local.stream = stream
+
+    def write(self, text):
+        stream = self.get_capture_stream()
+        if stream is not None:
+            return stream.write(text)
+        return self._original.write(text)
+
+    def flush(self):
+        stream = self.get_capture_stream()
+        if stream is not None:
+            stream.flush()
+        else:
+            self._original.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._original, name)
+
+
 @contextlib.contextmanager
 def _capture_pycnv_stdout():
-    """Capture pycnv print output and expose it only as debug logging."""
+    """Capture pycnv print output and expose it only as debug logging.
+
+    Uses a thread-local proxy so concurrent threads are not affected.
+    """
+    with _stdout_capture_lock:
+        if not isinstance(sys.stdout, _ThreadLocalStdoutProxy):
+            sys.stdout = _ThreadLocalStdoutProxy(sys.stdout)
+    proxy = sys.stdout
     stream = io.StringIO()
+    previous = proxy.get_capture_stream()
+    proxy.set_capture_stream(stream)
     try:
-        with contextlib.redirect_stdout(stream):
-            yield
+        yield
     finally:
+        proxy.set_capture_stream(previous)
         output = stream.getvalue().strip()
         if output:
             for line in output.splitlines():
