@@ -95,11 +95,15 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -109,6 +113,206 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_PKG_RESOURCES_DEPRECATION_MESSAGE</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;pkg_resources is deprecated as an API.*&quot;</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_suppress_pkg_resources_deprecation</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Suppress the known setuptools warning emitted by pycnv imports.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+            <span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">_PKG_RESOURCES_DEPRECATION_MESSAGE</span><span class="p">,</span>
+            <span class="n">category</span><span class="o">=</span><span class="ne">Warning</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">yield</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_preserve_root_logging</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prevent pycnv import-time logging.basicConfig from changing root logging.&quot;&quot;&quot;</span>
+    <span class="n">root_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">original_level</span> <span class="o">=</span> <span class="n">root_logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="n">original_handlers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">handler</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">original_handlers</span><span class="p">:</span>
+                <span class="n">root_logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+                <span class="n">handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">original_handlers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">handler</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+                <span class="n">root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="n">root_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">original_level</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_PycnvLogForwarder</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward pycnv records through the SeaSenseLib reader logger.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">LogRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelno</span><span class="p">,</span> <span class="s2">&quot;pycnv: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">())</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ThreadLocalPycnvHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log handler installed once on the pycnv logger; routes records per-thread.</span>
+
+<span class="sd">    Each thread that calls :func:`_controlled_pycnv_logging` sets its own</span>
+<span class="sd">    forwarder in thread-local storage.  Records arriving on threads that have</span>
+<span class="sd">    no active forwarder are silently dropped, so pycnv noise never escapes</span>
+<span class="sd">    this module unintentionally.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_active_forwarder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Handler</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the active forwarder for the current thread, or ``None``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">,</span> <span class="s2">&quot;forwarder&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_active_forwarder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Handler</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Activate *handler* for the current thread (or clear it when ``None``).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">forwarder</span> <span class="o">=</span> <span class="n">handler</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">LogRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">forwarder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_active_forwarder</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">forwarder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">&gt;=</span> <span class="n">forwarder</span><span class="o">.</span><span class="n">level</span><span class="p">:</span>
+            <span class="n">forwarder</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+
+<span class="n">_pycnv_handler_install_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">_pycnv_thread_local_handler</span><span class="p">:</span> <span class="n">_ThreadLocalPycnvHandler</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ensure_controlled_pycnv_logger</span><span class="p">(</span><span class="n">pycnv_logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install and reassert the SeaSenseLib-owned pycnv logging state.</span>
+
+<span class="sd">    pycnv mutates its logger level during normal reads.  Because the handler is</span>
+<span class="sd">    intentionally persistent and thread-local, every guarded call must restore</span>
+<span class="sd">    the controlled logger state instead of only doing it at first installation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_pycnv_thread_local_handler</span>
+
+    <span class="k">with</span> <span class="n">_pycnv_handler_install_lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_pycnv_thread_local_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_pycnv_thread_local_handler</span> <span class="o">=</span> <span class="n">_ThreadLocalPycnvHandler</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">pycnv_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_pycnv_thread_local_handler</span><span class="p">:</span>
+                <span class="n">pycnv_logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_pycnv_thread_local_handler</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pycnv_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="n">pycnv_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_pycnv_thread_local_handler</span><span class="p">)</span>
+
+        <span class="n">pycnv_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">)</span>
+        <span class="n">pycnv_logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_controlled_pycnv_logging</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route pycnv logging through this module, thread-safely.</span>
+
+<span class="sd">    A single :class:`_ThreadLocalPycnvHandler` is installed on the ``pycnv``</span>
+<span class="sd">    logger the first time this context manager runs.  Subsequent calls only</span>
+<span class="sd">    update thread-local state, so concurrent readers never interfere with each</span>
+<span class="sd">    other&#39;s log configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pycnv_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;pycnv&quot;</span><span class="p">)</span>
+    <span class="n">_ensure_controlled_pycnv_logger</span><span class="p">(</span><span class="n">pycnv_logger</span><span class="p">)</span>
+
+    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">_PycnvLogForwarder</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+    <span class="n">_pycnv_thread_local_handler</span><span class="o">.</span><span class="n">set_active_forwarder</span><span class="p">(</span><span class="n">forwarder</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">_pycnv_thread_local_handler</span><span class="o">.</span><span class="n">set_active_forwarder</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">_ensure_controlled_pycnv_logger</span><span class="p">(</span><span class="n">pycnv_logger</span><span class="p">)</span>
+
+
+<span class="n">_stdout_capture_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ThreadLocalStdoutProxy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;sys.stdout proxy that routes writes to a per-thread capture buffer when active.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original</span> <span class="o">=</span> <span class="n">original</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_capture_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the active capture stream for the current thread, or None.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="p">,</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_capture_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the capture stream for the current thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_capture_stream</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_capture_stream</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_original</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_original</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_capture_pycnv_stdout</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Capture pycnv print output and expose it only as debug logging.</span>
+
+<span class="sd">    Uses a thread-local proxy so concurrent threads are not affected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">_stdout_capture_lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">_ThreadLocalStdoutProxy</span><span class="p">):</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">_ThreadLocalStdoutProxy</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">previous</span> <span class="o">=</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get_capture_stream</span><span class="p">()</span>
+    <span class="n">proxy</span><span class="o">.</span><span class="n">set_capture_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">proxy</span><span class="o">.</span><span class="n">set_capture_stream</span><span class="p">(</span><span class="n">previous</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pycnv stdout: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pycnv_verbosity</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the logging level pycnv should use for the current reader call.&quot;&quot;&quot;</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getEffectiveLevel</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span>
+    <span class="k">return</span> <span class="n">level</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_import_pkg_resources_for_pycnv</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import pkg_resources for pycnv while suppressing its deprecation warning.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">_suppress_pkg_resources_deprecation</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>  <span class="c1"># noqa: F401</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">pkg_resources</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_import_pycnv</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import pycnv without letting it reconfigure root logging.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">_preserve_root_logging</span><span class="p">(),</span> <span class="n">_suppress_pkg_resources_deprecation</span><span class="p">():</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pycnv</span>
+    <span class="k">return</span> <span class="n">pycnv</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_lazy_pylab</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -846,10 +1050,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">_ensure_lazy_pylab</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">pkg_resources</span>  <span class="c1"># noqa: F401</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">pkg_resources</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pkg_resources</span> <span class="o">=</span> <span class="n">_import_pkg_resources_for_pycnv</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">pkg_resources</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
             <span class="nb">hasattr</span><span class="p">(</span><span class="n">pkg_resources</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
@@ -903,7 +1104,7 @@
                 <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_stream</span> <span class="o">=</span> <span class="n">_resource_stream</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pkg_resources</span><span class="p">,</span> <span class="s2">&quot;resource_string&quot;</span><span class="p">):</span>
                 <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_string</span> <span class="o">=</span> <span class="n">_resource_string</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">pycnv</span>
+        <span class="n">pycnv</span> <span class="o">=</span> <span class="n">_import_pycnv</span><span class="p">()</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
         <span class="c1"># Sanitize the file if sanitize_input is enabled (fixes pycnv incompatibilities)</span>
@@ -916,7 +1117,9 @@
         
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Read CNV file with pycnv reader</span>
-            <span class="n">cnv</span> <span class="o">=</span> <span class="n">pycnv</span><span class="o">.</span><span class="n">pycnv</span><span class="p">(</span><span class="n">file_to_read</span><span class="p">)</span>
+            <span class="n">pycnv_verbosity</span> <span class="o">=</span> <span class="n">_pycnv_verbosity</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">_controlled_pycnv_logging</span><span class="p">(</span><span class="n">pycnv_verbosity</span><span class="p">),</span> <span class="n">_capture_pycnv_stdout</span><span class="p">():</span>
+                <span class="n">cnv</span> <span class="o">=</span> <span class="n">pycnv</span><span class="o">.</span><span class="n">pycnv</span><span class="p">(</span><span class="n">file_to_read</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">pycnv_verbosity</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># Clean up temp file before re-raising</span>
             <span class="k">if</span> <span class="n">was_sanitized</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_to_read</span><span class="p">):</span>

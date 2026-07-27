@@ -137,39 +137,15 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-INFO:pycnv: Opening file: ../examples/denmark-strait-ds-m1-17.cnv
-WARNING:pycnv:Could not compute datetime dates based on timeM
-WARNING:pycnv:Could not compute datetime dates based on timeS
-INFO:pycnv:Dates computed based on start_date and time_interval
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Computing date
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-INFO:seasenselib.pipeline.pipeline:Starting pipeline with 8 stages
-INFO:seasenselib.pipeline.mapping.handlers.mapping_runner:Mapped 5 variables
-INFO:seasenselib.pipeline.derivation.handlers.derivation_runner:Derived 6 parameter(s)
-INFO:seasenselib.pipeline.metadata_extraction.handlers.extraction_runner:Extracted metadata from 2 source(s)
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.cf_convention:Applied CF-1.13 conventions
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.acdd_convention:Applied ACDD conventions
-INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
+pycnv: Could not compute datetime dates based on timeM
+pycnv: Could not compute datetime dates based on timeS
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/demo_mooring-output_3_3.png" src="_images/demo_mooring-output_3_3.png" />
+<img alt="_images/demo_mooring-output_3_1.png" src="_images/demo_mooring-output_3_1.png" />
 </div>
 </div>
 </section>
@@ -199,17 +175,10 @@ INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-INFO:seasenselib.readers.base:Initialized reader NortekAsciiReader for &#39;../examples/DSC18_477102.dat&#39;
-INFO:seasenselib.readers.base:Loading data from &#39;../examples/DSC18_477102.dat&#39;
-INFO:seasenselib.pipeline.pipeline:Starting pipeline with 8 stages
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;density&#39;: missing input &#39;salinity&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;potential_temperature&#39;: missing input &#39;salinity&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;conservative_temperature&#39;: missing input &#39;salinity&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
-INFO:seasenselib.pipeline.metadata_extraction.handlers.extraction_runner:Extracted metadata from 2 source(s)
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.cf_convention:Applied CF-1.13 conventions
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.acdd_convention:Applied ACDD conventions
-INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
+Skipped derivation &#39;density&#39;: missing input &#39;salinity&#39;
+Skipped derivation &#39;potential_temperature&#39;: missing input &#39;salinity&#39;
+Skipped derivation &#39;conservative_temperature&#39;: missing input &#39;salinity&#39;
+Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -247,21 +216,12 @@ INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-INFO:seasenselib.readers.base:Initialized reader RbrMatlabReader for &#39;../examples/DSE18_013889_20180827_1349.mat&#39;
-INFO:seasenselib.readers.base:Loading data from &#39;../examples/DSE18_013889_20180827_1349.mat&#39;
-INFO:seasenselib.readers.base:Initialized reader RbrMatlabLegacyReader for &#39;../examples/DSE18_013889_20180827_1349.mat&#39;
-INFO:seasenselib.readers.base:Loading data from &#39;../examples/DSE18_013889_20180827_1349.mat&#39;
-INFO:seasenselib.pipeline.pipeline:Starting pipeline with 8 stages
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;density&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;depth&#39;: missing input &#39;pressure&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;potential_temperature&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;conservative_temperature&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;speed_of_sound&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-INFO:seasenselib.pipeline.metadata_extraction.handlers.extraction_runner:Extracted metadata from 2 source(s)
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.cf_convention:Applied CF-1.13 conventions
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.acdd_convention:Applied ACDD conventions
-INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
+Skipped derivation &#39;density&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;depth&#39;: missing input &#39;pressure&#39;
+Skipped derivation &#39;potential_temperature&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;conservative_temperature&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
+Skipped derivation &#39;speed_of_sound&#39;: units for &#39;temperature&#39; are [&#39;�c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -289,22 +249,12 @@ INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-INFO:seasenselib.readers.base:Initialized reader RbrRskAutoReader for &#39;../examples/DSE18_101647_20180827_1551.rsk&#39;
-INFO:seasenselib.readers.base:Loading data from &#39;../examples/DSE18_101647_20180827_1551.rsk&#39;
-INFO:seasenselib.readers.base:Initialized reader RbrRskLegacyReader for &#39;../examples/DSE18_101647_20180827_1551.rsk&#39;
-INFO:seasenselib.readers.base:Loading data from &#39;../examples/DSE18_101647_20180827_1551.rsk&#39;
-INFO:seasenselib.pipeline.pipeline:Starting pipeline with 8 stages
-INFO:seasenselib.pipeline.mapping.handlers.mapping_runner:Mapped 1 variables
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;density&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;depth&#39;: missing input &#39;pressure&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;potential_temperature&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;conservative_temperature&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
-WARNING:seasenselib.pipeline.derivation.handlers.derivation_runner:Skipped derivation &#39;speed_of_sound&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
-INFO:seasenselib.pipeline.metadata_extraction.handlers.extraction_runner:Extracted metadata from 2 source(s)
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.cf_convention:Applied CF-1.13 conventions
-INFO:seasenselib.pipeline.metadata_enrichment.handlers.acdd_convention:Applied ACDD conventions
-INFO:seasenselib.pipeline.pipeline:Pipeline completed successfully
+Skipped derivation &#39;density&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;depth&#39;: missing input &#39;pressure&#39;
+Skipped derivation &#39;potential_temperature&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;conservative_temperature&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
+Skipped derivation &#39;absolute_salinity&#39;: missing input &#39;salinity&#39;
+Skipped derivation &#39;speed_of_sound&#39;: units for &#39;temperature&#39; are [&#39;°c&#39;], expected one of [&#39;degc&#39;, &#39;degree_celsius&#39;]
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
