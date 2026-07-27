@@ -2,11 +2,15 @@
 """
 
 from __future__ import annotations
-import re
-import logging
+import contextlib
 import importlib
+import io
+import logging
+import re
 import sys
+import threading
 import types
+import warnings
 from datetime import datetime
 import pandas as pd
 import numpy as np
@@ -16,6 +20,206 @@ from seasenselib.readers.base import AbstractReader
 import seasenselib.parameters as params
 
 logger = logging.getLogger(__name__)
+
+_PKG_RESOURCES_DEPRECATION_MESSAGE = r"pkg_resources is deprecated as an API.*"
+
+
+@contextlib.contextmanager
+def _suppress_pkg_resources_deprecation():
+    """Suppress the known setuptools warning emitted by pycnv imports."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=_PKG_RESOURCES_DEPRECATION_MESSAGE,
+            category=Warning,
+        )
+        yield
+
+
+@contextlib.contextmanager
+def _preserve_root_logging():
+    """Prevent pycnv import-time logging.basicConfig from changing root logging."""
+    root_logger = logging.getLogger()
+    original_level = root_logger.level
+    original_handlers = list(root_logger.handlers)
+
+    try:
+        yield
+    finally:
+        for handler in list(root_logger.handlers):
+            if handler not in original_handlers:
+                root_logger.removeHandler(handler)
+                handler.close()
+        for handler in original_handlers:
+            if handler not in root_logger.handlers:
+                root_logger.addHandler(handler)
+        root_logger.setLevel(original_level)
+
+
+class _PycnvLogForwarder(logging.Handler):
+    """Forward pycnv records through the SeaSenseLib reader logger."""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        logger.log(record.levelno, "pycnv: %s", record.getMessage())
+
+
+class _ThreadLocalPycnvHandler(logging.Handler):
+    """Log handler installed once on the pycnv logger; routes records per-thread.
+
+    Each thread that calls :func:`_controlled_pycnv_logging` sets its own
+    forwarder in thread-local storage.  Records arriving on threads that have
+    no active forwarder are silently dropped, so pycnv noise never escapes
+    this module unintentionally.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(level=logging.NOTSET)
+        self._local = threading.local()
+
+    def get_active_forwarder(self) -> logging.Handler | None:
+        """Return the active forwarder for the current thread, or ``None``."""
+        return getattr(self._local, "forwarder", None)
+
+    def set_active_forwarder(self, handler: logging.Handler | None) -> None:
+        """Activate *handler* for the current thread (or clear it when ``None``)."""
+        self._local.forwarder = handler
+
+    def emit(self, record: logging.LogRecord) -> None:
+        forwarder = self.get_active_forwarder()
+        if forwarder is not None and record.levelno >= forwarder.level:
+            forwarder.emit(record)
+
+
+_pycnv_handler_install_lock = threading.Lock()
+_pycnv_thread_local_handler: _ThreadLocalPycnvHandler | None = None
+
+
+def _ensure_controlled_pycnv_logger(pycnv_logger: logging.Logger) -> None:
+    """Install and reassert the SeaSenseLib-owned pycnv logging state.
+
+    pycnv mutates its logger level during normal reads.  Because the handler is
+    intentionally persistent and thread-local, every guarded call must restore
+    the controlled logger state instead of only doing it at first installation.
+    """
+    global _pycnv_thread_local_handler
+
+    with _pycnv_handler_install_lock:
+        if _pycnv_thread_local_handler is None:
+            _pycnv_thread_local_handler = _ThreadLocalPycnvHandler()
+
+        for handler in list(pycnv_logger.handlers):
+            if handler is not _pycnv_thread_local_handler:
+                pycnv_logger.removeHandler(handler)
+
+        if _pycnv_thread_local_handler not in pycnv_logger.handlers:
+            pycnv_logger.addHandler(_pycnv_thread_local_handler)
+
+        pycnv_logger.setLevel(logging.NOTSET)
+        pycnv_logger.propagate = False
+
+
+@contextlib.contextmanager
+def _controlled_pycnv_logging(level: int):
+    """Route pycnv logging through this module, thread-safely.
+
+    A single :class:`_ThreadLocalPycnvHandler` is installed on the ``pycnv``
+    logger the first time this context manager runs.  Subsequent calls only
+    update thread-local state, so concurrent readers never interfere with each
+    other's log configuration.
+    """
+    pycnv_logger = logging.getLogger("pycnv")
+    _ensure_controlled_pycnv_logger(pycnv_logger)
+
+    forwarder = _PycnvLogForwarder(level=level)
+    _pycnv_thread_local_handler.set_active_forwarder(forwarder)
+    try:
+        yield
+    finally:
+        _pycnv_thread_local_handler.set_active_forwarder(None)
+        _ensure_controlled_pycnv_logger(pycnv_logger)
+
+
+_stdout_capture_lock = threading.Lock()
+
+
+class _ThreadLocalStdoutProxy:
+    """sys.stdout proxy that routes writes to a per-thread capture buffer when active."""
+
+    def __init__(self, original):
+        self._original = original
+        self._local = threading.local()
+
+    def get_capture_stream(self):
+        """Return the active capture stream for the current thread, or None."""
+        return getattr(self._local, "stream", None)
+
+    def set_capture_stream(self, stream):
+        """Set the capture stream for the current thread."""
+        self._local.stream = stream
+
+    def write(self, text):
+        stream = self.get_capture_stream()
+        if stream is not None:
+            return stream.write(text)
+        return self._original.write(text)
+
+    def flush(self):
+        stream = self.get_capture_stream()
+        if stream is not None:
+            stream.flush()
+        else:
+            self._original.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._original, name)
+
+
+@contextlib.contextmanager
+def _capture_pycnv_stdout():
+    """Capture pycnv print output and expose it only as debug logging.
+
+    Uses a thread-local proxy so concurrent threads are not affected.
+    """
+    with _stdout_capture_lock:
+        if not isinstance(sys.stdout, _ThreadLocalStdoutProxy):
+            sys.stdout = _ThreadLocalStdoutProxy(sys.stdout)
+    proxy = sys.stdout
+    stream = io.StringIO()
+    previous = proxy.get_capture_stream()
+    proxy.set_capture_stream(stream)
+    try:
+        yield
+    finally:
+        proxy.set_capture_stream(previous)
+        output = stream.getvalue().strip()
+        if output:
+            for line in output.splitlines():
+                logger.debug("pycnv stdout: %s", line)
+
+
+def _pycnv_verbosity() -> int:
+    """Return the logging level pycnv should use for the current reader call."""
+    level = logger.getEffectiveLevel()
+    if level == logging.NOTSET:
+        return logging.ERROR
+    return level
+
+
+def _import_pkg_resources_for_pycnv():
+    """Import pkg_resources for pycnv while suppressing its deprecation warning."""
+    with _suppress_pkg_resources_deprecation():
+        try:
+            import pkg_resources  # noqa: F401
+        except Exception:
+            return None
+    return pkg_resources
+
+
+def _import_pycnv():
+    """Import pycnv without letting it reconfigure root logging."""
+    with _preserve_root_logging(), _suppress_pkg_resources_deprecation():
+        import pycnv
+    return pycnv
 
 
 def _ensure_lazy_pylab() -> None:
@@ -748,10 +952,7 @@ class SbeCnvReader(AbstractReader):
         """
 
         _ensure_lazy_pylab()
-        try:
-            import pkg_resources  # noqa: F401
-        except Exception:
-            pkg_resources = None
+        pkg_resources = _import_pkg_resources_for_pycnv()
 
         if pkg_resources is None or not all(
             hasattr(pkg_resources, attr)
@@ -805,7 +1006,7 @@ class SbeCnvReader(AbstractReader):
                 pkg_resources.resource_stream = _resource_stream
             if not hasattr(pkg_resources, "resource_string"):
                 pkg_resources.resource_string = _resource_string
-        import pycnv
+        pycnv = _import_pycnv()
         import os
 
         # Sanitize the file if sanitize_input is enabled (fixes pycnv incompatibilities)
@@ -818,7 +1019,9 @@ class SbeCnvReader(AbstractReader):
         
         try:
             # Read CNV file with pycnv reader
-            cnv = pycnv.pycnv(file_to_read)
+            pycnv_verbosity = _pycnv_verbosity()
+            with _controlled_pycnv_logging(pycnv_verbosity), _capture_pycnv_stdout():
+                cnv = pycnv.pycnv(file_to_read, verbosity=pycnv_verbosity)
         except Exception as e:
             # Clean up temp file before re-raising
             if was_sanitized and os.path.exists(file_to_read):
