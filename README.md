@@ -1,8 +1,10 @@
-<picture align="center" style="display: block; margin-bottom: 2em">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/images/banner-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/images/banner-light.svg">
-  <img alt="SeaSenseLib Logo" src="assets/images/banner-light.svg" style="width:100%; max-width: 400px;">
-</picture>
+<p align="center" style="margin-bottom: 2em;">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/banner-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/images/banner-light.svg">
+    <img alt="SeaSenseLib Logo" src="assets/images/banner-light.svg" width="400" style="width:100%; max-width: 400px;">
+  </picture>
+</p>
 
 -----------------
 
