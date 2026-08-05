@@ -1,3 +1,11 @@
+<picture align="center">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/banner-light.svg">
+  <img alt="SeaSenseLib Logo" src="assets/images/banner-light.svg">
+</picture>
+
+-----------------
+
 # SeaSenseLib
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20044197.svg)](https://doi.org/10.5281/zenodo.20044197)
