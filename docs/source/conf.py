@@ -15,7 +15,7 @@ print(sys.path)
 year = datetime.datetime.now(tz=datetime.timezone.utc).date().year
 
 # General information about the project.
-project = 'seasenselib'
+project = 'SeaSenseLib'
 author = 'Yves Sorge'
 copyright = f"{year}, {author}"
 release = 'v0.0.0'
@@ -45,7 +45,7 @@ html_static_path = ['_static']
 
 source_suffix = [".rst", ".md"]
 
-html_logo = "_static/logo.png"
+html_logo = "_static/logo.svg"
 
 html_css_files = [
     "css/custom.css",
