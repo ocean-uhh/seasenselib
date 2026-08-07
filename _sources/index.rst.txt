@@ -6,7 +6,7 @@
 Welcome to SeaSenseLib documentation!
 ====================================
 
-`seasenselib` is a library to process data from oceanographic sensor formats.
+`SeaSenseLib` is a library to process data from oceanographic sensor formats.
 
 For recommendations or bug reports, please visit https://github.com/ocean-uhh/seasenselib/issues/new
 
