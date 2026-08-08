@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SBE_InstrumentConfiguration SB_ConfigCTD_FileVersion="7.20.0.4" >
+  <Instrument Type="8" >
+    <Name>SBE 911plus/917plus CTD</Name>
+    <FrequencyChannelsSuppressed>0</FrequencyChannelsSuppressed>
+    <VoltageWordsSuppressed>0</VoltageWordsSuppressed>
+    <ComputerInterface>0</ComputerInterface>
+    <ScansToAverage>1</ScansToAverage>
+    <SurfaceParVoltageAdded>1</SurfaceParVoltageAdded>
+    <ScanTimeAdded>1</ScanTimeAdded>
+    <NmeaPositionDataAdded>1</NmeaPositionDataAdded>
+    <NmeaDepthDataAdded>0</NmeaDepthDataAdded>
+    <NmeaTimeAdded>0</NmeaTimeAdded>
+    <NmeaDeviceConnectedToPC>1</NmeaDeviceConnectedToPC>
+    <SensorArray Size="15" >
+      <Sensor index="0" SensorID="55" >
+        <TemperatureSensor SensorID="55" >
+          <SerialNumber>1294</SerialNumber>
+          <CalibrationDate>23-Feb-10 </CalibrationDate>
+          <UseG_J>1</UseG_J>
+          <A>0.00000000e+000</A>
+          <B>0.00000000e+000</B>
+          <C>0.00000000e+000</C>
+          <D>0.00000000e+000</D>
+          <F0_Old>0.000</F0_Old>
+          <G>4.86369538e-003</G>
+          <H>6.76909119e-004</H>
+          <I>2.66367745e-005</I>
+          <J>2.10148928e-006</J>
+          <F0>1000.000</F0>
+          <Slope>1.00000000</Slope>
+          <Offset>0.0000</Offset>
+        </TemperatureSensor>
+      </Sensor>
+      <Sensor index="1" SensorID="3" >
+        <ConductivitySensor SensorID="3" >
+          <SerialNumber>1106</SerialNumber>
+          <CalibrationDate>23-Feb-10 </CalibrationDate>
+          <UseG_J>1</UseG_J>
+          <!-- Cell const and series R are applicable only for wide range sensors. -->
+          <SeriesR>0.0000</SeriesR>
+          <CellConst>2000.0000</CellConst>
+          <Coefficients equation="0" >
+            <A>0.00000000e+000</A>
+            <B>0.00000000e+000</B>
+            <C>0.00000000e+000</C>
+            <D>0.00000000e+000</D>
+            <M>0.0</M>
+            <CPcor>-9.57000000e-008</CPcor>
+          </Coefficients>
+          <Coefficients equation="1" >
+            <G>-4.12998819e+000</G>
+            <H>5.41951906e-001</H>
+            <I>-6.65815688e-005</I>
+            <J>3.27117737e-005</J>
+            <CPcor>-9.57000000e-008</CPcor>
+            <CTcor>3.2500e-006</CTcor>
+          </Coefficients>
+          <Slope>1.00000000</Slope>
+          <Offset>0.00000</Offset>
+        </ConductivitySensor>
+      </Sensor>
+      <Sensor index="2" SensorID="45" >
+        <PressureSensor SensorID="45" >
+          <SerialNumber>50633</SerialNumber>
+          <CalibrationDate>20 Nov 92</CalibrationDate>
+          <C1>-4.145101e+004</C1>
+          <C2>7.979210e-001</C2>
+          <C3>1.322120e-002</C3>
+          <D1>3.929800e-002</D1>
+          <D2>0.000000e+000</D2>
+          <T1>3.034126e+001</T1>
+          <T2>-6.976840e-005</T2>
+          <T3>4.210020e-006</T3>
+          <T4>2.667450e-009</T4>
+          <Slope>0.99942300</Slope>
+          <Offset>-0.45931</Offset>
+          <T5>0.000000e+000</T5>
+          <AD590M>1.152000e-002</AD590M>
+          <AD590B>-8.603440e+000</AD590B>
+        </PressureSensor>
+      </Sensor>
+      <Sensor index="3" SensorID="55" >
+        <TemperatureSensor SensorID="55" >
+          <SerialNumber>4324</SerialNumber>
+          <CalibrationDate>03-Mar-10 </CalibrationDate>
+          <UseG_J>1</UseG_J>
+          <A>0.00000000e+000</A>
+          <B>0.00000000e+000</B>
+          <C>0.00000000e+000</C>
+          <D>0.00000000e+000</D>
+          <F0_Old>0.000</F0_Old>
+          <G>4.37250068e-003</G>
+          <H>6.46164499e-004</H>
+          <I>2.20372564e-005</I>
+          <J>1.70286259e-006</J>
+          <F0>1000.000</F0>
+          <Slope>1.00000000</Slope>
+          <Offset>0.0000</Offset>
+        </TemperatureSensor>
+      </Sensor>
+      <Sensor index="4" SensorID="3" >
+        <ConductivitySensor SensorID="3" >
+          <SerialNumber>1329</SerialNumber>
+          <CalibrationDate>23-Feb-10 </CalibrationDate>
+          <UseG_J>1</UseG_J>
+          <!-- Cell const and series R are applicable only for wide range sensors. -->
+          <SeriesR>0.0000</SeriesR>
+          <CellConst>2000.0000</CellConst>
+          <Coefficients equation="0" >
+            <A>0.00000000e+000</A>
+            <B>0.00000000e+000</B>
+            <C>0.00000000e+000</C>
+            <D>0.00000000e+000</D>
+            <M>0.0</M>
+            <CPcor>-9.57000000e-008</CPcor>
+          </Coefficients>
+          <Coefficients equation="1" >
+            <G>-4.22409616e+000</G>
+            <H>5.25447327e-001</H>
+            <I>-8.49718695e-005</I>
+            <J>3.37965301e-005</J>
+            <CPcor>-9.57000000e-008</CPcor>
+            <CTcor>3.2500e-006</CTcor>
+          </Coefficients>
+          <Slope>1.00000000</Slope>
+          <Offset>0.00000</Offset>
+        </ConductivitySensor>
+      </Sensor>
+      <Sensor index="5" SensorID="0" >
+        <AltimeterSensor SensorID="0" >
+          <SerialNumber>885</SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <ScaleFactor>15.000</ScaleFactor>
+          <Offset>0.000</Offset>
+        </AltimeterSensor>
+      </Sensor>
+      <Sensor index="6" SensorID="27" >
+        <NotInUse SensorID="27" >
+          <SerialNumber></SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <OutputType>2</OutputType>
+          <Free>1</Free>
+        </NotInUse>
+      </Sensor>
+      <Sensor index="7" SensorID="61" >
+        <UserPolynomialSensor SensorID="61" >
+          <SerialNumber>54</SerialNumber>
+          <CalibrationDate>15.06.2010</CalibrationDate>
+          <SensorName>DO</SensorName>
+          <A0>0.00000000</A0>
+          <A1>1.00000000</A1>
+          <A2>0.00000000</A2>
+          <A3>0.00000000</A3>
+        </UserPolynomialSensor>
+      </Sensor>
+      <Sensor index="8" SensorID="61" >
+        <UserPolynomialSensor SensorID="61" >
+          <SerialNumber>54</SerialNumber>
+          <CalibrationDate>15.06.2010</CalibrationDate>
+          <SensorName>Temperature</SensorName>
+          <A0>0.00000000</A0>
+          <A1>1.00000000</A1>
+          <A2>0.00000000</A2>
+          <A3>0.00000000</A3>
+        </UserPolynomialSensor>
+      </Sensor>
+      <Sensor index="9" SensorID="38" >
+        <OxygenSensor SensorID="38" >
+          <SerialNumber>1761</SerialNumber>
+          <CalibrationDate>12-Mar.10</CalibrationDate>
+          <Use2007Equation>1</Use2007Equation>
+          <CalibrationCoefficients equation="0" >
+            <!-- Coefficients for Owens-Millard equation. -->
+            <Boc>0.0000</Boc>
+            <Soc>0.0000e+000</Soc>
+            <offset>0.0000</offset>
+            <Pcor>0.00e+000</Pcor>
+            <Tcor>0.0000</Tcor>
+            <Tau>0.0</Tau>
+          </CalibrationCoefficients>
+          <CalibrationCoefficients equation="1" >
+            <!-- Coefficients for Sea-Bird equation - SBE calibration in 2007 and later. -->
+            <Soc> 0.4712</Soc>
+            <offset>-0.4942</offset>
+            <A>-2.3075e-003</A>
+            <B> 1.3749e-004</B>
+            <C>-2.9259e-006</C>
+            <D0> 2.5826e+000</D0>
+            <D1> 1.9263e-004</D1>
+            <D2>-4.6480e-002</D2>
+            <E> 3.6000e-002</E>
+            <Tau20> 1.8100</Tau20>
+            <H1>-3.3000e-002</H1>
+            <H2> 5.0000e+003</H2>
+            <H3> 1.4500e+003</H3>
+          </CalibrationCoefficients>
+        </OxygenSensor>
+      </Sensor>
+      <Sensor index="10" SensorID="27" >
+        <NotInUse SensorID="27" >
+          <SerialNumber></SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <OutputType>2</OutputType>
+          <Free>1</Free>
+        </NotInUse>
+      </Sensor>
+      <Sensor index="11" SensorID="11" >
+        <FluoroSeapointSensor SensorID="11" >
+          <SerialNumber>SCF 2428</SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <!-- The following is an array index, not the actual gain setting. -->
+          <GainSetting>1</GainSetting>
+          <Offset>0.000</Offset>
+        </FluoroSeapointSensor>
+      </Sensor>
+      <Sensor index="12" SensorID="27" >
+        <NotInUse SensorID="27" >
+          <SerialNumber></SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <OutputType>2</OutputType>
+          <Free>1</Free>
+        </NotInUse>
+      </Sensor>
+      <Sensor index="13" SensorID="27" >
+        <NotInUse SensorID="27" >
+          <SerialNumber></SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <OutputType>0</OutputType>
+          <Free>0</Free>
+        </NotInUse>
+      </Sensor>
+      <Sensor index="14" SensorID="51" >
+        <SPAR_Sensor SensorID="51" >
+          <SerialNumber>20353</SerialNumber>
+          <CalibrationDate></CalibrationDate>
+          <ConversionFactor>1732.00000000</ConversionFactor>
+          <RatioMultiplier>1.00000000</RatioMultiplier>
+        </SPAR_Sensor>
+      </Sensor>
+    </SensorArray>
+  </Instrument>
+</SBE_InstrumentConfiguration>

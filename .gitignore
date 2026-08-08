@@ -1,5 +1,6 @@
 # Output folder and generated files
 output/
+.coverage
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

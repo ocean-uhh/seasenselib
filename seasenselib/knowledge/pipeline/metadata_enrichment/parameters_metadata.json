@@ -75,10 +75,25 @@
     "standard_name": "northward_sea_water_velocity",
     "units": "m/s"
   },
+  "fluorescence": {
+    "coverage_content_type": "physicalMeasurement",
+    "long_name": "Fluorescence",
+    "measurement_type": "Measured",
+    "standard_name": "mass_concentration_of_chlorophyll_in_sea_water",
+    "units": "mg m-3"
+  },
   "oxygen": {
     "coverage_content_type": "physicalMeasurement",
     "long_name": "Oxygen",
-    "standard_name": "volume_fraction_of_oxygen_in_sea_water"
+    "standard_name": "moles_of_oxygen_per_unit_mass_in_sea_water",
+    "units": "umol/kg"
+  },
+  "par": {
+    "coverage_content_type": "physicalMeasurement",
+    "long_name": "Photosynthetically Active Radiation",
+    "measurement_type": "Measured",
+    "standard_name": "downwelling_photosynthetic_photon_flux_in_sea_water",
+    "units": "umol m-2 s-1"
   },
   "pitch": {
     "long_name": "Pitch angle",
@@ -125,7 +140,7 @@
     "long_name": "Salinity",
     "measurement_type": "Derived",
     "short_name": "SAL",
-    "standard_name": "sea_water_salinity"
+    "standard_name": "sea_water_practical_salinity"
   },
   "speed_of_sound": {
     "long_name": "Speed of sound in sea water",
