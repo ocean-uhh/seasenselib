@@ -1735,15 +1735,15 @@ def sbe911_hex_reader(
     ds = xr.Dataset(data_vars, coords={params.TIME: times})
 
     _VAR_ATTRS = {
-        "temp": {"units": "degrees_C", "long_name": "Temperature (Primary)"},
-        "cond": {"units": "mS/cm", "long_name": "Conductivity (Primary)"},
+        "temp": {"units": "degree_C", "long_name": "Temperature (Primary)"},
+        "cond": {"units": "mS cm-1", "long_name": "Conductivity (Primary)"},
         "press": {"units": "dbar", "long_name": "Pressure"},
-        "temp2": {"units": "degrees_C", "long_name": "Temperature (Secondary)"},
-        "cond2": {"units": "mS/cm", "long_name": "Conductivity (Secondary)"},
-        "oxygen": {"units": "umol/kg", "long_name": "Dissolved Oxygen"},
-        "oxygen_ml_l": {"units": "ml/L", "long_name": "Dissolved Oxygen"},
-        "oxygen2": {"units": "umol/kg", "long_name": "Dissolved Oxygen (Secondary)"},
-        "oxygen2_ml_l": {"units": "ml/L", "long_name": "Dissolved Oxygen (Secondary)"},
+        "temp2": {"units": "degree_C", "long_name": "Temperature (Secondary)"},
+        "cond2": {"units": "mS cm-1", "long_name": "Conductivity (Secondary)"},
+        "oxygen": {"units": "umol kg-1", "long_name": "Dissolved Oxygen"},
+        "oxygen_ml_l": {"units": "ml l-1", "long_name": "Dissolved Oxygen"},
+        "oxygen2": {"units": "umol kg-1", "long_name": "Dissolved Oxygen (Secondary)"},
+        "oxygen2_ml_l": {"units": "ml l-1", "long_name": "Dissolved Oxygen (Secondary)"},
         "fluorescence": {"units": "mg m-3", "long_name": "Fluorescence"},
         "turbidity": {"units": "NTU", "long_name": "Turbidity"},
         "altimeter": {"units": "m", "long_name": "Altimeter Distance"},
@@ -2331,10 +2331,10 @@ def sbe37_hex_reader(
 
     # Add units as variable attributes
     if "temp" in data_vars:
-        ds["temp"].attrs["units"] = "degrees_C"
+        ds["temp"].attrs["units"] = "degree_C"
         ds["temp"].attrs["long_name"] = "Temperature"
     if "cond" in data_vars:
-        ds["cond"].attrs["units"] = "mS/cm"
+        ds["cond"].attrs["units"] = "mS cm-1"
         ds["cond"].attrs["long_name"] = "Conductivity"
     if "press" in data_vars:
         ds["press"].attrs["units"] = "dbar"
@@ -2350,16 +2350,16 @@ def sbe37_hex_reader(
         else:
             ds["press"].attrs["long_name"] = "Pressure"
     if "oxygen" in data_vars:
-        ds["oxygen"].attrs["units"] = "umol/L"
+        ds["oxygen"].attrs["units"] = "umol l-1"
         ds["oxygen"].attrs["long_name"] = "Dissolved Oxygen"
     if "oxygen_ml_l" in data_vars:
-        ds["oxygen_ml_l"].attrs["units"] = "ml/L"
+        ds["oxygen_ml_l"].attrs["units"] = "ml l-1"
         ds["oxygen_ml_l"].attrs["long_name"] = "Dissolved Oxygen (ml/L)"
     if "oxygen_phase" in data_vars:
         ds["oxygen_phase"].attrs["units"] = "degrees"
         ds["oxygen_phase"].attrs["long_name"] = "Oxygen Phase"
     if "oxygen_temp" in data_vars:
-        ds["oxygen_temp"].attrs["units"] = "degrees_C"
+        ds["oxygen_temp"].attrs["units"] = "degree_C"
         ds["oxygen_temp"].attrs["long_name"] = "Oxygen Sensor Temperature"
 
     # Add metadata

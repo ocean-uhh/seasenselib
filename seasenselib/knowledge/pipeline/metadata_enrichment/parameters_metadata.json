@@ -86,7 +86,7 @@
     "coverage_content_type": "physicalMeasurement",
     "long_name": "Oxygen",
     "standard_name": "moles_of_oxygen_per_unit_mass_in_sea_water",
-    "units": "umol/kg"
+    "units": "umol kg-1"
   },
   "par": {
     "coverage_content_type": "physicalMeasurement",

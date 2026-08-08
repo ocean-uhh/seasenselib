@@ -83,7 +83,7 @@ metadata = {
     }, 
     OXYGEN: {
         'long_name': "Oxygen",
-        'units': 'umol/kg',
+        'units': 'umol kg-1',
         'coverage_content_type': 'physicalMeasurement',
         'standard_name': 'moles_of_oxygen_per_unit_mass_in_sea_water',
     },
