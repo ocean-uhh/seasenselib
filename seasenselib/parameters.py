@@ -320,6 +320,9 @@ default_mappings = {
     ALTIMETER: [
         'altM', 'altimeter'
     ],
+    PAR: [
+        'par', 'PAR',
+    ],
     DENSITY: [ 
         'sigma-t00', 'sigma-t11',
         'sigma-theta00', 'sigma-theta11',
