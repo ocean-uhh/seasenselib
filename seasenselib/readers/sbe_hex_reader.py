@@ -1010,31 +1010,11 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
     # no upstream seabirdscientific dataclass; their coefficients are built in
     # the explicit branches below.
     _XMLCON_SENSORS: dict = {
-        "TemperatureSensor": SensorSpec(
-            TemperatureFrequencyCoefficients,
-            {"G": "g", "H": "h", "I": "i", "J": "j", "F0": "f0"},
-            "temperature",
-        ),
-        "ConductivitySensor": SensorSpec(
-            ConductivityCoefficients,
-            {"G": "g", "H": "h", "I": "i", "J": "j",
-             "CPcor": "cpcor", "CTcor": "ctcor", "WBOTC": "wbotc"},
-            "conductivity",
-        ),
-        "PressureSensor": SensorSpec(
-            PressureDigiquartzCoefficients,
-            {"C1": "c1", "C2": "c2", "C3": "c3", "D1": "d1", "D2": "d2",
-             "T1": "t1", "T2": "t2", "T3": "t3", "T4": "t4", "T5": "t5"},
-            "pressure",
-        ),
-        "OxygenSensor": SensorSpec(
-            Oxygen43Coefficients,
-            {"Soc": "soc", "offset": "v_offset", "Tau20": "tau_20",
-             "A": "a", "B": "b", "C": "c", "E": "e",
-             "D0": "d0", "D1": "d1", "D2": "d2",
-             "H1": "h1", "H2": "h2", "H3": "h3"},
-            "oxygen",
-        ),
+        # T/C/P/O2 use explicit branches below — tag_map is unused for them.
+        "TemperatureSensor": SensorSpec(TemperatureFrequencyCoefficients, {}, "temperature"),
+        "ConductivitySensor": SensorSpec(ConductivityCoefficients, {}, "conductivity"),
+        "PressureSensor": SensorSpec(PressureDigiquartzCoefficients, {}, "pressure"),
+        "OxygenSensor": SensorSpec(Oxygen43Coefficients, {}, "oxygen"),
         "AltimeterSensor": SensorSpec(
             AltimeterCoefficients,
             {"ScaleFactor": "slope", "Offset": "offset"},
@@ -1187,13 +1167,31 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
                     f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
                     "G/H/I/J coefficients in equation=1 or bare form."
                 )
+            _cpcor_str = coef_src.findtext("CPcor")
+            _ctcor_str = coef_src.findtext("CTcor")
+            if _cpcor_str is None:
+                warnings.warn(
+                    f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
+                    "CPcor tag — using SBE standard default -9.57e-8. "
+                    "Verify this is correct for your instrument.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            if _ctcor_str is None:
+                warnings.warn(
+                    f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
+                    "CTcor tag — using SBE standard default 3.25e-6. "
+                    "Verify this is correct for your instrument.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             coefs = ConductivityCoefficients(
                 g=float(g),
                 h=float(coef_src.findtext("H")),
                 i=float(coef_src.findtext("I")),
                 j=float(coef_src.findtext("J")),
-                cpcor=float(coef_src.findtext("CPcor") or -9.57e-8),
-                ctcor=float(coef_src.findtext("CTcor") or 3.25e-6),
+                cpcor=float(_cpcor_str) if _cpcor_str is not None else -9.57e-8,
+                ctcor=float(_ctcor_str) if _ctcor_str is not None else 3.25e-6,
                 wbotc=float(coef_src.findtext("WBOTC") or 0.0),
             )
             sensors[channel_key] = SensorInfo(
@@ -1278,8 +1276,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="transmissometer",
                 variable="transmissometer",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients={
                     "M": float(child.findtext("M")),
                     "B": float(child.findtext("B")),
@@ -1291,8 +1288,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="user_polynomial",
                 variable="user_polynomial",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients={
                     "A0": float(child.findtext("A0") or 0),
                     "A1": float(child.findtext("A1") or 0),
@@ -1307,8 +1303,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="par",
                 variable="par",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients=PARCoefficients(
                     im=_par_im(child, xmlcon_idx),
                     a0=0.0,
@@ -1335,8 +1330,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type=spec.variable or tag.lower(),
                 variable=spec.variable,
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients=coefs,
             )
 
@@ -1671,12 +1665,22 @@ def sbe911_hex_reader(
                 window_size=1,
                 sample_interval=sample_interval,
             )
+            _lon = header_info.get("nmea_longitude") or 0.0
+            _lat = header_info.get("nmea_latitude") or 0.0
+            if not header_info.get("nmea_longitude") or not header_info.get("nmea_latitude"):
+                warnings.warn(
+                    "NMEA position not found in hex header — using lon=0.0, lat=0.0 "
+                    "for oxygen density calculation. Potential density and derived "
+                    "oxygen may be inaccurate.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             sigma_theta = conv.potential_density_from_t_s_p(
                 temperature=temp_primary,
                 salinity=_salinity_primary,
                 pressure=pressure,
-                lon=header_info.get("nmea_longitude") or 0.0,
-                lat=header_info.get("nmea_latitude") or 0.0,
+                lon=_lon,
+                lat=_lat,
             )
             oxy_role = volt_info.role or "primary"
             oxy_var = "oxygen" if oxy_role == "primary" else "oxygen2"
@@ -2329,8 +2333,9 @@ def sbe37_hex_reader(
                     import gsw as _gsw
 
                     pressure_vals = data_vars["press"][1]
+                    # cond is stored in S/m (Option A); gsw.SP_from_C expects mS/cm.
                     salinity_vals = _gsw.SP_from_C(
-                        C=data_vars["cond"][1],
+                        C=data_vars["cond"][1] * 10.0,
                         t=data_vars["temp"][1],
                         p=pressure_vals,
                     )
