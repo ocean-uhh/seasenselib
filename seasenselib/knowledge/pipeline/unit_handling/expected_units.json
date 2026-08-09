@@ -1,6 +1,6 @@
 {
   "battery_voltage": "volts",
-  "conductivity": "S m-1",
+  "conductivity": "mS cm-1",
   "correlation": "unitless",
   "density": "kg m-3",
   "depth": "meters",
@@ -13,11 +13,11 @@
   "magnitude": "m/s",
   "north_velocity": "m/s",
   "pitch": "degrees",
-  "potential_temperature": "K",
+  "potential_temperature": "degree_C",
   "power_supply_input": "V",
   "pressure": "dbar",
   "roll": "degrees",
   "speed_of_sound": "m/s",
-  "temperature": "K",
+  "temperature": "degree_C",
   "up_velocity": "m/s"
 }

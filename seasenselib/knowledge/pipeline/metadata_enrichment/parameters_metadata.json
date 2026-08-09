@@ -10,7 +10,7 @@
     "measurement_type": "Measured",
     "short_name": "COND",
     "standard_name": "sea_water_electrical_conductivity",
-    "units": "S m-1"
+    "units": "mS cm-1"
   },
   "correlation": {
     "long_name": "Correlation",
@@ -89,13 +89,13 @@
     "long_name": "Potential Temperature \u03b8",
     "measurement_type": "Derived",
     "standard_name": "sea_water_potential_temperature",
-    "units": "degC"
+    "units": "degree_C"
   },
   "conservative_temperature": {
     "long_name": "Conservative Temperature",
     "measurement_type": "Derived",
     "standard_name": "sea_water_conservative_temperature",
-    "units": "degC"
+    "units": "degree_C"
   },
   "absolute_salinity": {
     "long_name": "Absolute Salinity",
@@ -133,12 +133,13 @@
     "units": "m/s"
   },
   "temperature": {
+    "_comment": "Units are degree_C, assumed ITS-90 for all modern instruments. A variable named temperature_68 would indicate IPTS-68 scale and must be handled separately. See https://exchange-format.readthedocs.io/en/latest/parameters.html#ctdtmp",
     "coverage_content_type": "physicalMeasurement",
     "long_name": "Temperature",
     "measurement_type": "Measured",
     "short_name": "WT",
     "standard_name": "sea_water_temperature",
-    "units": "ITS-90, deg C"
+    "units": "degree_C"
   },
   "time": {
     "coverage_content_type": "coordinate",

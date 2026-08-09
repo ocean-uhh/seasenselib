@@ -33,7 +33,7 @@ class UnitNormalizer:
 
     def normalize(self, ds: xr.Dataset) -> Tuple[xr.Dataset, List[str], List[str]]:
         issues: List[str] = []
-        conversions: List[str] = []
+        relabels: List[str] = []
 
         for var_name in ds.data_vars:
             var = ds[var_name]
@@ -53,7 +53,19 @@ class UnitNormalizer:
                 old_units = current_units
                 new_units = self.unit_normalizations[current_units]
                 var.attrs['units'] = new_units
-                conversions.append(f"{var_name}: {old_units} -> {new_units}")
-                logger.debug("Normalized units for '%s': %s -> %s", var_name, old_units, new_units)
+                relabels.append(f"{var_name}: {old_units} -> {new_units}")
+                logger.debug("Relabelled units for '%s': %s -> %s", var_name, old_units, new_units)
+            elif _base_name(var_name) in self.expected_units:
+                expected = self.expected_units[_base_name(var_name)]
+                if current_units != expected:
+                    msg = (
+                        f"Variable '{var_name}' has unit '{current_units}' "
+                        f"but expected '{expected}'"
+                    )
+                    issues.append(msg)
+                    if self.strict:
+                        raise ValueError(msg)
+                    warnings.warn(msg)
+                    logger.debug(msg)
 
-        return ds, issues, conversions
+        return ds, issues, relabels

@@ -11,6 +11,7 @@ from typing import Dict, Any
 from ..base import Stage, StageContext
 from .handlers.unit_normalizer import UnitNormalizer
 from .handlers.unit_converter import UnitConverter
+from .handlers.conductivity_normalizer import ConductivityNormalizer
 
 
 class UnitHandlingStage(Stage):
@@ -19,6 +20,7 @@ class UnitHandlingStage(Stage):
     def __init__(self):
         self._normalizer = UnitNormalizer()
         self._converter = UnitConverter()
+        self._cond_normalizer = ConductivityNormalizer()
 
     def name(self) -> str:
         return "unit_handling"
@@ -28,9 +30,11 @@ class UnitHandlingStage(Stage):
         if isinstance(handlers, list) and handlers:
             self._enable_normalize = 'normalize' in handlers
             self._enable_convert = 'convert' in handlers
+            self._enable_cond_normalize = 'conductivity_normalize' in handlers
         else:
             self._enable_normalize = True
             self._enable_convert = False
+            self._enable_cond_normalize = True
 
         # Pass config through to normalizer / converter
         normalizer_cfg = dict(config)
@@ -53,12 +57,18 @@ class UnitHandlingStage(Stage):
         from ..utils import record_handler_applied
 
         if getattr(self, '_enable_normalize', True):
-            ds, issues, conversions = self._normalizer.normalize(ds)
+            ds, issues, relabels = self._normalizer.normalize(ds)
             if issues:
                 context.metadata['unit_validation_issues'] = issues
-            if conversions:
-                context.metadata.setdefault('unit_conversions', []).extend(conversions)
+            if relabels:
+                context.metadata.setdefault('unit_conversions', []).extend(relabels)
             record_handler_applied(context.metadata, self.name(), "normalize")
+
+        if getattr(self, '_enable_cond_normalize', True):
+            ds, cond_normalizations = self._cond_normalizer.normalize(ds)
+            if cond_normalizations:
+                context.metadata.setdefault('unit_conversions', []).extend(cond_normalizations)
+            record_handler_applied(context.metadata, self.name(), "conductivity_normalize")
 
         if getattr(self, '_enable_convert', False):
             ds, conversions = self._converter.convert(ds)
