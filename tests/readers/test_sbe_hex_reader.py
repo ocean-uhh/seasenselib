@@ -11,7 +11,6 @@ from seasenselib.readers.sbe_hex_reader import (
     SbeHexReader,
     _read_hex_file_fast,
     _select_sbe37_instrument_type,
-    channel_of,
     detect_sbe_hex_family,
     detect_sbe_hex_layout,
     parse_hex_header_sensors,

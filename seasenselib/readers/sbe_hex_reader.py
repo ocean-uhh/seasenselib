@@ -100,22 +100,18 @@ _N_VOLT = 8
 _SPAR_IDX = 14
 
 
-def channel_of(index: int) -> tuple:
-    """Map an xmlcon ``Sensor index`` attribute to a ``(kind, channel_number)`` tuple.
+def _channel_of(index: int, n_freq: int, n_volt: int) -> tuple | None:
+    """Map an xmlcon sensor index to ``(kind, channel_number)``, or ``None`` if suppressed.
 
-    Raises :exc:`ValueError` if the index falls outside the SBE911+ layout.
+    Uses the actual active-channel counts (after applying suppression) so the
+    result is correct for files with ``FrequencyChannelsSuppressed`` or
+    ``VoltageWordsSuppressed`` > 0.
     """
-    if index < _N_FREQ:
+    if index < n_freq:
         return ("frequency", index)
-    if index < _N_FREQ + _N_VOLT:
-        return ("volt", index - _N_FREQ)
-    if index == _SPAR_IDX:
-        return ("spar", 0)
-    raise ValueError(
-        f"XMLCON sensor index {index} is outside the SBE911+ layout "
-        f"(frequency 0–{_N_FREQ - 1}, volt {_N_FREQ}–{_N_FREQ + _N_VOLT - 1}, "
-        f"spar {_SPAR_IDX})."
-    )
+    if index < n_freq + n_volt:
+        return ("volt", index - n_freq)
+    return None
 
 
 def detect_sbe_hex_family(hex_path: Union[str, Path]) -> Literal["sbe37", "sbe911plus"]:
@@ -970,9 +966,9 @@ def _par_im(par_elem, xmlcon_idx: int) -> float:
 
 
 def _sci(elem) -> dict:
-    """Return serial and calibration_date from a sensor XML element."""
+    """Return serial_number and calibration_date from a sensor XML element."""
     return {
-        "serial": (elem.findtext("SerialNumber") or "").strip(),
+        "serial_number": (elem.findtext("SerialNumber") or "").strip(),
         "calibration_date": (elem.findtext("CalibrationDate") or "").strip(),
     }
 
@@ -1125,11 +1121,8 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
         if xmlcon_idx < 0:
             continue
 
-        if xmlcon_idx < n_freq:
-            channel_key = ("frequency", xmlcon_idx)
-        elif xmlcon_idx < n_freq + n_volt:
-            channel_key = ("volt", xmlcon_idx - n_freq)
-        else:
+        channel_key = _channel_of(xmlcon_idx, n_freq, n_volt)
+        if channel_key is None:
             continue  # suppressed channel or out-of-range (e.g. SPAR at index 14)
 
         child = next(iter(sensor_elem), None)
@@ -1150,8 +1143,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
                 "Add it to _XMLCON_SENSORS or _XMLCON_SKIP."
             )
 
-        serial = (child.findtext("SerialNumber") or "").strip()
-        cal_date = (child.findtext("CalibrationDate") or "").strip()
+        sci = _sci(child)
 
         # --- explicit branches for sensors needing conditional or extra logic ---
 
@@ -1176,8 +1168,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="temperature",
                 variable="temperature",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients=coefs,
                 role=role,
             )
@@ -1208,8 +1199,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="conductivity",
                 variable="conductivity",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients=coefs,
                 role=role,
             )
@@ -1234,8 +1224,7 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             sensors[channel_key] = SensorInfo(
                 sensor_type="pressure",
                 variable="pressure",
-                serial_number=serial,
-                calibration_date=cal_date,
+                **sci,
                 coefficients=coefs,
                 role="primary",
                 offset=float(child.findtext("Offset") or 0),
@@ -1243,8 +1232,6 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
             )
 
         elif tag == "OxygenSensor":
-            oxy_role = "primary" if oxy_count == 0 else "secondary"
-            oxy_count += 1
             eq1 = child.find('./CalibrationCoefficients[@equation="1"]')
             if eq1 is None:
                 logger.warning(
@@ -1252,20 +1239,23 @@ def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
                     "calibration coefficients — sensor will be skipped.",
                     xmlcon_idx,
                 )
+                # Do not increment oxy_count: an uncalibrated sensor does not
+                # consume a primary/secondary slot — the next calibrated sensor
+                # should still be labelled "primary".
                 sensors[channel_key] = SensorInfo(
                     sensor_type="oxygen",
                     variable="oxygen",
-                    serial_number=serial,
-                    calibration_date=cal_date,
+                    **sci,
                     coefficients=None,
-                    role=oxy_role,
+                    role=None,
                 )
             else:
+                oxy_role = "primary" if oxy_count == 0 else "secondary"
+                oxy_count += 1
                 sensors[channel_key] = SensorInfo(
                     sensor_type="oxygen",
                     variable="oxygen",
-                    serial_number=serial,
-                    calibration_date=cal_date,
+                    **sci,
                     coefficients=Oxygen43Coefficients(
                         soc=float(eq1.findtext("Soc")),
                         v_offset=float(eq1.findtext("offset")),
