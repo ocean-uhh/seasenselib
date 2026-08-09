@@ -11,12 +11,13 @@ from seasenselib.readers.sbe_hex_reader import (
     SbeHexReader,
     _read_hex_file_fast,
     _select_sbe37_instrument_type,
+    channel_of,
     detect_sbe_hex_family,
     detect_sbe_hex_layout,
     parse_hex_header_sensors,
     parse_hex_header_sbe911,
+    read_xmlcon,
     sbe911_hex_reader,
-    sbe911_xmlcon_channel_map,
 )
 
 _FIXTURE_DIR = "tests/readers/fixtures"
@@ -437,8 +438,8 @@ def test_sbe_hex_reader_can_create_pressure_from_reference_pressure(tmp_path):
         with_reference_pressure["press"].attrs["sensor_source_basis"]
         == "sbe_header_reference_pressure"
     )
-    assert abs(float(with_reference_pressure["cond"].values[0]) - 34.245203) < 1e-6
-    assert abs(float(without_reference_pressure["cond"].values[0]) - 34.245203) > 1e-3
+    assert abs(float(with_reference_pressure["cond"].values[0]) - 3.424520) < 1e-5
+    assert abs(float(without_reference_pressure["cond"].values[0]) - 3.424520) > 1e-4
 
 
 def test_read_hex_file_fast_uses_seabird_line_decoder(tmp_path):
@@ -574,35 +575,30 @@ def test_detect_sbe911plus_layout_raises_on_bytes_per_scan_mismatch():
         )
 
 
-def test_sbe911_xmlcon_channel_map_primary_temperature_sensor():
-    ch = sbe911_xmlcon_channel_map(_MIXSED2_XMLCON)
-    t1 = ch[("frequency", 0)]
-    assert t1["sensor_type"] == "temperature"
-    assert t1["role"] == "primary"
-    assert t1["serial"] == "4798"
-    coefs = t1["coefficients"]
+def test_read_xmlcon_primary_temperature_sensor():
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    t1 = cm.sensors[("frequency", 0)]
+    assert t1.sensor_type == "temperature"
+    assert t1.role == "primary"
+    assert t1.serial_number == "4798"
+    coefs = t1.coefficients
     # 911+ temperature uses frequency-based calibration (g/h/i/j/f0)
     assert hasattr(coefs, "g") and hasattr(coefs, "h") and hasattr(coefs, "f0")
 
 
-def test_sbe911_xmlcon_channel_map_dual_tc_have_different_coefficients():
-    ch = sbe911_xmlcon_channel_map(_MIXSED2_XMLCON)
-    t1_coefs = ch[("frequency", 0)]["coefficients"]
-    t2_coefs = ch[("frequency", 3)]["coefficients"]
-    assert t1_coefs != t2_coefs
-
-    c1_coefs = ch[("frequency", 1)]["coefficients"]
-    c2_coefs = ch[("frequency", 4)]["coefficients"]
-    assert c1_coefs != c2_coefs
+def test_read_xmlcon_dual_tc_have_different_coefficients():
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    assert cm.sensors[("frequency", 0)].coefficients != cm.sensors[("frequency", 3)].coefficients
+    assert cm.sensors[("frequency", 1)].coefficients != cm.sensors[("frequency", 4)].coefficients
 
 
-def test_sbe911_xmlcon_channel_map_not_in_use_entry():
-    ch = sbe911_xmlcon_channel_map(_MIXSED2_XMLCON)
-    not_in_use = [v for v in ch.values() if isinstance(v, dict) and v.get("sensor_type") == "not_in_use"]
-    assert len(not_in_use) >= 1
+def test_read_xmlcon_not_in_use_sensors_excluded():
+    """NotInUse sensors are skipped and do not appear in the sensor map."""
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    assert all(info.sensor_type != "not_in_use" for info in cm.sensors.values())
 
 
-def test_sbe911_xmlcon_channel_map_unknown_sensor_raises(tmp_path):
+def test_read_xmlcon_unknown_sensor_raises(tmp_path):
     xmlcon = tmp_path / "bad.xmlcon"
     xmlcon.write_text(
         "\n".join([
@@ -620,8 +616,8 @@ def test_sbe911_xmlcon_channel_map_unknown_sensor_raises(tmp_path):
             "</SBE_InstrumentConfiguration>",
         ])
     )
-    with pytest.raises(NotImplementedError):
-        sbe911_xmlcon_channel_map(xmlcon)
+    with pytest.raises(ValueError):
+        read_xmlcon(xmlcon)
 
 
 def test_sbe911_hex_reader_integration_mixsed2():
@@ -688,22 +684,22 @@ def test_sbe911_hex_reader_integration_m104_par_and_spar():
     assert float(ds["spar"].values[0]) >= 0.0
 
 
-def test_sbe911_xmlcon_channel_map_m104_par_coefficients():
+def test_read_xmlcon_m104_par_coefficients():
     """PAR calibration coefficients are correctly mapped from M104 XMLCON.
 
     The formula is PAR = Multiplier * 1e9 * 10^(V/M) / CalibrationConstant + Offset.
     Mapped to PARCoefficients: im = 1e9 * Multiplier / CC, a0 = 0, a1 = M.
     """
-    cm = sbe911_xmlcon_channel_map(_M104_XMLCON)
-    par_entry = cm[("volt", 6)]
-    assert par_entry["sensor_type"] == "par"
-    coefs = par_entry["coefficients"]
+    cm = read_xmlcon(_M104_XMLCON)
+    par_info = cm.sensors[("volt", 6)]
+    assert par_info.sensor_type == "par"
+    coefs = par_info.coefficients
     # im should be 1e9 * 1.0 / 18340000000 ≈ 0.05451
     assert abs(coefs.im - 1e9 / 18340000000.0) < 1e-8
     assert coefs.a0 == 0.0
     assert coefs.a1 == 1.0
-    # Offset stored separately
-    assert abs(par_entry["offset"] - (-0.09468947)) < 1e-6
+    # Offset stored separately on SensorInfo
+    assert abs(par_info.offset - (-0.09468947)) < 1e-6
 
 
 def test_sbe911_hex_reader_integration_m84_old_xmlcon():
@@ -725,13 +721,13 @@ def test_sbe911_hex_reader_integration_m84_old_xmlcon():
     assert bool(np.all(np.isfinite(ds["spar"].values)))
 
 
-def test_sbe911_xmlcon_channel_map_m84_old_conductivity():
+def test_read_xmlcon_m84_old_conductivity():
     """Old-format XMLCON (Seasave 7.20c) parses conductivity without equation=1 wrapper."""
-    cm = sbe911_xmlcon_channel_map(_M84_XMLCON)
-    cond_entry = cm[("frequency", 1)]
-    assert cond_entry["sensor_type"] == "conductivity"
-    assert cond_entry["role"] == "primary"
-    coefs = cond_entry["coefficients"]
+    cm = read_xmlcon(_M84_XMLCON)
+    cond_info = cm.sensors[("frequency", 1)]
+    assert cond_info.sensor_type == "conductivity"
+    assert cond_info.role == "primary"
+    coefs = cond_info.coefficients
     # Old XMLCON has G/H/I/J directly under the sensor element; check that we got values
     assert coefs.g != 0.0 or coefs.h != 0.0  # at least one non-zero coefficient
 
@@ -754,16 +750,18 @@ def test_sbe911_hex_reader_integration_msm72_volt_suppressed():
     assert "spar" not in ds
 
 
-def test_sbe911_xmlcon_channel_map_msm72_volt_suppressed_channels():
-    """VoltageWordsSuppressed=1 → channels 0-5 present, 6-7 absent."""
-    cm = sbe911_xmlcon_channel_map(_MSM72_XMLCON)
-    assert cm["_meta"]["voltage_words_suppressed"] == 1
-    # Channels 0-5 exist in the channel map
-    for i in range(6):
-        assert ("volt", i) in cm, f"volt channel {i} unexpectedly absent"
-    # Channels 6-7 are suppressed — not in the channel map
-    assert ("volt", 6) not in cm
-    assert ("volt", 7) not in cm
+def test_read_xmlcon_msm72_volt_suppressed_channels():
+    """VoltageWordsSuppressed=1 → no channels at index 6 or 7 in sensor map."""
+    cm = read_xmlcon(_MSM72_XMLCON)
+    assert cm.meta["voltage_words_suppressed"] == 1
+    # All sensor keys with volt channels must have index 0-5 (active range)
+    volt_indices = [ch for (kind, ch) in cm.sensors if kind == "volt"]
+    assert all(i < 6 for i in volt_indices), (
+        f"Suppressed volt channel found in sensor map: {[i for i in volt_indices if i >= 6]}"
+    )
+    # Channels 6-7 are suppressed — not in the sensor map
+    assert ("volt", 6) not in cm.sensors
+    assert ("volt", 7) not in cm.sensors
 
 
 # ---------------------------------------------------------------------------
@@ -784,20 +782,19 @@ def test_parse_hex_header_msm_store_system_time():
     )
 
 
-def test_sbe911_xmlcon_channel_map_msm_timing_flags():
-    ch = sbe911_xmlcon_channel_map(_MSM_XMLCON)
-    meta = ch["_meta"]
-    assert meta["scan_time_added"] is True, "ScanTimeAdded=1 not read from XMLCON"
-    assert meta["nmea_time_added"] is True, "NmeaTimeAdded=1 not read from XMLCON"
+def test_read_xmlcon_msm_timing_flags():
+    cm = read_xmlcon(_MSM_XMLCON)
+    assert cm.meta["scan_time_added"] is True, "ScanTimeAdded=1 not read from XMLCON"
+    assert cm.meta["nmea_time_added"] is True, "NmeaTimeAdded=1 not read from XMLCON"
 
 
-def test_sbe911_xmlcon_channel_map_msm_dual_oxygen():
-    ch = sbe911_xmlcon_channel_map(_MSM_XMLCON)
-    oxy_entries = {k: v for k, v in ch.items() if isinstance(k, tuple) and v.get("sensor_type") == "oxygen"}
+def test_read_xmlcon_msm_dual_oxygen():
+    cm = read_xmlcon(_MSM_XMLCON)
+    oxy_entries = {k: v for k, v in cm.sensors.items() if v.sensor_type == "oxygen"}
     assert len(oxy_entries) == 2, f"Expected 2 oxygen entries, got {len(oxy_entries)}"
-    roles = {v["role"] for v in oxy_entries.values()}
+    roles = {v.role for v in oxy_entries.values()}
     assert roles == {"primary", "secondary"}, f"Unexpected roles: {roles}"
-    serials = {v.get("serial") for v in oxy_entries.values()}
+    serials = {v.serial_number for v in oxy_entries.values()}
     assert len(serials) == 2, "Primary and secondary oxygen should have different serials"
     assert None not in serials, "Oxygen sensor serial is missing"
 

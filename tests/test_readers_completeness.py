@@ -11,6 +11,7 @@ This test ensures that:
 7. Developers add proper format metadata when adding new readers
 """
 
+import dataclasses
 import unittest
 import inspect
 import importlib
@@ -241,6 +242,8 @@ class TestReadersCompleteness(unittest.TestCase):
                         attr is not AbstractReader):        # Exclude the base class itself
                         if attr_name.startswith('_'):
                             continue  # Private helper classes are implementation details
+                        if dataclasses.is_dataclass(attr):
+                            continue  # Helper dataclasses are not reader implementations
 
                         # Check if this class inherits from AbstractReader
                         if not issubclass(attr, AbstractReader):
@@ -277,6 +280,8 @@ class TestReadersCompleteness(unittest.TestCase):
                         attr is not AbstractReader):        # Exclude the base class itself
                         if attr_name.startswith('_'):
                             continue  # Private helper classes are implementation details
+                        if dataclasses.is_dataclass(attr):
+                            continue  # Helper dataclasses are not reader implementations
 
                         # Check if class name ends with "Reader"
                         if not attr_name.endswith('Reader'):
