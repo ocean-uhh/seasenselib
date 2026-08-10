@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import gsw
+gsw = pytest.importorskip("gsw")
 
 from seasenselib.readers.sbe_hex_reader import (
     SbeHexReader,
