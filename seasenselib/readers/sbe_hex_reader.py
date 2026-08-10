@@ -1,12 +1,23 @@
-"""Reader wrapper and helper functions for Sea-Bird SBE37 HEX files."""
+"""Reader wrapper and helper functions for Sea-Bird SBE HEX files.
+
+Supports two instrument families, detected automatically from the file header:
+
+* **SBE37** family (SBE37SM, SBE37SMP, …) — existing support, unchanged.
+* **SBE911plus** family (SBE 911+/917+ CTD) — added in this module.
+
+The public entry point for both families is :class:`SbeHexReader`.
+"""
 
 from __future__ import annotations
 
+import datetime
+from dataclasses import dataclass
 import logging
 from pathlib import Path
 import re
+import warnings
 from types import SimpleNamespace
-from typing import Dict, Union
+from typing import Any, Dict, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -42,6 +53,185 @@ _SBE_HEX_VARIABLE_SENSOR_TYPES = {
     "oxygen_phase": "oxygen",
     "oxygen_temp": "oxygen",
 }
+
+
+@dataclass(frozen=True)
+class SensorSpec:
+    """How to turn one XMLCON sensor element into calibration coefficients.
+
+    ``coeff_class`` is the seabirdscientific coefficient dataclass; ``None``
+    when no upstream class exists. ``tag_map`` maps XMLCON leaf tag names to
+    dataclass field names. ``variable`` is the output variable stem, or
+    ``None`` for sensors that are metadata-only.
+    """
+
+    coeff_class: type | None
+    tag_map: dict
+    variable: str | None
+
+
+@dataclass
+class SensorInfo:
+    """Calibration and role metadata for one XMLCON sensor channel."""
+
+    sensor_type: str
+    variable: str | None
+    serial_number: str | None
+    calibration_date: str | None
+    coefficients: Any
+    role: str | None = None
+    offset: float | None = None
+    slope: float | None = None
+    name: str | None = None
+
+
+@dataclass
+class XmlconMap:
+    """Parsed SBE911+ xmlcon: per-channel sensor info and instrument-level settings."""
+
+    sensors: dict  # dict[tuple[str, int], SensorInfo]
+    meta: dict
+
+
+_XMLCON_SKIP = frozenset({"NotInUse"})
+
+_N_FREQ = 5
+_N_VOLT = 8
+_SPAR_IDX = 14
+
+
+def _channel_of(index: int, n_freq: int, n_volt: int) -> tuple | None:
+    """Map an xmlcon sensor index to ``(kind, channel_number)``, or ``None`` if suppressed.
+
+    Uses the actual active-channel counts (after applying suppression) so the
+    result is correct for files with ``FrequencyChannelsSuppressed`` or
+    ``VoltageWordsSuppressed`` > 0.
+    """
+    if index < n_freq:
+        return ("frequency", index)
+    if index < n_freq + n_volt:
+        return ("volt", index - n_freq)
+    return None
+
+
+def detect_sbe_hex_family(hex_path: Union[str, Path]) -> Literal["sbe37", "sbe911plus"]:
+    """Return the instrument family by inspecting line 1 of the hex file.
+
+    The SBE 911plus/917plus always starts with ``* Sea-Bird SBE 9 Data File:``.
+    Every other recognised SBE HEX variant is treated as SBE37 family.
+    """
+    with open(hex_path, "r", encoding="latin-1") as f:
+        first = f.readline().strip()
+    if first == "* Sea-Bird SBE 9 Data File:":
+        return "sbe911plus"
+    return "sbe37"
+
+
+def _parse_nmea_degrees(value: str) -> float | None:
+    """Convert an NMEA lat/lon string such as '65 13.78 N' to decimal degrees."""
+    try:
+        parts = value.strip().split()
+        if len(parts) == 3:
+            degrees = float(parts[0])
+            minutes = float(parts[1])
+            hemisphere = parts[2].upper()
+            decimal = degrees + minutes / 60.0
+            if hemisphere in ("S", "W"):
+                decimal = -decimal
+            return decimal
+    except (ValueError, IndexError):
+        pass
+    return None
+
+
+def parse_hex_header_sbe911(hex_path: Union[str, Path]) -> dict:
+    """Parse the ``* key = value`` header of an SBE 911plus HEX file.
+
+    Reads with ``latin-1`` encoding to handle ship names with non-ASCII
+    characters.  Double-asterisk ``** key: value`` lines are collected into
+    ``user_header``.
+
+    Returns
+    -------
+    dict
+        Keys: ``bytes_per_scan``, ``voltage_words``, ``scans_averaged``,
+        ``upload_time`` (:class:`datetime.datetime`), ``nmea_latitude``,
+        ``nmea_longitude``, ``store_lat_lon`` (bool), ``sample_interval``
+        (seconds, float), ``user_header`` (dict).
+    """
+    header: dict = {
+        "bytes_per_scan": None,
+        "voltage_words": None,
+        "scans_averaged": None,
+        "upload_time": None,
+        "nmea_latitude": None,
+        "nmea_longitude": None,
+        "store_lat_lon": False,
+        "nmea_time_added": False,
+        "store_system_time": False,
+        "sample_interval": None,
+        "user_header": {},
+    }
+
+    with open(hex_path, "r", encoding="latin-1") as f:
+        for line in f:
+            if not line.startswith("*"):
+                break
+            stripped = line[1:].strip()
+
+            # Double-asterisk user-header lines
+            if stripped.startswith("*"):
+                user_line = stripped[1:].strip()
+                if ":" in user_line:
+                    key, _, val = user_line.partition(":")
+                    key = key.strip()
+                    val = val.strip()
+                    if key:
+                        try:
+                            header["user_header"][key] = int(val)
+                        except ValueError:
+                            header["user_header"][key] = val
+                continue
+
+            # Bare flag lines (no "=")
+            if "=" not in stripped:
+                if stripped == "Append System Time to Every Scan":
+                    header["store_system_time"] = True
+                continue
+
+            key, _, val = stripped.partition("=")
+            key = key.strip()
+            val = val.strip()
+
+            if key == "Number of Bytes Per Scan":
+                header["bytes_per_scan"] = int(val)
+            elif key == "Number of Voltage Words":
+                header["voltage_words"] = int(val)
+            elif key in (
+                "Number of Scans Averaged by the Deck Unit",
+                "number of scans to average",
+            ):
+                parsed = int(val)
+                if header["scans_averaged"] is None:
+                    header["scans_averaged"] = parsed
+            elif key == "System UpLoad Time":
+                for fmt in ("%b %d %Y %H:%M:%S", "%b %d %Y  %H:%M:%S"):
+                    try:
+                        header["upload_time"] = datetime.datetime.strptime(val, fmt)
+                        break
+                    except ValueError:
+                        continue
+            elif key == "NMEA Latitude":
+                header["nmea_latitude"] = _parse_nmea_degrees(val)
+            elif key == "NMEA Longitude":
+                header["nmea_longitude"] = _parse_nmea_degrees(val)
+            elif key == "Store Lat/Lon Data":
+                header["store_lat_lon"] = "Append" in val
+
+    if header["scans_averaged"] is not None:
+        header["sample_interval"] = header["scans_averaged"] / 24.0
+
+    return header
 
 
 def _sbe_hex_field(name: str, hex_chars: int) -> SimpleNamespace:
@@ -82,19 +272,25 @@ def detect_sbe_hex_layout(
     header_info: dict,
     enabled_sensors_list: list[str],
     instrument_type,
+    *,
+    family: str = "sbe37",
 ) -> SimpleNamespace:
     """Detect the raw data-row layout before decoding.
 
-    Only the SBE37 format-0 family is implemented so far because that is what
-    seabirdscientific currently decodes for SBE37 variants. This small detector
-    gives future developers a clear extension point for new row structures.
+    For SBE37 format-0, the layout is derived from ``enabled_sensors_list``
+    and cross-checked against ``header_info['sample_length']``.
 
-    ``TxRealTime`` is treated as acquisition metadata, not as a layout by
-    itself. Some recovered files have ``TxRealTime=no`` but still store the same
-    temperature/conductivity/time rows. The actual safety checks are therefore
-    the enabled sensors, the header ``SampleLength`` value, and the per-line hex
-    length validation in ``_read_hex_file_fast()``.
+    For SBE911plus, the layout is derived from ``header_info['bytes_per_scan']``,
+    ``header_info['voltage_words']``, and ``header_info['store_lat_lon']``.
+    The cross-check against ``bytes_per_scan`` raises on mismatch.
+
+    ``TxRealTime`` is treated as acquisition metadata for SBE37; the actual
+    safety checks are the enabled sensors, ``SampleLength``, and per-line hex
+    length validation in :func:`_read_hex_file_fast`.
     """
+    if family == "sbe911plus":
+        return _detect_sbe911plus_layout(header_info)
+
     if not _is_sbe37_instrument_type(instrument_type):
         raise ValueError(
             f"No SBE HEX layout detector is implemented for {instrument_type}. "
@@ -143,9 +339,7 @@ def detect_sbe_hex_layout(
         )
         layout_tokens.append("press")
 
-    fields.append(
-        _sbe_hex_field("date time", _SBE37_FORMAT0_HEX_LENGTHS["date time"])
-    )
+    fields.append(_sbe_hex_field("date time", _SBE37_FORMAT0_HEX_LENGTHS["date time"]))
 
     layout = _sbe_hex_layout(
         name=f"sbe37_format0_{'_'.join(layout_tokens)}_time",
@@ -160,6 +354,74 @@ def detect_sbe_hex_layout(
             f"Header SampleLength={sample_length} bytes does not match detected "
             f"layout {layout.name} ({layout.expected_hex_chars // 2} bytes). "
             "If this is a valid file, add a new SbeHexLayout detector/decoder."
+        )
+
+    return layout
+
+
+def _detect_sbe911plus_layout(header_info: dict) -> SimpleNamespace:
+    """Build the SBE 911plus hex data-row layout from header metadata.
+
+    Layout formula (all values from the file header):
+    - 5 frequency channels × 3 bytes each = 15 bytes (T1, C1, P, T2, C2)
+    - ``voltage_words`` × 3 bytes each (each word encodes two ext-volt values)
+    - 7 bytes NMEA lat/lon when ``store_lat_lon`` is True
+    - 3 bytes status + data-integrity trailer
+
+    The total must equal ``bytes_per_scan``.  A mismatch raises :exc:`ValueError`
+    rather than silently skipping the check.
+    """
+    freq_channels = 5  # 911+ always has 5 frequency channels (T1, C1, P, T2, C2)
+    volt_words = header_info.get("voltage_words")
+    store_lat_lon = header_info.get("store_lat_lon", False)
+    nmea_time_added = header_info.get("nmea_time_added", False)
+    store_system_time = header_info.get("store_system_time", False)
+    bytes_per_scan = header_info.get("bytes_per_scan")
+
+    if volt_words is None:
+        raise ValueError(
+            "Cannot build SBE 911plus layout: 'Number of Voltage Words' not found in header."
+        )
+
+    _FREQ_NAMES = [
+        "temperature",
+        "conductivity",
+        "digiquartz pressure",
+        "secondary temperature",
+        "secondary conductivity",
+    ]
+    fields = [_sbe_hex_field(name, 6) for name in _FREQ_NAMES[:freq_channels]]
+    for i in range(volt_words):
+        fields.append(_sbe_hex_field(f"volt_word_{i}", 6))
+    if store_lat_lon:
+        fields.append(_sbe_hex_field("nmea_location", 14))
+    if nmea_time_added:
+        fields.append(_sbe_hex_field("nmea_time", 8))
+    fields.append(_sbe_hex_field("status_integrity", 6))
+    if store_system_time:
+        fields.append(_sbe_hex_field("system_time", 8))
+
+    name_parts = [f"f{freq_channels}", f"v{volt_words}"]
+    if store_lat_lon:
+        name_parts.append("nmea")
+    if nmea_time_added:
+        name_parts.append("ntime")
+    if store_system_time:
+        name_parts.append("stime")
+    layout = _sbe_hex_layout(
+        name=f"sbe911plus_{'_'.join(name_parts)}",
+        instrument_family="sbe911plus",
+        decoder_backend="seabirdscientific.read_hex",
+        fields=tuple(fields),
+    )
+
+    if bytes_per_scan is not None and bytes_per_scan * 2 != layout.expected_hex_chars:
+        raise ValueError(
+            f"Header 'Number of Bytes Per Scan'={bytes_per_scan} gives "
+            f"{bytes_per_scan * 2} expected hex chars, but the derived layout "
+            f"'{layout.name}' totals {layout.expected_hex_chars} chars. "
+            "Check FrequencyChannelsSuppressed, VoltageWordsSuppressed, and "
+            "'Store Lat/Lon Data' in the header."
         )
 
     return layout
@@ -216,7 +478,12 @@ def _read_sbe_hex_raw_header(hex_file: Union[str, Path]) -> str | None:
 def _find_sbe_hex_xmlcon_path(hex_file: Union[str, Path]) -> Path | None:
     """Find a companion XMLCON file for an SBE HEX file, if one exists."""
     hex_path = Path(hex_file)
-    candidates = [hex_path.with_suffix(".xmlcon")]
+    candidates = [
+        hex_path.with_suffix(".xmlcon"),
+        hex_path.with_suffix(".XMLCON"),
+        hex_path.with_suffix(".con"),
+        hex_path.with_suffix(".CON"),
+    ]
     for candidate in candidates:
         if candidate.exists():
             return candidate
@@ -329,7 +596,9 @@ def _sbe_hex_raw_variable_metadata(
         sensor_info = header_coefficients.get(sensor_type) or xmlcon_sensors.get(
             sensor_type
         )
-        if not sensor_info and sensor_type not in header_info.get("enabled_sensors", []):
+        if not sensor_info and sensor_type not in header_info.get(
+            "enabled_sensors", []
+        ):
             continue
 
         metadata = {"sensor_type": sensor_type}
@@ -370,7 +639,16 @@ def _select_sbe37_instrument_type(
         return selected
 
     selected = _instrument_type_from_text(instrument_data_module, device_type)
-    return selected or instrument_type_enum.SBE37SM
+    if selected is None:
+        valid_names = ", ".join(
+            item.name for item in instrument_type_enum if item.name.startswith("SBE37")
+        )
+        raise ValueError(
+            f"Unrecognised SBE37 device_type '{device_type}' in hex header. "
+            f"Supported types: {valid_names}. "
+            "Pass instrument_type= explicitly if this is a valid SBE37 file."
+        )
+    return selected
 
 
 def _instrument_type_from_text(instrument_data_module, text: str | None):
@@ -659,6 +937,911 @@ def _parse_coefficients(sensor_elem, sensor_type: str, sensor_index: int) -> Dic
     }
 
 
+# ---------------------------------------------------------------------------
+# SBE 911plus xmlcon and dataset builder
+# ---------------------------------------------------------------------------
+
+
+def _par_im(par_elem, xmlcon_idx: int) -> float:
+    """Compute the PARCoefficients.im value from a PAR_BiosphericalLicorChelseaSensor element.
+
+    Formula: im = 1e9 * Multiplier / CalibrationConstant
+    Raises ValueError on missing or zero CalibrationConstant.
+    """
+    cc_str = par_elem.findtext("CalibrationConstant")
+    if not cc_str or not cc_str.strip():
+        raise ValueError(
+            f"PAR sensor at xmlcon index {xmlcon_idx} has no CalibrationConstant — "
+            "cannot compute PAR coefficients."
+        )
+    cc = float(cc_str)
+    if cc == 0.0:
+        raise ValueError(
+            f"PAR sensor at xmlcon index {xmlcon_idx} has CalibrationConstant=0 — "
+            "cannot divide by zero when computing PAR coefficients."
+        )
+    multiplier = float(par_elem.findtext("Multiplier") or 1.0)
+    return 1e9 * multiplier / cc
+
+
+
+def _sci(elem) -> dict:
+    """Return serial_number and calibration_date from a sensor XML element."""
+    return {
+        "serial_number": (elem.findtext("SerialNumber") or "").strip(),
+        "calibration_date": (elem.findtext("CalibrationDate") or "").strip(),
+    }
+
+
+def read_xmlcon(path: Union[str, Path]) -> XmlconMap:
+    """Parse an SBE 911plus xmlcon file into an :class:`XmlconMap`.
+
+    Each ``<Sensor index="N">`` element in the xmlcon maps to a channel via
+    :func:`channel_of`. The returned :class:`XmlconMap` has:
+
+    * ``sensors`` — ``{(kind, channel): SensorInfo}`` for all declared, non-skipped
+      sensors that fall within the active channel range.
+    * ``meta`` — instrument-level settings (suppressed counts, timing flags, SPAR).
+
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to a Sea-Bird ``.xmlcon`` / ``.XMLCON`` file.
+
+    Raises
+    ------
+    ValueError
+        If a sensor element tag is neither in the internal ``_XMLCON_SENSORS``
+        registry nor in :data:`_XMLCON_SKIP`. Unknown sensors are an error, not
+        a silent omission.
+    """
+    import xml.etree.ElementTree as ET
+    from seabirdscientific.cal_coefficients import (
+        TemperatureFrequencyCoefficients,
+        PressureDigiquartzCoefficients,
+        ConductivityCoefficients,
+        Oxygen43Coefficients,
+        ECOCoefficients,
+        AltimeterCoefficients,
+        PH18Coefficients,
+    )
+
+    # Registry of all known sensor tags. Sensors with coeff_class=None have
+    # no upstream seabirdscientific dataclass; their coefficients are built in
+    # the explicit branches below.
+    _XMLCON_SENSORS: dict = {
+        # T/C/P/O2 use explicit branches below — tag_map is unused for them.
+        "TemperatureSensor": SensorSpec(TemperatureFrequencyCoefficients, {}, "temperature"),
+        "ConductivitySensor": SensorSpec(ConductivityCoefficients, {}, "conductivity"),
+        "PressureSensor": SensorSpec(PressureDigiquartzCoefficients, {}, "pressure"),
+        "OxygenSensor": SensorSpec(Oxygen43Coefficients, {}, "oxygen"),
+        "AltimeterSensor": SensorSpec(
+            AltimeterCoefficients,
+            {"ScaleFactor": "slope", "Offset": "offset"},
+            "altimeter",
+        ),
+        "FluoroWetlabECO_AFL_FL_Sensor": SensorSpec(
+            ECOCoefficients,
+            {"ScaleFactor": "slope", "Vblank": "offset"},
+            "fluorescence",
+        ),
+        "TurbidityMeter": SensorSpec(
+            ECOCoefficients,
+            {"ScaleFactor": "slope", "DarkVoltage": "offset"},
+            "turbidity",
+        ),
+        "FluoroSeapointSensor": SensorSpec(
+            ECOCoefficients,
+            {"GainSetting": "slope", "Offset": "offset"},
+            "fluorescence",
+        ),
+        "FluoroSeatechWetlabsFLF_Sensor": SensorSpec(
+            ECOCoefficients,
+            {"ScaleFactor": "slope", "Offset": "offset"},
+            "fluorescence",
+        ),
+        "pH_Sensor": SensorSpec(
+            PH18Coefficients,
+            {"Slope": "slope", "Offset": "offset"},
+            "ph",
+        ),
+        # No upstream dataclass — coefficients built in explicit branches below.
+        "WET_LabsCStar": SensorSpec(None, {}, "transmissometer"),
+        "UserPolynomialSensor": SensorSpec(None, {}, "user_polynomial"),
+        "PAR_BiosphericalLicorChelseaSensor": SensorSpec(None, {}, "par"),
+        # Calibration extracted into meta; any in-range index is skipped.
+        "SPAR_Sensor": SensorSpec(None, {}, None),
+    }
+
+    path = Path(path)
+    root = ET.parse(path).getroot()
+
+    freq_suppressed = int(root.findtext(".//FrequencyChannelsSuppressed") or 0)
+    volt_suppressed = int(root.findtext(".//VoltageWordsSuppressed") or 0)
+    scans_to_average = int(root.findtext(".//ScansToAverage") or 1)
+    store_lat_lon = int(root.findtext(".//NmeaPositionDataAdded") or 0) == 1
+    nmea_time_added = int(root.findtext(".//NmeaTimeAdded") or 0) == 1
+    scan_time_added = int(root.findtext(".//ScanTimeAdded") or 0) == 1
+    surface_par_added = int(root.findtext(".//SurfaceParVoltageAdded") or 0) == 1
+
+    spar_coefs = None
+    if surface_par_added:
+        spar_elem = root.find(".//SPAR_Sensor")
+        if spar_elem is not None:
+            cf = spar_elem.findtext("ConversionFactor")
+            if cf is not None:
+                from seabirdscientific.cal_coefficients import SPARCoefficients
+                spar_coefs = SPARCoefficients(
+                    im=1.0, a0=0.0, a1=1.0,
+                    conversion_factor=float(cf),
+                )
+
+    meta = {
+        "frequency_channels_suppressed": freq_suppressed,
+        "voltage_words_suppressed": volt_suppressed,
+        "scans_to_average": scans_to_average,
+        "store_lat_lon": store_lat_lon,
+        "nmea_time_added": nmea_time_added,
+        "scan_time_added": scan_time_added,
+        "surface_par_added": surface_par_added,
+        "spar_coefficients": spar_coefs,
+        "sample_interval": scans_to_average / 24.0,
+    }
+
+    n_freq = 5 - freq_suppressed
+    n_volt = 8 - volt_suppressed
+
+    sensors: dict = {}
+    temp_count = 0
+    cond_count = 0
+    oxy_count = 0
+
+    for sensor_elem in root.findall(".//Sensor"):
+        xmlcon_idx = int(sensor_elem.get("index", -1))
+        if xmlcon_idx < 0:
+            continue
+
+        channel_key = _channel_of(xmlcon_idx, n_freq, n_volt)
+        if channel_key is None:
+            continue  # suppressed channel or out-of-range (e.g. SPAR at index 14)
+
+        child = next(iter(sensor_elem), None)
+        if child is None:
+            continue
+
+        tag = child.tag
+        if tag in _XMLCON_SKIP:
+            continue
+
+        if tag == "SPAR_Sensor":
+            continue  # calibration already extracted into meta above
+
+        spec = _XMLCON_SENSORS.get(tag)
+        if spec is None:
+            raise ValueError(
+                f"{path.name}: unhandled sensor {tag!r} at index {xmlcon_idx}. "
+                "Add it to _XMLCON_SENSORS or _XMLCON_SKIP."
+            )
+
+        sci = _sci(child)
+
+        # --- explicit branches for sensors needing conditional or extra logic ---
+
+        if tag == "TemperatureSensor":
+            use_gj = int(child.findtext("UseG_J") or 1)
+            if use_gj == 0:
+                raise ValueError(
+                    f"{path.name}: TemperatureSensor at index {xmlcon_idx} has "
+                    "UseG_J=0 (A/B/C/D coefficients), which has no upstream "
+                    "seabirdscientific representation. Use a Seasave version that "
+                    "outputs UseG_J=1 coefficients."
+                )
+            role = "primary" if temp_count == 0 else "secondary"
+            temp_count += 1
+            coefs = TemperatureFrequencyCoefficients(
+                g=float(child.findtext("G")),
+                h=float(child.findtext("H")),
+                i=float(child.findtext("I")),
+                j=float(child.findtext("J")),
+                f0=float(child.findtext("F0")),
+            )
+            sensors[channel_key] = SensorInfo(
+                sensor_type="temperature",
+                variable="temperature",
+                **sci,
+                coefficients=coefs,
+                role=role,
+            )
+
+        elif tag == "ConductivitySensor":
+            role = "primary" if cond_count == 0 else "secondary"
+            cond_count += 1
+            eq1 = child.find('./Coefficients[@equation="1"]')
+            # Older Seasave XMLCONs (pre-7.22) store G/H/I/J directly under the
+            # sensor element rather than inside a Coefficients[@equation="1"] block,
+            # and omit WBOTC entirely. Fall back to bare children in that case.
+            coef_src = eq1 if eq1 is not None else child
+            g = coef_src.findtext("G")
+            if g is None:
+                raise ValueError(
+                    f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
+                    "G/H/I/J coefficients in equation=1 or bare form."
+                )
+            _cpcor_str = coef_src.findtext("CPcor")
+            _ctcor_str = coef_src.findtext("CTcor")
+            if _cpcor_str is None:
+                warnings.warn(
+                    f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
+                    "CPcor tag — using SBE standard default -9.57e-8. "
+                    "Verify this is correct for your instrument.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            if _ctcor_str is None:
+                warnings.warn(
+                    f"{path.name}: ConductivitySensor at index {xmlcon_idx} has no "
+                    "CTcor tag — using SBE standard default 3.25e-6. "
+                    "Verify this is correct for your instrument.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            coefs = ConductivityCoefficients(
+                g=float(g),
+                h=float(coef_src.findtext("H")),
+                i=float(coef_src.findtext("I")),
+                j=float(coef_src.findtext("J")),
+                cpcor=float(_cpcor_str) if _cpcor_str is not None else -9.57e-8,
+                ctcor=float(_ctcor_str) if _ctcor_str is not None else 3.25e-6,
+                wbotc=float(coef_src.findtext("WBOTC") or 0.0),
+            )
+            sensors[channel_key] = SensorInfo(
+                sensor_type="conductivity",
+                variable="conductivity",
+                **sci,
+                coefficients=coefs,
+                role=role,
+            )
+
+        elif tag == "PressureSensor":
+            ad590m = child.findtext("AD590M")
+            ad590b = child.findtext("AD590B")
+            coefs = PressureDigiquartzCoefficients(
+                c1=float(child.findtext("C1")),
+                c2=float(child.findtext("C2")),
+                c3=float(child.findtext("C3")),
+                d1=float(child.findtext("D1")),
+                d2=float(child.findtext("D2")),
+                t1=float(child.findtext("T1")),
+                t2=float(child.findtext("T2")),
+                t3=float(child.findtext("T3")),
+                t4=float(child.findtext("T4")),
+                t5=float(child.findtext("T5")),
+                AD590M=float(ad590m) if ad590m is not None else None,
+                AD590B=float(ad590b) if ad590b is not None else None,
+            )
+            sensors[channel_key] = SensorInfo(
+                sensor_type="pressure",
+                variable="pressure",
+                **sci,
+                coefficients=coefs,
+                role="primary",
+                offset=float(child.findtext("Offset") or 0),
+                slope=float(child.findtext("Slope") or 1),
+            )
+
+        elif tag == "OxygenSensor":
+            eq1 = child.find('./CalibrationCoefficients[@equation="1"]')
+            if eq1 is None:
+                logger.warning(
+                    "OxygenSensor at xmlcon index %d has no equation=1 "
+                    "calibration coefficients — sensor will be skipped.",
+                    xmlcon_idx,
+                )
+                # Do not increment oxy_count: an uncalibrated sensor does not
+                # consume a primary/secondary slot — the next calibrated sensor
+                # should still be labelled "primary".
+                sensors[channel_key] = SensorInfo(
+                    sensor_type="oxygen",
+                    variable="oxygen",
+                    **sci,
+                    coefficients=None,
+                    role=None,
+                )
+            else:
+                oxy_role = "primary" if oxy_count == 0 else "secondary"
+                oxy_count += 1
+                sensors[channel_key] = SensorInfo(
+                    sensor_type="oxygen",
+                    variable="oxygen",
+                    **sci,
+                    coefficients=Oxygen43Coefficients(
+                        soc=float(eq1.findtext("Soc")),
+                        v_offset=float(eq1.findtext("offset")),
+                        tau_20=float(eq1.findtext("Tau20")),
+                        a=float(eq1.findtext("A")),
+                        b=float(eq1.findtext("B")),
+                        c=float(eq1.findtext("C")),
+                        e=float(eq1.findtext("E")),
+                        d0=float(eq1.findtext("D0")),
+                        d1=float(eq1.findtext("D1")),
+                        d2=float(eq1.findtext("D2")),
+                        h1=float(eq1.findtext("H1")),
+                        h2=float(eq1.findtext("H2")),
+                        h3=float(eq1.findtext("H3")),
+                    ),
+                    role=oxy_role,
+                )
+
+        elif tag == "WET_LabsCStar":
+            sensors[channel_key] = SensorInfo(
+                sensor_type="transmissometer",
+                variable="transmissometer",
+                **sci,
+                coefficients={
+                    "M": float(child.findtext("M")),
+                    "B": float(child.findtext("B")),
+                    "path_length": float(child.findtext("PathLength")),
+                },
+            )
+
+        elif tag == "UserPolynomialSensor":
+            sensors[channel_key] = SensorInfo(
+                sensor_type="user_polynomial",
+                variable="user_polynomial",
+                **sci,
+                coefficients={
+                    "A0": float(child.findtext("A0") or 0),
+                    "A1": float(child.findtext("A1") or 0),
+                    "A2": float(child.findtext("A2") or 0),
+                    "A3": float(child.findtext("A3") or 0),
+                },
+                name=(child.findtext("SensorName") or "").strip(),
+            )
+
+        elif tag == "PAR_BiosphericalLicorChelseaSensor":
+            from seabirdscientific.cal_coefficients import PARCoefficients
+            sensors[channel_key] = SensorInfo(
+                sensor_type="par",
+                variable="par",
+                **sci,
+                coefficients=PARCoefficients(
+                    im=_par_im(child, xmlcon_idx),
+                    a0=0.0,
+                    a1=float(child.findtext("M") or 1.0),
+                    multiplier=1.0,
+                ),
+                offset=float(child.findtext("Offset") or 0.0),
+            )
+
+        else:
+            # Simple table-driven: coeff_class and tag_map are sufficient.
+            coefs = None
+            if spec.coeff_class is not None:
+                kwargs = {}
+                for xml_tag, field_name in spec.tag_map.items():
+                    val_str = child.findtext(xml_tag)
+                    if val_str is None:
+                        raise ValueError(
+                            f"{path.name}: sensor {tag!r} at index {xmlcon_idx} "
+                            f"is missing required calibration tag <{xml_tag}>."
+                        )
+                    kwargs[field_name] = float(val_str)
+                coefs = spec.coeff_class(**kwargs)
+            sensors[channel_key] = SensorInfo(
+                sensor_type=spec.variable or tag.lower(),
+                variable=spec.variable,
+                **sci,
+                coefficients=coefs,
+            )
+
+    return XmlconMap(sensors=sensors, meta=meta)
+
+
+def _build_sbe911_enabled_sensors(xmlcon_map: XmlconMap) -> tuple[list, int, int]:
+    """Derive the seabirdscientific enabled-sensors list from the xmlcon map.
+
+    Returns ``(enabled_sensors, frequency_channels_suppressed,
+    voltage_words_suppressed)``.
+    """
+    import seabirdscientific.instrument_data as _id
+
+    meta = xmlcon_map.meta
+    freq_suppressed = meta.get("frequency_channels_suppressed", 0)
+    volt_suppressed = meta.get("voltage_words_suppressed", 0)
+    store_lat_lon = meta.get("store_lat_lon", False)
+    nmea_time_added = meta.get("nmea_time_added", False)
+    scan_time_added = meta.get("scan_time_added", False)
+    surface_par_added = meta.get("surface_par_added", False)
+
+    _VOLT_SENSOR = {
+        0: _id.Sensors.ExtVolt0,
+        1: _id.Sensors.ExtVolt1,
+        2: _id.Sensors.ExtVolt2,
+        3: _id.Sensors.ExtVolt3,
+        4: _id.Sensors.ExtVolt4,
+        5: _id.Sensors.ExtVolt5,
+        6: _id.Sensors.ExtVolt6,
+        7: _id.Sensors.ExtVolt7,
+    }
+
+    temp_count = 0
+    cond_count = 0
+    enabled: list = []
+
+    for freq_idx in range(5 - freq_suppressed):
+        entry = xmlcon_map.sensors.get(("frequency", freq_idx))
+        st = entry.sensor_type if entry else None
+        if st == "temperature":
+            enabled.append(
+                _id.Sensors.Temperature
+                if temp_count == 0
+                else _id.Sensors.SecondaryTemperature
+            )
+            temp_count += 1
+        elif st == "conductivity":
+            enabled.append(
+                _id.Sensors.Conductivity
+                if cond_count == 0
+                else _id.Sensors.SecondaryConductivity
+            )
+            cond_count += 1
+        elif st == "pressure":
+            enabled.append(_id.Sensors.Pressure)
+
+    # Each "voltage word" in the hex is a 3-byte block encoding TWO channels.
+    # VoltageWordsSuppressed counts suppressed word-pairs (not individual channels).
+    # Active channels = (4 - volt_suppressed) * 2.
+    active_volt_channels = (4 - volt_suppressed) * 2
+    for volt_idx in range(active_volt_channels):
+        enabled.append(_VOLT_SENSOR[volt_idx])
+
+    if surface_par_added:
+        enabled.append(_id.Sensors.SPAR)
+    if store_lat_lon:
+        enabled.append(_id.Sensors.nmeaLocation)
+    if nmea_time_added:
+        enabled.append(_id.Sensors.nmeaTime)
+    if scan_time_added:
+        enabled.append(_id.Sensors.SystemTime)
+
+    return enabled, freq_suppressed, volt_suppressed
+
+
+def _build_sbe911_time(header_info: dict, n_samples: int) -> pd.DatetimeIndex:
+    """Build a time coordinate from upload time and sample interval.
+
+    ``System UpLoad Time`` is taken as the time of the **last** scan.
+    The time array is constructed backward to the first scan.
+    """
+    upload_time = header_info.get("upload_time")
+    sample_interval = header_info.get("sample_interval")
+
+    if upload_time is None:
+        raise ValueError(
+            "Cannot build time coordinate: 'System UpLoad Time' not found in "
+            "the 911+ header. The file may be malformed."
+        )
+    if not sample_interval or sample_interval <= 0:
+        raise ValueError(
+            f"Cannot build time coordinate: invalid sample_interval={sample_interval!r}. "
+            "Check 'Number of Scans Averaged by the Deck Unit' in the header."
+        )
+
+    start = upload_time - datetime.timedelta(seconds=(n_samples - 1) * sample_interval)
+    return pd.date_range(
+        start=start, periods=n_samples, freq=pd.Timedelta(seconds=sample_interval)
+    )
+
+
+def sbe911_hex_reader(
+    hex_file: Union[str, Path],
+    *,
+    header_info: dict | None = None,
+    xmlcon_map: XmlconMap | None = None,
+    xmlcon_path: Union[str, Path] | None = None,
+) -> xr.Dataset:
+    """Read an SBE 911plus HEX file and return a calibrated xarray Dataset.
+
+    Calibration coefficients are derived from the companion xmlcon file via
+    :func:`read_xmlcon`.  The time coordinate is reconstructed
+    from ``System UpLoad Time`` (last scan) and ``sample_interval``.
+
+    Parameters
+    ----------
+    hex_file : Union[str, Path]
+        Path to the ``.hex`` file.
+    header_info : dict, optional
+        Pre-parsed header from :func:`parse_hex_header_sbe911`.
+    xmlcon_map : XmlconMap, optional
+        Pre-parsed xmlcon map from :func:`read_xmlcon`.
+    xmlcon_path : Union[str, Path], optional
+        Path to companion xmlcon; used when ``xmlcon_map`` is not supplied.
+
+    Returns
+    -------
+    xr.Dataset
+        Calibrated dataset with T, C, P, secondary T/C where present, and all
+        aux channels declared in the xmlcon.
+    """
+    import seabirdscientific.instrument_data as _id
+    import seabirdscientific.conversion as conv
+    import gsw
+
+    hex_path = Path(hex_file)
+    if not hex_path.exists():
+        raise FileNotFoundError(f"Hex file not found: {hex_path}")
+
+    if header_info is None:
+        header_info = parse_hex_header_sbe911(hex_path)
+
+    if xmlcon_map is None:
+        if xmlcon_path is None:
+            xmlcon_path = _find_sbe_hex_xmlcon_path(hex_path)
+        if xmlcon_path is None:
+            raise FileNotFoundError(
+                f"No companion xmlcon file found for {hex_path}. "
+                "SBE 911+ files require an xmlcon for calibration."
+            )
+        xmlcon_map = read_xmlcon(xmlcon_path)
+    elif xmlcon_path is None:
+        xmlcon_path = _find_sbe_hex_xmlcon_path(hex_path)
+
+    # Merge xmlcon flags into header_info so the layout detector sees them.
+    # Older Seasave versions (pre-7.22) omit "Store Lat/Lon Data" and
+    # "NmeaTimeAdded" from the hex header; the XMLCON is authoritative.
+    # ScanTimeAdded may already be True from the hex "Append System Time" bare flag.
+    _xmlcon_meta = xmlcon_map.meta
+    # XMLCON is authoritative for all timing/layout flags; older Seasave versions
+    # omit several flags from the hex header entirely.
+    header_info["store_lat_lon"] = _xmlcon_meta.get(
+        "store_lat_lon", header_info.get("store_lat_lon", False)
+    )
+    header_info["nmea_time_added"] = _xmlcon_meta.get("nmea_time_added", False)
+    if _xmlcon_meta.get("scan_time_added", False):
+        header_info["store_system_time"] = True
+    # Fall back to XMLCON ScansToAverage when hex header omits "Number of Scans Averaged"
+    if header_info.get("sample_interval") is None and _xmlcon_meta.get("sample_interval"):
+        header_info["sample_interval"] = _xmlcon_meta["sample_interval"]
+
+    enabled_sensors, freq_suppressed, volt_suppressed = _build_sbe911_enabled_sensors(
+        xmlcon_map
+    )
+    layout = detect_sbe_hex_layout(
+        header_info=header_info,
+        enabled_sensors_list=[],
+        instrument_type=_id.InstrumentType.SBE911Plus,
+        family="sbe911plus",
+    )
+    raw = _read_hex_file_fast(
+        filepath=hex_path,
+        instrument_type=_id.InstrumentType.SBE911Plus,
+        enabled_sensors=enabled_sensors,
+        layout=layout,
+        frequency_channels_suppressed=freq_suppressed,
+        voltage_words_suppressed=volt_suppressed,
+    )
+
+    n_samples = len(raw)
+    times = _build_sbe911_time(header_info, n_samples)
+    sample_interval = header_info["sample_interval"]
+    data_vars: dict = {}
+
+    # ----- Primary temperature (freq 0) -----
+    t1_info = xmlcon_map.sensors.get(("frequency", 0))
+    if t1_info is None or t1_info.sensor_type != "temperature":
+        raise ValueError(
+            "No primary temperature sensor at frequency channel 0 in channel map."
+        )
+    temp_primary = conv.convert_temperature_frequency(
+        frequency=raw["temperature"].values,
+        coefs=t1_info.coefficients,
+        standard="ITS90",
+        units="C",
+    )
+    data_vars["temp"] = (params.TIME, temp_primary)
+
+    # ----- Digiquartz pressure (freq 2) -----
+    p_info = xmlcon_map.sensors.get(("frequency", 2))
+    if p_info is None or p_info.sensor_type != "pressure":
+        raise ValueError("No pressure sensor at frequency channel 2 in channel map.")
+    if "temperature compensation" not in raw.columns:
+        raise ValueError(
+            "Column 'temperature compensation' absent from decoded 911+ data. "
+            "Required for Digiquartz pressure conversion."
+        )
+    pressure = conv.convert_pressure_digiquartz(
+        pressure_count=raw["digiquartz pressure"].values,
+        compensation_voltage=raw["temperature compensation"].values,
+        coefs=p_info.coefficients,
+        units="dbar",
+        sample_interval=sample_interval,
+    )
+    slope = p_info.slope if p_info.slope is not None else 1.0
+    offset = p_info.offset if p_info.offset is not None else 0.0
+    pressure = pressure * slope + offset
+    data_vars["press"] = (params.TIME, pressure)
+
+    # ----- Primary conductivity (freq 1) -----
+    c1_info = xmlcon_map.sensors.get(("frequency", 1))
+    if c1_info is None or c1_info.sensor_type != "conductivity":
+        raise ValueError(
+            "No primary conductivity sensor at frequency channel 1 in channel map."
+        )
+    # convert_conductivity with scalar=1.0 returns mS/cm for 911+ frequency input.
+    cond_primary = conv.convert_conductivity(
+        conductivity_count=raw["conductivity"].values,
+        temperature=temp_primary,
+        pressure=pressure,
+        coefs=c1_info.coefficients,
+    )
+    _median_cond = float(np.median(cond_primary[np.isfinite(cond_primary)]))
+    if not (10.0 < _median_cond < 1000.0):
+        warnings.warn(
+            f"SBE 911+ primary conductivity has median {_median_cond:.4g} mS/cm, "
+            "outside the expected range (10–1000). "
+            "Check instrument calibration coefficients.",
+            UserWarning,
+            stacklevel=2,
+        )
+    data_vars["cond"] = (params.TIME, cond_primary)
+    # salinity_primary is computed lazily inside the oxygen volt branch.
+    _salinity_primary = None
+
+    # ----- Secondary temperature (freq 3, optional) -----
+    t2_info = xmlcon_map.sensors.get(("frequency", 3))
+    if t2_info and t2_info.sensor_type == "temperature":
+        temp_secondary = conv.convert_temperature_frequency(
+            frequency=raw["secondary temperature"].values,
+            coefs=t2_info.coefficients,
+            standard="ITS90",
+            units="C",
+        )
+        data_vars["temp2"] = (params.TIME, temp_secondary)
+
+    # ----- Secondary conductivity (freq 4, optional) -----
+    c2_info = xmlcon_map.sensors.get(("frequency", 4))
+    if (
+        c2_info
+        and c2_info.sensor_type == "conductivity"
+        and "temp2" in data_vars
+    ):
+        cond_secondary = conv.convert_conductivity(
+            conductivity_count=raw["secondary conductivity"].values,
+            temperature=data_vars["temp2"][1],
+            pressure=pressure,
+            coefs=c2_info.coefficients,
+        )
+        _median_cond2 = float(np.median(cond_secondary[np.isfinite(cond_secondary)]))
+        if not (10.0 < _median_cond2 < 1000.0):
+            warnings.warn(
+                f"SBE 911+ secondary conductivity has median {_median_cond2:.4g} mS/cm, "
+                "outside the expected range (10–1000). "
+                "Check instrument calibration coefficients.",
+                UserWarning,
+                stacklevel=2,
+            )
+        data_vars["cond2"] = (params.TIME, cond_secondary)
+
+    # ----- Voltage channels -----
+    # VoltageWordsSuppressed counts suppressed word-pairs; active channels = (4 - suppressed) * 2
+    n_volt = (4 - xmlcon_map.meta.get("voltage_words_suppressed", 0)) * 2
+
+    for volt_idx in range(n_volt):
+        raw_col = f"volt {volt_idx}"
+        if raw_col not in raw.columns:
+            continue
+        volt_info = xmlcon_map.sensors.get(("volt", volt_idx))
+        if volt_info is None:
+            continue
+
+        sensor_type = volt_info.sensor_type
+        coefs = volt_info.coefficients
+        volt_raw = raw[raw_col].values
+
+        if sensor_type == "not_in_use":
+            logger.info("Volt %d: NotInUse — skipped.", volt_idx)
+
+        elif sensor_type == "oxygen":
+            if coefs is None:
+                logger.warning(
+                    "Volt %d: oxygen sensor has no calibration coefficients — skipped.",
+                    volt_idx,
+                )
+                continue
+            if _salinity_primary is None:
+                _salinity_primary = gsw.SP_from_C(
+                    C=cond_primary,
+                    t=temp_primary,
+                    p=pressure,
+                )
+            oxy_ml_l = conv.convert_sbe43_oxygen(
+                voltage=volt_raw,
+                temperature=temp_primary,
+                pressure=pressure,
+                salinity=_salinity_primary,
+                coefs=coefs,
+                apply_tau_correction=True,
+                apply_hysteresis_correction=True,
+                window_size=1,
+                sample_interval=sample_interval,
+            )
+            _lon = header_info.get("nmea_longitude") or 0.0
+            _lat = header_info.get("nmea_latitude") or 0.0
+            if not header_info.get("nmea_longitude") or not header_info.get("nmea_latitude"):
+                warnings.warn(
+                    "NMEA position not found in hex header — using lon=0.0, lat=0.0 "
+                    "for oxygen density calculation. Potential density and derived "
+                    "oxygen may be inaccurate.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            sigma_theta = conv.potential_density_from_t_s_p(
+                temperature=temp_primary,
+                salinity=_salinity_primary,
+                pressure=pressure,
+                lon=_lon,
+                lat=_lat,
+            )
+            oxy_role = volt_info.role or "primary"
+            oxy_var = "oxygen" if oxy_role == "primary" else "oxygen2"
+            data_vars[f"{oxy_var}_ml_l"] = (params.TIME, oxy_ml_l)
+            data_vars[oxy_var] = (
+                params.TIME,
+                conv.convert_oxygen_to_umol_per_kg(oxy_ml_l, sigma_theta),
+            )
+
+        elif sensor_type in ("fluorescence", "turbidity"):
+            if coefs is None:
+                logger.warning(
+                    "Volt %d: %s has no calibration coefficients — skipped.",
+                    volt_idx,
+                    sensor_type,
+                )
+                continue
+            data_vars[sensor_type] = (
+                params.TIME,
+                conv.convert_eco(raw=volt_raw, coefs=coefs),
+            )
+
+        elif sensor_type == "altimeter":
+            if coefs is None:
+                logger.warning(
+                    "Volt %d: altimeter has no coefficients — skipped.", volt_idx
+                )
+                continue
+            data_vars["altimeter"] = (
+                params.TIME,
+                conv.convert_altimeter(volts=volt_raw, coefs=coefs),
+            )
+
+        elif sensor_type == "transmissometer":
+            if coefs is None:
+                logger.warning(
+                    "Volt %d: transmissometer has no coefficients — storing raw voltage.",
+                    volt_idx,
+                )
+                data_vars[f"volt{volt_idx}_raw"] = (params.TIME, volt_raw)
+            else:
+                data_vars["transmissometer"] = (
+                    params.TIME,
+                    coefs["M"] * volt_raw + coefs["B"],
+                )
+
+        elif sensor_type == "user_polynomial":
+            if coefs is None:
+                data_vars[f"volt{volt_idx}_raw"] = (params.TIME, volt_raw)
+            else:
+                result = (
+                    coefs["A0"]
+                    + coefs["A1"] * volt_raw
+                    + coefs["A2"] * volt_raw**2
+                    + coefs["A3"] * volt_raw**3
+                )
+                raw_name = volt_info.name or f"volt{volt_idx}_poly"
+                var_name = re.sub(r"[^a-zA-Z0-9_]", "_", raw_name).lower()
+                data_vars[var_name] = (params.TIME, result)
+                logger.info(
+                    "Volt %d: user polynomial stored as '%s'.", volt_idx, var_name
+                )
+
+        elif sensor_type == "ph":
+            logger.info(
+                "Volt %d: pH conversion not implemented — storing raw voltage as "
+                "'volt%d_raw'.",
+                volt_idx,
+                volt_idx,
+            )
+            data_vars[f"volt{volt_idx}_raw"] = (params.TIME, volt_raw)
+
+        elif sensor_type == "par":
+            if coefs is None:
+                logger.warning(
+                    "Volt %d: PAR sensor has no calibration coefficients — storing raw voltage.",
+                    volt_idx,
+                )
+                data_vars[f"volt{volt_idx}_raw"] = (params.TIME, volt_raw)
+            else:
+                par_offset = volt_info.offset if volt_info.offset is not None else 0.0
+                data_vars["par"] = (
+                    params.TIME,
+                    conv.convert_par_logarithmic(volts=volt_raw, coefs=coefs) + par_offset,
+                )
+
+        else:
+            raise NotImplementedError(
+                f"Volt {volt_idx}: unhandled sensor_type '{sensor_type}'. "
+                "Add a conversion to sbe911_hex_reader."
+            )
+
+    # ----- NMEA position (per-scan) -----
+    if "NMEA Latitude" in raw.columns:
+        data_vars["nmea_latitude"] = (params.TIME, raw["NMEA Latitude"].values)
+    if "NMEA Longitude" in raw.columns:
+        data_vars["nmea_longitude"] = (params.TIME, raw["NMEA Longitude"].values)
+
+    # ----- Surface PAR (separate scan field, decoded by seabirdscientific) -----
+    if xmlcon_map.meta.get("surface_par_added", False) and "surface par" in raw.columns:
+        spar_coefs = xmlcon_map.meta.get("spar_coefficients")
+        if spar_coefs is None:
+            logger.warning(
+                "SurfaceParVoltageAdded is set but no SPAR calibration found "
+                "in XMLCON — storing raw surface PAR voltage."
+            )
+            data_vars["spar_raw"] = (params.TIME, raw["surface par"].values)
+        else:
+            data_vars["spar"] = (
+                params.TIME,
+                conv.convert_spar_biospherical(
+                    volts=raw["surface par"].values, coefs=spar_coefs
+                ),
+            )
+
+    ds = xr.Dataset(data_vars, coords={params.TIME: times})
+
+    _VAR_ATTRS = {
+        "temp": {"units": "degree_C", "long_name": "Temperature (Primary)"},
+        "cond": {"units": "mS cm-1", "long_name": "Conductivity (Primary)"},
+        "press": {"units": "dbar", "long_name": "Pressure"},
+        "temp2": {"units": "degree_C", "long_name": "Temperature (Secondary)"},
+        "cond2": {"units": "mS cm-1", "long_name": "Conductivity (Secondary)"},
+        "oxygen": {"units": "umol kg-1", "long_name": "Dissolved Oxygen"},
+        "oxygen_ml_l": {"units": "ml l-1", "long_name": "Dissolved Oxygen"},
+        "oxygen2": {"units": "umol kg-1", "long_name": "Dissolved Oxygen (Secondary)"},
+        "oxygen2_ml_l": {"units": "ml l-1", "long_name": "Dissolved Oxygen (Secondary)"},
+        "fluorescence": {"units": "mg m-3", "long_name": "Fluorescence"},
+        "turbidity": {"units": "NTU", "long_name": "Turbidity"},
+        "altimeter": {"units": "m", "long_name": "Altimeter Distance"},
+        "transmissometer": {"units": "%", "long_name": "Beam Transmission"},
+        "par": {"units": "umol_photons m-2 s-1", "long_name": "Photosynthetically Active Radiation"},
+        "spar": {"units": "umol_photons m-2 s-1", "long_name": "Surface Photosynthetically Active Radiation"},
+        "spar_raw": {"units": "V", "long_name": "Surface PAR (raw voltage)"},
+        "nmea_latitude": {"units": "degrees_north", "long_name": "NMEA Latitude"},
+        "nmea_longitude": {"units": "degrees_east", "long_name": "NMEA Longitude"},
+    }
+    for var, attrs in _VAR_ATTRS.items():
+        if var in ds:
+            ds[var].attrs.update(attrs)
+
+    ds.attrs["source_file"] = str(hex_path)
+    ds.attrs["instrument_family"] = "sbe911plus"
+    ds.attrs["instrument_type"] = _id.InstrumentType.SBE911Plus.value
+    ds.attrs["sample_interval"] = sample_interval
+    ds.attrs["hex_layout"] = layout.name
+    ds.attrs["hex_layout_expected_chars"] = layout.expected_hex_chars
+    if xmlcon_path is not None:
+        ds.attrs["xmlcon_file"] = str(xmlcon_path)
+        try:
+            ds.attrs["xmlcon_content"] = Path(xmlcon_path).read_text(encoding="utf-8")
+        except Exception:
+            ds.attrs["xmlcon_content"] = Path(xmlcon_path).read_text(encoding="latin-1")
+    if header_info.get("upload_time") is not None:
+        ds.attrs["upload_time"] = header_info["upload_time"].isoformat()
+    for k, v in header_info.get("user_header", {}).items():
+        ds.attrs[f"user_{k.lower()}"] = v
+
+    return ds
+
+
 def parse_hex_header_sensors(hex_file: Union[str, Path]) -> Dict:
     """
     Parse SBE37 hex file header to extract enabled sensors and calibration coefficients.
@@ -809,9 +1992,10 @@ def parse_hex_header_sensors(hex_file: Union[str, Path]) -> Dict:
                     }
 
     except Exception as e:
-        logger.warning(
-            "Could not parse calibration coefficients in %s: %s", hex_path, e
-        )
+        raise ValueError(
+            f"Could not parse calibration coefficients in {hex_path}: {e}. "
+            "The header XML may be malformed. Supply calibration via an xmlcon file."
+        ) from e
 
     return {
         "enabled_sensors": enabled_sensors,
@@ -977,9 +2161,7 @@ def sbe37_hex_reader(
     if raw_data.empty:
         times = pd.DatetimeIndex([])
     elif "date time" not in raw_data.columns:
-        raise ValueError(
-            f"Decoded SBE HEX data from {hex_path} does not contain time"
-        )
+        raise ValueError(f"Decoded SBE HEX data from {hex_path} does not contain time")
     else:
         times = pd.to_datetime(raw_data["date time"])
     n_samples = len(times)
@@ -1041,11 +2223,12 @@ def sbe37_hex_reader(
             _require_coefficients("pressure", press_coeffs_filtered, press_keys)
             press_coefs = PressureCoefficients(**press_coeffs_filtered)
 
-            temp_comp_values = raw_data.get(
-                "temperature compensation", np.zeros(n_samples)
-            )
-            if hasattr(temp_comp_values, "values"):
-                temp_comp_values = temp_comp_values.values
+            if "temperature compensation" not in raw_data.columns:
+                raise ValueError(
+                    f"Column 'temperature compensation' is absent from decoded SBE37 "
+                    f"data in {hex_path}. Cannot convert pressure without it."
+                )
+            temp_comp_values = raw_data["temperature compensation"].values
 
             pressure = conv.convert_pressure(
                 pressure_count=raw_data["pressure"].values,
@@ -1078,6 +2261,17 @@ def sbe37_hex_reader(
             _require_coefficients("conductivity", cond_coeffs_filtered, cond_keys)
             cond_coefs = ConductivityCoefficients(**cond_coeffs_filtered)
 
+            if "temp" not in data_vars:
+                logger.warning(
+                    "SBE37 conductivity conversion: temperature calibration is "
+                    "missing; using zeros for temperature. Result will be inaccurate."
+                )
+            if "press" not in data_vars:
+                logger.warning(
+                    "SBE37 conductivity conversion: no pressure data available; "
+                    "using zeros for pressure. Use create_pressure_from_reference_pressure=True "
+                    "to supply a reference depth for a more accurate result."
+                )
             temp_values = data_vars.get("temp", (None, np.zeros(n_samples)))[1]
             pressure_values = data_vars.get("press", (None, np.zeros(n_samples)))[1]
             conductivity = conv.convert_conductivity(
@@ -1086,8 +2280,17 @@ def sbe37_hex_reader(
                 pressure=pressure_values,
                 coefs=cond_coefs,
             )
-            # Convert from S/m to mS/cm.
-            data_vars["cond"] = (params.TIME, conductivity * 10.0)
+            # convert_conductivity returns S/m for SBE37; pipeline normalises to mS cm-1.
+            _median_cond37 = float(np.median(conductivity[np.isfinite(conductivity)]))
+            if not (0.5 < _median_cond37 < 10.0):
+                warnings.warn(
+                    f"SBE37 conductivity has median {_median_cond37:.4g} S/m, "
+                    "outside the expected range (0.5–10). "
+                    "Check instrument calibration coefficients.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            data_vars["cond"] = (params.TIME, conductivity)
 
         oxygen_info = sensor_configs.get("oxygen")
         if oxygen_info and "SBE63 oxygen phase" in raw_data.columns:
@@ -1127,9 +2330,15 @@ def sbe37_hex_reader(
 
                 # We need pressure and salinity for full conversion.
                 if "temp" in data_vars and "cond" in data_vars and "press" in data_vars:
-                    # For now, use a typical seawater salinity of 35 PSU.
+                    import gsw as _gsw
+
                     pressure_vals = data_vars["press"][1]
-                    salinity_vals = np.full_like(pressure_vals, 35.0)
+                    # cond is stored in S/m (Option A); gsw.SP_from_C expects mS/cm.
+                    salinity_vals = _gsw.SP_from_C(
+                        C=data_vars["cond"][1] * 10.0,
+                        t=data_vars["temp"][1],
+                        p=pressure_vals,
+                    )
 
                     oxygen_ml_per_l = conv.convert_sbe63_oxygen(
                         raw_oxygen_phase=oxygen_phase,
@@ -1181,7 +2390,10 @@ def sbe37_hex_reader(
             pressure_from_reference_pressure = True
         # Handle SBE63 oxygen data (phase and temperature)
         if "SBE63 oxygen phase" in raw_data.columns:
-            data_vars["oxygen_phase"] = (params.TIME, raw_data["SBE63 oxygen phase"].values)
+            data_vars["oxygen_phase"] = (
+                params.TIME,
+                raw_data["SBE63 oxygen phase"].values,
+            )
         if "SBE63 oxygen temperature" in raw_data.columns:
             data_vars["oxygen_temp"] = (
                 params.TIME,
@@ -1193,11 +2405,12 @@ def sbe37_hex_reader(
 
     # Add units as variable attributes
     if "temp" in data_vars:
-        ds["temp"].attrs["units"] = "degrees_C"
+        ds["temp"].attrs["units"] = "degree_C"
         ds["temp"].attrs["long_name"] = "Temperature"
     if "cond" in data_vars:
-        ds["cond"].attrs["units"] = "mS/cm"
+        ds["cond"].attrs["units"] = "S/m"
         ds["cond"].attrs["long_name"] = "Conductivity"
+        ds["cond"].attrs["conductivity_unit_source"] = "SBE37 hex convert_conductivity returns S/m"
     if "press" in data_vars:
         ds["press"].attrs["units"] = "dbar"
         if pressure_from_reference_pressure:
@@ -1212,16 +2425,16 @@ def sbe37_hex_reader(
         else:
             ds["press"].attrs["long_name"] = "Pressure"
     if "oxygen" in data_vars:
-        ds["oxygen"].attrs["units"] = "umol/L"
+        ds["oxygen"].attrs["units"] = "umol l-1"
         ds["oxygen"].attrs["long_name"] = "Dissolved Oxygen"
     if "oxygen_ml_l" in data_vars:
-        ds["oxygen_ml_l"].attrs["units"] = "ml/L"
+        ds["oxygen_ml_l"].attrs["units"] = "ml l-1"
         ds["oxygen_ml_l"].attrs["long_name"] = "Dissolved Oxygen (ml/L)"
     if "oxygen_phase" in data_vars:
         ds["oxygen_phase"].attrs["units"] = "degrees"
         ds["oxygen_phase"].attrs["long_name"] = "Oxygen Phase"
     if "oxygen_temp" in data_vars:
-        ds["oxygen_temp"].attrs["units"] = "degrees_C"
+        ds["oxygen_temp"].attrs["units"] = "degree_C"
         ds["oxygen_temp"].attrs["long_name"] = "Oxygen Sensor Temperature"
 
     # Add metadata
@@ -1240,7 +2453,9 @@ def sbe37_hex_reader(
     ds.attrs["hex_layout_backend"] = layout.decoder_backend
     ds.attrs["hex_layout_expected_chars"] = layout.expected_hex_chars
     ds.attrs["hex_layout_fields"] = ", ".join(field.name for field in layout.fields)
-    ds.attrs["data_type"] = "calibrated" if (calibration_coeffs or xmlcon_info) else "raw"
+    ds.attrs["data_type"] = (
+        "calibrated" if (calibration_coeffs or xmlcon_info) else "raw"
+    )
     if reference_pressure is not None:
         ds.attrs["reference_pressure"] = reference_pressure
     ds.attrs["create_pressure_from_reference_pressure"] = (
@@ -1347,7 +2562,17 @@ class SbeHexReader(AbstractReader):
         ]
 
     def _load_data(self) -> xr.Dataset:
-        """Load the SBE HEX file using the original standalone function."""
+        """Load the SBE HEX file, dispatching on instrument family."""
+        self._raw_header = _read_sbe_hex_raw_header(self.input_file)
+        family = detect_sbe_hex_family(self.input_file)
+
+        if family == "sbe911plus":
+            return self._load_data_sbe911plus()
+
+        return self._load_data_sbe37()
+
+    def _load_data_sbe37(self) -> xr.Dataset:
+        """Load data for the SBE37 family."""
         header_info = parse_hex_header_sensors(self.input_file)
         xmlcon_info = None
         xmlcon_path = _find_sbe_hex_xmlcon_path(self.input_file)
@@ -1361,7 +2586,6 @@ class SbeHexReader(AbstractReader):
                     exc,
                 )
 
-        self._raw_header = _read_sbe_hex_raw_header(self.input_file)
         self._raw_metadata_blocks = _sbe_hex_raw_metadata_blocks(
             header_info,
             xmlcon_info,
@@ -1395,13 +2619,43 @@ class SbeHexReader(AbstractReader):
 
         return ds
 
+    def _load_data_sbe911plus(self) -> xr.Dataset:
+        """Load data for the SBE 911plus family."""
+        header_info = parse_hex_header_sbe911(self.input_file)
+        xmlcon_path = _find_sbe_hex_xmlcon_path(self.input_file)
+        xmlcon_map = None
+        if xmlcon_path is not None:
+            try:
+                xmlcon_map = read_xmlcon(xmlcon_path)
+            except Exception as exc:
+                raise ValueError(
+                    f"Could not parse companion 911+ XMLCON {xmlcon_path}: {exc}. "
+                    "SBE 911+ calibration requires a valid XMLCON file."
+                ) from exc
+
+        ds = sbe911_hex_reader(
+            self.input_file,
+            header_info=header_info,
+            xmlcon_map=xmlcon_map,
+            xmlcon_path=xmlcon_path,
+        )
+        self._raw_metadata_blocks = {
+            "attributes": {
+                "instrument_family": "sbe911plus",
+                "upload_time": header_info.get("upload_time"),
+                "sample_interval": header_info.get("sample_interval"),
+            }
+        }
+        self._raw_metadata_variables = {}
+        return ds
+
     @classmethod
     def format_key(cls) -> str:
         return "sbe-hex"
 
     @classmethod
     def format_name(cls) -> str:
-        return "SeaBird SBE37 HEX"
+        return "SeaBird SBE HEX"
 
     @classmethod
     def file_extension(cls) -> str | None:

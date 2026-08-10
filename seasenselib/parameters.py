@@ -39,6 +39,7 @@ HEADING = 'heading'
 BATTERY_VOLTAGE = 'battery_voltage'
 ALTIMETER = 'altimeter'
 REDOX_POTENTIAL = 'redox_potential'
+PAR = 'par'
 
 # Meta data should use standardized values from https://cfconventions.org/
 metadata = {
@@ -72,9 +73,9 @@ metadata = {
     SALINITY: {
         'long_name': "Salinity",
         'coverage_content_type': 'physicalMeasurement',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'short_name': 'SAL',
-        'measurement_type': 'Derived', 
+        'measurement_type': 'Derived',
     },
     TURBIDITY: {
         'long_name': "Turbidity",
@@ -85,8 +86,23 @@ metadata = {
     }, 
     OXYGEN: {
         'long_name': "Oxygen",
+        'units': 'umol kg-1',
         'coverage_content_type': 'physicalMeasurement',
-        'standard_name': 'volume_fraction_of_oxygen_in_sea_water'
+        'standard_name': 'moles_of_oxygen_per_unit_mass_in_sea_water',
+    },
+    FLUORESCENCE: {
+        'long_name': "Fluorescence",
+        'units': 'mg m-3',
+        'coverage_content_type': 'physicalMeasurement',
+        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
+        'measurement_type': 'Measured',
+    },
+    PAR: {
+        'long_name': "Photosynthetically Active Radiation",
+        'units': 'umol m-2 s-1',
+        'coverage_content_type': 'physicalMeasurement',
+        'standard_name': 'downwelling_photosynthetic_photon_flux_in_sea_water',
+        'measurement_type': 'Measured',
     },
     DEPTH: {
         'long_name': 'Depth',
@@ -306,6 +322,9 @@ default_mappings = {
     ],
     ALTIMETER: [
         'altM', 'altimeter'
+    ],
+    PAR: [
+        'par', 'PAR',
     ],
     DENSITY: [ 
         'sigma-t00', 'sigma-t11',

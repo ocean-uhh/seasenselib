@@ -6,12 +6,18 @@ import numpy as np
 import pytest
 import xarray as xr
 
+gsw = pytest.importorskip("gsw")
+
 from seasenselib.readers.sbe_hex_reader import (
     SbeHexReader,
     _read_hex_file_fast,
     _select_sbe37_instrument_type,
+    detect_sbe_hex_family,
     detect_sbe_hex_layout,
     parse_hex_header_sensors,
+    parse_hex_header_sbe911,
+    read_xmlcon,
+    sbe911_hex_reader,
 )
 
 _FIXTURES = Path(__file__).parent / "fixtures"
@@ -62,6 +68,12 @@ class TestSbeHexReaderConductivityUnits:
         )
         assert "conductivity_normalised_from" not in ds["conductivity"].attrs
 
+_FIXTURE_DIR = "tests/readers/fixtures"
+_MIXSED2_HEX = f"{_FIXTURE_DIR}/MIXSED2_000.hex"
+_MIXSED2_XMLCON = f"{_FIXTURE_DIR}/MIXSED2_000.xmlcon"
+_MSM_HEX = f"{_FIXTURE_DIR}/msm_142_1_056_short.hex"
+_MSM_XMLCON = f"{_FIXTURE_DIR}/MSM_142_1_056.XMLCON"
+
 
 def _seabird_instrument_data():
     return pytest.importorskip("seabirdscientific.instrument_data")
@@ -69,7 +81,7 @@ def _seabird_instrument_data():
 
 def test_sbe_hex_reader_exposes_format_metadata():
     assert SbeHexReader.format_key() == "sbe-hex"
-    assert SbeHexReader.format_name() == "SeaBird SBE37 HEX"
+    assert SbeHexReader.format_name() == "SeaBird SBE HEX"
     assert SbeHexReader.file_extension() == ".hex"
     assert SbeHexReader._get_valid_extensions() == (".hex",)
 
@@ -474,8 +486,8 @@ def test_sbe_hex_reader_can_create_pressure_from_reference_pressure(tmp_path):
         with_reference_pressure["press"].attrs["sensor_source_basis"]
         == "sbe_header_reference_pressure"
     )
-    assert abs(float(with_reference_pressure["cond"].values[0]) - 34.245203) < 1e-6
-    assert abs(float(without_reference_pressure["cond"].values[0]) - 34.245203) > 1e-3
+    assert abs(float(with_reference_pressure["cond"].values[0]) - 3.424520) < 1e-5
+    assert abs(float(without_reference_pressure["cond"].values[0]) - 3.424520) > 1e-4
 
 
 def test_read_hex_file_fast_uses_seabird_line_decoder(tmp_path):
@@ -532,3 +544,336 @@ def test_read_hex_file_fast_validates_detected_layout_length(tmp_path):
             enabled_sensors=[id.Sensors.Temperature, id.Sensors.Conductivity],
             layout=layout,
         )
+
+
+# ---------------------------------------------------------------------------
+# SBE 911+ tests
+# ---------------------------------------------------------------------------
+
+
+def test_detect_sbe_hex_family_returns_sbe37_for_microcat(tmp_path):
+    hex_file = tmp_path / "micro.hex"
+    hex_file.write_text("* Sea-Bird SBE37SM-RS232 Data File:\n000000\n")
+    assert detect_sbe_hex_family(hex_file) == "sbe37"
+
+
+def test_detect_sbe_hex_family_returns_sbe911plus_for_sbe9_header(tmp_path):
+    hex_file = tmp_path / "cast.hex"
+    hex_file.write_text("* Sea-Bird SBE 9 Data File:\n000000\n")
+    assert detect_sbe_hex_family(hex_file) == "sbe911plus"
+
+
+def test_detect_sbe_hex_family_on_real_mixsed2_fixture():
+    assert detect_sbe_hex_family(_MIXSED2_HEX) == "sbe911plus"
+
+
+def test_parse_hex_header_sbe911_extracts_core_fields():
+    info = parse_hex_header_sbe911(_MIXSED2_HEX)
+    assert info["bytes_per_scan"] == 37
+    assert info["voltage_words"] == 4
+    assert info["scans_averaged"] == 1
+    assert abs(info["sample_interval"] - 1 / 24) < 1e-9
+    assert info["store_lat_lon"] is True
+
+
+def test_parse_hex_header_sbe911_parses_nmea_coordinates():
+    info = parse_hex_header_sbe911(_MIXSED2_HEX)
+    # "65 13.78 N" → 65 + 13.78/60
+    assert abs(info["nmea_latitude"] - (65 + 13.78 / 60)) < 1e-4
+    # "024 39.57 W" → -(24 + 39.57/60)
+    assert abs(info["nmea_longitude"] - (-(24 + 39.57 / 60))) < 1e-4
+
+
+def test_parse_hex_header_sbe911_user_header_station_and_depth():
+    info = parse_hex_header_sbe911(_MIXSED2_HEX)
+    user = info["user_header"]
+    assert user.get("Station") == "st_000"
+    assert user.get("Depth") == 84
+
+
+def test_parse_hex_header_sbe911_handles_latin1_ship_name(tmp_path):
+    # Ship name with latin-1 byte (0xF3 = ó); should not raise
+    header_bytes = (
+        "* Sea-Bird SBE 9 Data File:\n"
+        "* Number of Bytes Per Scan = 37\n"
+        "* Number of Voltage Words = 4\n"
+        "* Number of Scans Averaged by the Deck Unit = 1\n"
+        "** Ship: Od\xf3n de Buen\n"
+        "*END*\n"
+    ).encode("latin-1")
+    hex_file = tmp_path / "latin.hex"
+    hex_file.write_bytes(header_bytes)
+    info = parse_hex_header_sbe911(hex_file)
+    assert info["voltage_words"] == 4
+    assert "Ship" in info["user_header"]
+
+
+def test_detect_sbe911plus_layout_raises_on_bytes_per_scan_mismatch():
+    # bytes_per_scan=38 → expects 76 hex chars, but 5+4 volt+nmea+status = 74 chars
+    with pytest.raises(ValueError, match="Bytes Per Scan"):
+        detect_sbe_hex_layout(
+            {
+                "bytes_per_scan": 38,  # wrong: correct value is 37
+                "voltage_words": 4,
+                "store_lat_lon": True,
+            },
+            [],
+            None,
+            family="sbe911plus",
+        )
+
+
+def test_read_xmlcon_primary_temperature_sensor():
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    t1 = cm.sensors[("frequency", 0)]
+    assert t1.sensor_type == "temperature"
+    assert t1.role == "primary"
+    assert t1.serial_number == "4798"
+    coefs = t1.coefficients
+    # 911+ temperature uses frequency-based calibration (g/h/i/j/f0)
+    assert hasattr(coefs, "g") and hasattr(coefs, "h") and hasattr(coefs, "f0")
+
+
+def test_read_xmlcon_dual_tc_have_different_coefficients():
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    assert cm.sensors[("frequency", 0)].coefficients != cm.sensors[("frequency", 3)].coefficients
+    assert cm.sensors[("frequency", 1)].coefficients != cm.sensors[("frequency", 4)].coefficients
+
+
+def test_read_xmlcon_not_in_use_sensors_excluded():
+    """NotInUse sensors are skipped and do not appear in the sensor map."""
+    cm = read_xmlcon(_MIXSED2_XMLCON)
+    assert all(info.sensor_type != "not_in_use" for info in cm.sensors.values())
+
+
+def test_read_xmlcon_unknown_sensor_raises(tmp_path):
+    xmlcon = tmp_path / "bad.xmlcon"
+    xmlcon.write_text(
+        "\n".join([
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            "<SBE_InstrumentConfiguration>",
+            "  <Instrument>",
+            '    <SensorArray Size="1">',
+            '      <Sensor index="0" SensorID="99">',
+            "        <UnknownAlienSensor SensorID=\"99\">",
+            "          <SerialNumber>999</SerialNumber>",
+            "        </UnknownAlienSensor>",
+            "      </Sensor>",
+            "    </SensorArray>",
+            "  </Instrument>",
+            "</SBE_InstrumentConfiguration>",
+        ])
+    )
+    with pytest.raises(ValueError):
+        read_xmlcon(xmlcon)
+
+
+def test_sbe911_hex_reader_integration_mixsed2():
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds = SbeHexReader(_MIXSED2_HEX, perform_default_postprocessing=False).data
+
+    # Shape and time coordinate
+    assert len(ds.time) == 500
+    assert all(
+        ds.time.values[i] < ds.time.values[i + 1] for i in range(len(ds.time) - 1)
+    ), "time coordinate is not monotonically increasing"
+
+    # Required variables present (raw names, no postprocessing pipeline)
+    for var in ("temp", "cond", "press", "temp2", "cond2", "oxygen", "fluorescence", "turbidity"):
+        assert var in ds, f"expected variable '{var}' missing from dataset"
+
+    # Numerical sanity: first scan, from smoke test
+    assert abs(float(ds["temp"][0]) - 11.04) < 0.05
+    assert abs(float(ds["cond"][0]) - 38.64) < 0.10
+    assert abs(float(ds["press"][0]) - 6.09) < 0.10
+
+    # Derived salinity should be near 34.5 PSU (cond is mS/cm)
+    sp = gsw.SP_from_C(
+        float(ds["cond"][0]),
+        float(ds["temp"][0]),
+        float(ds["press"][0]),
+    )
+    assert abs(sp - 34.56) < 0.20, f"salinity {sp:.3f} PSU outside expected range"
+
+    # sample_interval attribute recorded
+    assert "sample_interval" in ds.attrs
+
+
+_M104_HEX = f"{_FIXTURE_DIR}/M104_154_01_short.hex"
+_M104_XMLCON = f"{_FIXTURE_DIR}/M104_154_01.XMLCON"
+_M84_HEX = f"{_FIXTURE_DIR}/m84_3_287_short.hex"
+_M84_XMLCON = f"{_FIXTURE_DIR}/M84_3_287.XMLCON"
+_MSM72_HEX = f"{_FIXTURE_DIR}/MSM72_002_2_short.hex"
+_MSM72_XMLCON = f"{_FIXTURE_DIR}/MSM72_002_2.XMLCON"
+
+
+def test_sbe911_hex_reader_integration_m104_par_and_spar():
+    """M104: Seasave 7.22.4, PAR_BiosphericalLicorChelseaSensor on volt channel + SurfaceParVoltageAdded."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds = sbe911_hex_reader(_M104_HEX, xmlcon_path=_M104_XMLCON)
+
+    assert len(ds.time) == 527
+
+    for var in ("temp", "cond", "press", "temp2", "cond2",
+                "oxygen", "oxygen_ml_l", "fluorescence", "altimeter", "par", "spar"):
+        assert var in ds, f"expected variable '{var}' missing from dataset"
+
+    # PAR is computed from logarithmic formula; values near zero are expected
+    # for the start of a short cast (sensor in darkness).
+    import numpy as np
+    assert bool(np.all(np.isfinite(ds["par"].values)))
+    assert bool(np.all(np.isfinite(ds["spar"].values)))
+
+    # SPAR is biospherical linear: spar = volts * conversion_factor
+    assert float(ds["spar"].values[0]) >= 0.0
+
+
+def test_read_xmlcon_m104_par_coefficients():
+    """PAR calibration coefficients are correctly mapped from M104 XMLCON.
+
+    The formula is PAR = Multiplier * 1e9 * 10^(V/M) / CalibrationConstant + Offset.
+    Mapped to PARCoefficients: im = 1e9 * Multiplier / CC, a0 = 0, a1 = M.
+    """
+    cm = read_xmlcon(_M104_XMLCON)
+    par_info = cm.sensors[("volt", 6)]
+    assert par_info.sensor_type == "par"
+    coefs = par_info.coefficients
+    # im should be 1e9 * 1.0 / 18340000000 ≈ 0.05451
+    assert abs(coefs.im - 1e9 / 18340000000.0) < 1e-8
+    assert coefs.a0 == 0.0
+    assert coefs.a1 == 1.0
+    # Offset stored separately on SensorInfo
+    assert abs(par_info.offset - (-0.09468947)) < 1e-6
+
+
+def test_sbe911_hex_reader_integration_m84_old_xmlcon():
+    """m84: Seasave 7.20c, old conductivity XMLCON (no equation=1 wrapper),
+    FluoroSeapoint sensor, user-polynomial DO/Temperature channels, SurfacePAR."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds = sbe911_hex_reader(_M84_HEX, xmlcon_path=_M84_XMLCON)
+
+    assert len(ds.time) == 220
+
+    for var in ("temp", "cond", "press", "temp2", "cond2",
+                "oxygen", "oxygen_ml_l", "fluorescence", "altimeter",
+                "do", "temperature", "spar"):
+        assert var in ds, f"expected variable '{var}' missing from dataset"
+
+    import numpy as np
+    assert bool(np.all(np.isfinite(ds["spar"].values)))
+
+
+def test_read_xmlcon_m84_old_conductivity():
+    """Old-format XMLCON (Seasave 7.20c) parses conductivity without equation=1 wrapper."""
+    cm = read_xmlcon(_M84_XMLCON)
+    cond_info = cm.sensors[("frequency", 1)]
+    assert cond_info.sensor_type == "conductivity"
+    assert cond_info.role == "primary"
+    coefs = cond_info.coefficients
+    # Old XMLCON has G/H/I/J directly under the sensor element; check that we got values
+    assert coefs.g != 0.0 or coefs.h != 0.0  # at least one non-zero coefficient
+
+
+def test_sbe911_hex_reader_integration_msm72_volt_suppressed():
+    """MSM72: Seasave 7.22, VoltageWordsSuppressed=1 (6 active volt channels),
+    FluoroSeapoint sensor."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds = sbe911_hex_reader(_MSM72_HEX, xmlcon_path=_MSM72_XMLCON)
+
+    assert len(ds.time) == 504
+
+    for var in ("temp", "cond", "press", "temp2", "cond2",
+                "oxygen", "oxygen_ml_l", "fluorescence", "altimeter"):
+        assert var in ds, f"expected variable '{var}' missing from dataset"
+
+    # VoltSuppressed=1 → 6 active channels; SPAR suppressed, so no 'spar'
+    assert "spar" not in ds
+
+
+def test_read_xmlcon_msm72_volt_suppressed_channels():
+    """VoltageWordsSuppressed=1 → no channels at index 6 or 7 in sensor map."""
+    cm = read_xmlcon(_MSM72_XMLCON)
+    assert cm.meta["voltage_words_suppressed"] == 1
+    # All sensor keys with volt channels must have index 0-5 (active range)
+    volt_indices = [ch for (kind, ch) in cm.sensors if kind == "volt"]
+    assert all(i < 6 for i in volt_indices), (
+        f"Suppressed volt channel found in sensor map: {[i for i in volt_indices if i >= 6]}"
+    )
+    # Channels 6-7 are suppressed — not in the sensor map
+    assert ("volt", 6) not in cm.sensors
+    assert ("volt", 7) not in cm.sensors
+
+
+# ---------------------------------------------------------------------------
+# MSM 142-1-056 fixture tests  (NmeaTimeAdded=1, ScanTimeAdded=1, dual O2)
+# ---------------------------------------------------------------------------
+
+def test_detect_sbe_hex_family_on_real_msm_fixture():
+    assert detect_sbe_hex_family(_MSM_HEX) == "sbe911plus"
+
+
+def test_parse_hex_header_msm_store_system_time():
+    info = parse_hex_header_sbe911(_MSM_HEX)
+    assert info["bytes_per_scan"] == 45
+    assert info["voltage_words"] == 4
+    assert info["store_lat_lon"] is True
+    assert info["store_system_time"] is True, (
+        "'Append System Time to Every Scan' bare flag not parsed from MSM header"
+    )
+
+
+def test_read_xmlcon_msm_timing_flags():
+    cm = read_xmlcon(_MSM_XMLCON)
+    assert cm.meta["scan_time_added"] is True, "ScanTimeAdded=1 not read from XMLCON"
+    assert cm.meta["nmea_time_added"] is True, "NmeaTimeAdded=1 not read from XMLCON"
+
+
+def test_read_xmlcon_msm_dual_oxygen():
+    cm = read_xmlcon(_MSM_XMLCON)
+    oxy_entries = {k: v for k, v in cm.sensors.items() if v.sensor_type == "oxygen"}
+    assert len(oxy_entries) == 2, f"Expected 2 oxygen entries, got {len(oxy_entries)}"
+    roles = {v.role for v in oxy_entries.values()}
+    assert roles == {"primary", "secondary"}, f"Unexpected roles: {roles}"
+    serials = {v.serial_number for v in oxy_entries.values()}
+    assert len(serials) == 2, "Primary and secondary oxygen should have different serials"
+    assert None not in serials, "Oxygen sensor serial is missing"
+
+
+def test_sbe911_hex_reader_integration_msm():
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ds = sbe911_hex_reader(_MSM_HEX, xmlcon_path=_MSM_XMLCON)
+
+    # Shape and time coordinate
+    assert len(ds.time) == 559
+    assert all(
+        ds.time.values[i] < ds.time.values[i + 1] for i in range(len(ds.time) - 1)
+    ), "time coordinate is not monotonically increasing"
+
+    # Dual oxygen and other expected variables
+    for var in ("temp", "cond", "press", "temp2", "cond2",
+                "oxygen", "oxygen2", "oxygen_ml_l", "oxygen2_ml_l",
+                "fluorescence", "turbidity", "altimeter"):
+        assert var in ds, f"expected variable '{var}' missing from dataset"
+
+    # oxygen and oxygen2 use different calibration coefficients so their values differ
+    import numpy as np
+    assert not np.allclose(ds["oxygen"].values, ds["oxygen2"].values), (
+        "oxygen and oxygen2 should differ (different sensors)"
+    )
+
+    # Both oxygen arrays are finite (no NaN from failed conversion)
+    assert bool(np.all(np.isfinite(ds["oxygen"].values)))
+    assert bool(np.all(np.isfinite(ds["oxygen2"].values)))
+
+    # sample_interval attribute recorded
+    assert "sample_interval" in ds.attrs
