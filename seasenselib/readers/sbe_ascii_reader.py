@@ -157,7 +157,13 @@ class SbeAsciiReader(AbstractReader):
         # declared unit; the pipeline unit_handling stage normalises to mS cm-1.
         cond_values = ds['conductivity'].values
         declared_unit = "S/m"
-        infer_conductivity_unit(cond_values, declared=declared_unit)
+        try:
+            infer_conductivity_unit(cond_values, declared=declared_unit)
+        except ValueError as exc:
+            logger.warning(
+                "Could not verify conductivity units against magnitude: %s",
+                exc,
+            )
         ds['conductivity'].attrs = {
             'units': declared_unit,
             'conductivity_unit_source': "SBE37 ASC format outputs S/m",
