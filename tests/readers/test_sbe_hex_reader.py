@@ -28,28 +28,27 @@ _HEX_FIXTURE = _FIXTURES / "7508_caldip_short.hex"
 class TestSbeHexReaderConductivityUnits:
     """Integration tests against the real 7508 SBE37 fixture.
 
-    The seabirdscientific library converts conductivity to mS/cm internally.
-    The pipeline unit_handling stage relabels mS/cm → mS cm-1 without touching values.
-    ConductivityNormalizer should be a no-op (already in mS cm-1 after normalizer relabel).
+    The SBE37 hex reader exposes conductivity in S/m before pipeline processing.
+    The pipeline conductivity normalizer converts S/m → mS cm-1.
     """
 
     @staticmethod
     def _require_seabird():
         pytest.importorskip("seabirdscientific.instrument_data")
 
-    def test_raw_conductivity_unit_is_mscm_slash(self):
-        """Reader assigns mS/cm (slash notation) before pipeline."""
+    def test_raw_conductivity_unit_is_sm(self):
+        """Reader assigns S/m before pipeline."""
         self._require_seabird()
         raw_ds = SbeHexReader(str(_HEX_FIXTURE), use_steps=False).data
         assert "cond" in raw_ds.data_vars
-        assert raw_ds["cond"].attrs.get("units") == "mS/cm"
+        assert raw_ds["cond"].attrs.get("units") == "S/m"
 
-    def test_raw_conductivity_values_in_mscm_range(self):
-        """Values should be ~34 (mS/cm), not ~3.4 (S/m)."""
+    def test_raw_conductivity_values_in_sm_range(self):
+        """Values should be in S/m range (~3–5), not mS/cm range (~30–50)."""
         self._require_seabird()
         raw_ds = SbeHexReader(str(_HEX_FIXTURE), use_steps=False).data
         median = float(np.median(raw_ds["cond"].values))
-        assert 20.0 < median < 60.0, f"Expected mS/cm range (20–60), got {median:.3f}"
+        assert 0.5 < median < 10.0, f"Expected S/m range (0.5–10), got {median:.3f}"
 
     def test_pipeline_relabels_unit_to_cf_space(self):
         """After pipeline, unit is mS cm-1 (CF space notation)."""
@@ -57,16 +56,15 @@ class TestSbeHexReaderConductivityUnits:
         ds = SbeHexReader(str(_HEX_FIXTURE)).data
         assert ds["conductivity"].attrs.get("units") == "mS cm-1"
 
-    def test_pipeline_does_not_convert_values(self):
-        """Values must stay in mS/cm range — no ×10 conversion should occur."""
+    def test_pipeline_converts_values_to_mscm(self):
+        """Pipeline converts S/m values to mS cm-1 by ×10."""
         self._require_seabird()
         ds = SbeHexReader(str(_HEX_FIXTURE)).data
         median = float(np.median(ds["conductivity"].values))
         assert 20.0 < median < 60.0, (
-            f"Expected conductivity ~34 mS cm-1 after pipeline, got {median:.3f}. "
-            "A value > 60 would mean double-conversion happened."
+            f"Expected conductivity in mS cm-1 range (20–60) after pipeline, got {median:.3f}."
         )
-        assert "conductivity_normalised_from" not in ds["conductivity"].attrs
+        assert ds["conductivity"].attrs.get("conductivity_normalised_from") in {"S/m", "S m-1"}
 
 _FIXTURE_DIR = "tests/readers/fixtures"
 _MIXSED2_HEX = f"{_FIXTURE_DIR}/MIXSED2_000.hex"
