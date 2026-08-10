@@ -20,6 +20,7 @@
   "north_amplitude": "North Amplitude",
   "north_velocity": "Northward velocity (m/s)",
   "oxygen": "Oxygen",
+  "par": "Photosynthetically Active Radiation (umol m-2 s-1)",
   "pitch": "Pitch angle (degrees)",
   "potential_temperature": "Potential Temperature \u03b8 (degC)",
   "power_supply_input": "Power supply input voltage (V)",

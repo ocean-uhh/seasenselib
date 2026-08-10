@@ -5,6 +5,12 @@
     "CTDALTIMETER",
     "ctd_altimeter"
   ],
+  "par": [
+    "par",
+    "PAR",
+    "ctd_fluor_par",
+    "CTDPAR"
+  ],
   "battery_voltage": [
     "Vbatt",
     "BATTV",
