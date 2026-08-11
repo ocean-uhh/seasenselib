@@ -17,6 +17,7 @@ import numpy as np
 import xarray as xr
 
 from seasenselib.readers.base import AbstractReader
+from seasenselib.readers.utils.conductivity_units import infer_conductivity_unit
 import seasenselib.parameters as params
 
 logger = logging.getLogger(__name__)
@@ -639,6 +640,32 @@ class SbeCnvReader(AbstractReader):
         
         return ds
 
+    def __verify_conductivity_units(self, ds):
+        """Verify declared conductivity units against data magnitude; warn on mismatch.
+
+        Does not convert values — the pipeline unit_handling stage normalises
+        conductivity to mS cm-1 before derivation.
+        """
+        _COND_CHANNEL_PATTERNS = frozenset({
+            'c0mS/cm', 'c0S/m', 'c1mS/cm', 'c1S/m',
+            'cond0S/m', 'cond1S/m', 'cond0mS/cm', 'cond1mS/cm',
+        })
+        for var_name in list(ds.data_vars):
+            original_name = ds[var_name].attrs.get('cnv_original_name', var_name)
+            if original_name not in _COND_CHANNEL_PATTERNS:
+                continue
+            declared = ds[var_name].attrs.get('units', '')
+            if not declared:
+                continue
+            values = ds[var_name].values
+            try:
+                infer_conductivity_unit(values, declared=declared)
+            except ValueError as exc:
+                logger.warning(
+                    "Could not verify conductivity units for '%s': %s", var_name, exc
+                )
+        return ds
+
     def __assign_cnv_global_attributes(self, ds, cnv):
         """Assign CNV-specific global attributes to the xarray Dataset.
         
@@ -1081,6 +1108,9 @@ class SbeCnvReader(AbstractReader):
 
         # Assign CNV-specific metadata (preserves CNV units, adds original names/labels)
         ds = self.__assign_cnv_metadata(ds, xarray_labels, xarray_units, channel_names, cnv)
+
+        # Verify declared conductivity units against magnitude (conversion in pipeline)
+        ds = self.__verify_conductivity_units(ds)
 
         # Depth derivation is handled by the pipeline derivation stage.
 

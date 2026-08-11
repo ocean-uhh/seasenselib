@@ -136,4 +136,33 @@ class DerivationStage(Stage):
             )
 
     def process(self, context: StageContext) -> StageContext:
+        self._warn_if_conductivity_in_sm(context.dataset)
         return self._derivation.process(context)
+
+    @staticmethod
+    def _warn_if_conductivity_in_sm(ds) -> None:
+        """Warn if a conductivity variable arrives with S/m units.
+
+        The conductivity_normalize handler in unit_handling should have
+        converted it to mS cm-1 before this stage runs.  If it hasn't,
+        any future salinity-from-conductivity derivation would produce
+        values that are wrong by a factor of 10.
+        """
+        import warnings
+        import seasenselib.parameters as params
+        _SM_UNITS = frozenset({"S/m", "S m-1"})
+        cond_key = params.CONDUCTIVITY
+        for var_name in ds.data_vars:
+            if var_name == cond_key or (
+                var_name.startswith(cond_key + "_") and var_name[len(cond_key) + 1:].isdigit()
+            ):
+                units = ds[var_name].attrs.get("units", "")
+                if units in _SM_UNITS:
+                    warnings.warn(
+                        f"Variable '{var_name}' has units '{units}' at the derivation stage. "
+                        "Conductivity should be in mS cm-1 before derivation. "
+                        "Check that the 'conductivity_normalize' handler is enabled "
+                        "in the unit_handling stage.",
+                        UserWarning,
+                        stacklevel=4,
+                    )

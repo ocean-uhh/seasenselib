@@ -17,6 +17,7 @@
       "config": {
         "handlers": [
           "normalize",
+          "conductivity_normalize",
           "convert"
         ]
       }

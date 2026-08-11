@@ -103,3 +103,9 @@ where = ["."]
 [tool.setuptools.package-data]
 "seasenselib.knowledge" = ["**/*.json"]
 "seasenselib.config.pipeline" = ["*.json"]
+
+[tool.coverage.run]
+source = ["seasenselib"]
+
+[tool.coverage.report]
+omit = ["tests/*"]

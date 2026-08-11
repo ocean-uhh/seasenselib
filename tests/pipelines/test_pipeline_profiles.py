@@ -8,11 +8,14 @@ def test_pipeline_profiles_have_descriptions():
         assert description, f"Profile '{name}' missing description"
 
 
-def test_default_profile_unit_handling_is_normalize_only():
+def test_default_profile_unit_handling_handlers():
     cfg = PipelineConfig.from_resource("default")
     stage = next((s for s in cfg.pipeline if s.name == "unit_handling"), None)
     assert stage is not None
-    assert stage.config.get("handlers") == ["normalize"]
+    handlers = stage.config.get("handlers", [])
+    assert "normalize" in handlers
+    assert "conductivity_normalize" in handlers
+    assert "convert" not in handlers
 
 
 def test_default_profile_includes_reader_transformation_after_unit_handling():

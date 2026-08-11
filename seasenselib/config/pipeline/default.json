@@ -16,7 +16,8 @@
       "name": "unit_handling",
       "config": {
         "handlers": [
-          "normalize"
+          "normalize",
+          "conductivity_normalize"
         ]
       }
     },

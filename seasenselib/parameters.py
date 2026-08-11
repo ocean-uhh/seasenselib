@@ -43,9 +43,12 @@ PAR = 'par'
 
 # Meta data should use standardized values from https://cfconventions.org/
 metadata = {
+    # Units are degree_C, assumed ITS-90 for all modern instruments.
+    # A variable named temperature_68 indicates IPTS-68 scale and must be handled separately.
+    # See https://exchange-format.readthedocs.io/en/latest/parameters.html#ctdtmp
     TEMPERATURE: {
         'long_name': "Temperature",
-        'units': "ITS-90, deg C",
+        'units': "degree_C",
         'coverage_content_type': 'physicalMeasurement',
         'standard_name': 'sea_water_temperature',
         'short_name': "WT",
@@ -62,7 +65,7 @@ metadata = {
     CONDUCTIVITY: {
         'long_name': "Conductivity",
         'coverage_content_type': 'physicalMeasurement',
-        'units': "S m-1",
+        'units': "mS cm-1",
         'standard_name': 'sea_water_electrical_conductivity',
         'short_name': "COND",
         'measurement_type': "Measured",
@@ -117,13 +120,13 @@ metadata = {
     },
     POTENTIAL_TEMPERATURE: {
         'long_name': 'Potential Temperature θ',
-        'units': 'degC',
+        'units': 'degree_C',
         'standard_name': 'sea_water_potential_temperature',
         'measurement_type': 'Derived',
     },
     CONSERVATIVE_TEMPERATURE: {
         'long_name': 'Conservative Temperature',
-        'units': 'degC',
+        'units': 'degree_C',
         'standard_name': 'sea_water_conservative_temperature',
         'measurement_type': 'Derived',
     },

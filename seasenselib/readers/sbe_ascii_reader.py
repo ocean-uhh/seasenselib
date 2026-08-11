@@ -10,6 +10,7 @@ import pandas as pd
 import xarray as xr
 
 from seasenselib.readers.base import AbstractReader
+from seasenselib.readers.utils.conductivity_units import infer_conductivity_unit
 import seasenselib.parameters as params
 
 logger = logging.getLogger(__name__)
@@ -152,9 +153,24 @@ class SbeAsciiReader(AbstractReader):
         """
         ds = xr.Dataset.from_dataframe(df)
 
+        # SBE37 ASCII output is S/m for conductivity. Verify magnitude matches
+        # declared unit; the pipeline unit_handling stage normalises to mS cm-1.
+        cond_values = ds['conductivity'].values
+        declared_unit = "S/m"
+        try:
+            infer_conductivity_unit(cond_values, declared=declared_unit)
+        except ValueError as exc:
+            logger.warning(
+                "Could not verify conductivity units against magnitude: %s",
+                exc,
+            )
+        ds['conductivity'].attrs = {
+            'units': declared_unit,
+            'conductivity_unit_source': "SBE37 ASC format outputs S/m",
+        }
+
         # Add minimal units from raw data (stages will enrich with CF metadata)
-        ds['temperature'].attrs = {'units': '°C'}
-        ds['conductivity'].attrs = {'units': 'S/m'}
+        ds['temperature'].attrs = {'units': 'degree_C'}
         if 'pressure' in ds.data_vars:
             ds['pressure'].attrs = {'units': 'dbar'}
 

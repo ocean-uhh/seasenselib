@@ -17,9 +17,12 @@ DatasetBuilder
 from seasenselib.readers.utils.time_converter import TimeConverter
 from seasenselib.readers.utils.dataset_processor import DatasetProcessor
 from seasenselib.readers.utils.dataset_builder import DatasetBuilder
+from seasenselib.readers.utils.conductivity_units import infer_conductivity_unit, to_mS_cm
 
 __all__ = [
     'TimeConverter',
-    'DatasetProcessor', 
+    'DatasetProcessor',
     'DatasetBuilder',
+    'infer_conductivity_unit',
+    'to_mS_cm',
 ]
