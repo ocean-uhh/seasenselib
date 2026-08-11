@@ -110,6 +110,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.utils.conductivity_units</span><span class="w"> </span><span class="kn">import</span> <span class="n">infer_conductivity_unit</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -737,6 +738,32 @@
         
         <span class="k">return</span> <span class="n">ds</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">__verify_conductivity_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify declared conductivity units against data magnitude; warn on mismatch.</span>
+
+<span class="sd">        Does not convert values — the pipeline unit_handling stage normalises</span>
+<span class="sd">        conductivity to mS cm-1 before derivation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_COND_CHANNEL_PATTERNS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+            <span class="s1">&#39;c0mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;c0S/m&#39;</span><span class="p">,</span> <span class="s1">&#39;c1mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;c1S/m&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cond0S/m&#39;</span><span class="p">,</span> <span class="s1">&#39;cond1S/m&#39;</span><span class="p">,</span> <span class="s1">&#39;cond0mS/cm&#39;</span><span class="p">,</span> <span class="s1">&#39;cond1mS/cm&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+            <span class="n">original_name</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cnv_original_name&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_COND_CHANNEL_PATTERNS</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">declared</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">declared</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">infer_conductivity_unit</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">declared</span><span class="o">=</span><span class="n">declared</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Could not verify conductivity units for &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">exc</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">__assign_cnv_global_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">cnv</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign CNV-specific global attributes to the xarray Dataset.</span>
 <span class="sd">        </span>
@@ -1179,6 +1206,9 @@
 
         <span class="c1"># Assign CNV-specific metadata (preserves CNV units, adds original names/labels)</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__assign_cnv_metadata</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">xarray_labels</span><span class="p">,</span> <span class="n">xarray_units</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">,</span> <span class="n">cnv</span><span class="p">)</span>
+
+        <span class="c1"># Verify declared conductivity units against magnitude (conversion in pipeline)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__verify_conductivity_units</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Depth derivation is handled by the pipeline derivation stage.</span>
 

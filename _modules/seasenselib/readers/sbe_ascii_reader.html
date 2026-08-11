@@ -103,6 +103,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seasenselib.readers.utils.conductivity_units</span><span class="w"> </span><span class="kn">import</span> <span class="n">infer_conductivity_unit</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib.parameters</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">params</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -247,9 +248,24 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
+        <span class="c1"># SBE37 ASCII output is S/m for conductivity. Verify magnitude matches</span>
+        <span class="c1"># declared unit; the pipeline unit_handling stage normalises to mS cm-1.</span>
+        <span class="n">cond_values</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;conductivity&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">declared_unit</span> <span class="o">=</span> <span class="s2">&quot;S/m&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">infer_conductivity_unit</span><span class="p">(</span><span class="n">cond_values</span><span class="p">,</span> <span class="n">declared</span><span class="o">=</span><span class="n">declared_unit</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Could not verify conductivity units against magnitude: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">exc</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;conductivity&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">declared_unit</span><span class="p">,</span>
+            <span class="s1">&#39;conductivity_unit_source&#39;</span><span class="p">:</span> <span class="s2">&quot;SBE37 ASC format outputs S/m&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
         <span class="c1"># Add minimal units from raw data (stages will enrich with CF metadata)</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;°C&#39;</span><span class="p">}</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;conductivity&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;S/m&#39;</span><span class="p">}</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;degree_C&#39;</span><span class="p">}</span>
         <span class="k">if</span> <span class="s1">&#39;pressure&#39;</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
             <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="s1">&#39;dbar&#39;</span><span class="p">}</span>
 
