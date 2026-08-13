@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.core.io_manager &mdash; SeaSenseLib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SeaSenseLib
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">SeaSenseLib Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SeaSenseLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.core.io_manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.core.io_manager</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Data I/O management.</span>
+
+<span class="sd">This module provides a lightweight coordinator for data reading and writing operations.</span>
+<span class="sd">The actual work is delegated to specialized factories and autodiscovery.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.autodiscovery</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormatDetector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.factories</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReaderFactory</span><span class="p">,</span> <span class="n">WriterFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReaderError</span>
+
+
+<div class="viewcode-block" id="DataIOManager">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.DataIOManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataIOManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lightweight coordinator for data reading and writing operations.</span>
+<span class="sd">    </span>
+<span class="sd">    This class delegates the actual work to specialized factories while</span>
+<span class="sd">    providing a simple unified interface for CLI and API consumers.</span>
+<span class="sd">    </span>
+<span class="sd">    Architecture:</span>
+<span class="sd">    - FormatDetector: Detects file formats from extensions/hints</span>
+<span class="sd">    - ReaderFactory: Creates appropriate reader instances</span>
+<span class="sd">    - WriterFactory: Creates appropriate writer instances</span>
+<span class="sd">    - DataIOManager: Orchestrates the above components</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    format_detector : FormatDetector</span>
+<span class="sd">        Detects file formats</span>
+<span class="sd">    reader_factory : ReaderFactory</span>
+<span class="sd">        Creates reader instances</span>
+<span class="sd">    writer_factory : WriterFactory</span>
+<span class="sd">        Creates writer instances</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the I/O manager with its dependencies.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_detector</span> <span class="o">=</span> <span class="n">FormatDetector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader_factory</span> <span class="o">=</span> <span class="n">ReaderFactory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer_factory</span> <span class="o">=</span> <span class="n">WriterFactory</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataIOManager.read_data">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.DataIOManager.read_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">header_input_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read data from input file.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_file : str</span>
+<span class="sd">            Path to the input file</span>
+<span class="sd">        format_hint : str, optional</span>
+<span class="sd">            Format hint to override auto-detection</span>
+<span class="sd">        header_input_file : str, optional</span>
+<span class="sd">            Path to header file (required for some formats like Nortek ASCII)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Reader-specific parameters passed through to the reader.</span>
+<span class="sd">            Common parameters:</span>
+<span class="sd">            - sanitize_input : bool (for CNV files, default=True)</span>
+<span class="sd">            - encoding : str (for TOB files)</span>
+<span class="sd">            - mapping : dict (variable name mapping)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        xarray.Dataset</span>
+<span class="sd">            The loaded data</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReaderError</span>
+<span class="sd">            If reading fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate input file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ReaderError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input file does not exist: </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Detect format</span>
+        <span class="n">format_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_detector</span><span class="o">.</span><span class="n">detect_format</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">)</span>
+
+        <span class="n">return_metadata</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;return_metadata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        <span class="n">validate_reader_args</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_validate_reader_args&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+        <span class="c1"># Create reader and get data</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_factory</span><span class="o">.</span><span class="n">create_reader</span><span class="p">(</span>
+            <span class="n">format_key</span><span class="p">,</span>
+            <span class="n">input_file</span><span class="p">,</span>
+            <span class="n">header_input_file</span><span class="p">,</span>
+            <span class="n">validate_reader_args</span><span class="o">=</span><span class="n">validate_reader_args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="k">if</span> <span class="n">return_metadata</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="s1">&#39;processing_metadata&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">metadata</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="DataIOManager.write_data">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.DataIOManager.write_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">format_hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write data to output file.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        data : xarray.Dataset</span>
+<span class="sd">            The data to write</span>
+<span class="sd">        output_file : str</span>
+<span class="sd">            Path to the output file</span>
+<span class="sd">        format_hint : str, optional</span>
+<span class="sd">            Format hint to override auto-detection (e.g., &#39;netcdf&#39;, &#39;csv&#39;, &#39;excel&#39;)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Writer-specific parameters passed through to the writer.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        WriterError</span>
+<span class="sd">            If writing fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Detect and validate output format (returns format_key like &#39;netcdf&#39;)</span>
+        <span class="n">format_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_detector</span><span class="o">.</span><span class="n">validate_output_format</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">)</span>
+
+        <span class="c1"># Create output directory if needed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_output_directory</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+
+        <span class="c1"># Create writer and write data</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer_factory</span><span class="o">.</span><span class="n">create_writer</span><span class="p">(</span><span class="n">format_key</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_output_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create output directory if it doesn&#39;t exist.&quot;&quot;&quot;</span>
+        <span class="n">output_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_dir</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

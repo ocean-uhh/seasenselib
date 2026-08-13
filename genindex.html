@@ -46,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">SeaSenseLib Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -103,6 +104,7 @@
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -110,6 +112,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -149,18 +152,22 @@
 </li>
       <li><a href="api_reference.html#seasenselib.readers.AdcpMatlabRdadcpReader">AdcpMatlabRdadcpReader (class in seasenselib.readers)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.readers.AdcpMatlabUhhdsReader">AdcpMatlabUhhdsReader (class in seasenselib.readers)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.add_cli_arguments">add_cli_arguments() (seasenselib.plotters.base.AbstractPlotter class method)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.plotters.DepthProfilePlotter.add_cli_arguments">(seasenselib.plotters.DepthProfilePlotter class method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.add_cli_arguments">(seasenselib.plotters.TimeSeriesPlotter class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.plotters.TsDiagramPlotter.add_cli_arguments">(seasenselib.plotters.TsDiagramPlotter class method)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.add_stage">add_stage() (seasenselib.pipeline.PipelineConfig method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.assign_metadata">assign_metadata (seasenselib.readers.base.AbstractReader attribute)</a>
 </li>
   </ul></td>
@@ -169,10 +176,32 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.count_valid">count_valid() (seasenselib.processors.StatisticsProcessor method)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.Stage.can_process">can_process() (seasenselib.pipeline.Stage method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#seasenselib.pipeline.TransformationStage.can_process">(seasenselib.pipeline.TransformationStage method)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageConfig.config">config (seasenselib.pipeline.StageConfig attribute)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Stage.configure">configure() (seasenselib.pipeline.Stage method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#seasenselib.pipeline.TransformationStage.configure">(seasenselib.pipeline.TransformationStage method)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageContext.copy">copy() (seasenselib.pipeline.StageContext method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.count_valid">count_valid() (seasenselib.processors.StatisticsProcessor method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.create_pipeline">create_pipeline() (in module seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.ReaderFactory.create_reader">create_reader() (seasenselib.core.ReaderFactory method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.WriterFactory.create_writer">create_writer() (seasenselib.core.WriterFactory method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.readers.CsvReader">CsvReader (class in seasenselib.readers)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.writers.CsvWriter">CsvWriter (class in seasenselib.writers)</a>
@@ -198,7 +227,7 @@
 </li>
         <li><a href="api_reference.html#seasenselib.readers.RbrAsciiReader.data">(seasenselib.readers.RbrAsciiReader attribute)</a>
 </li>
-        <li><a href="api_reference.html#id38">(seasenselib.readers.RbrRskAutoReader attribute)</a>, <a href="api_reference.html#seasenselib.readers.RbrRskAutoReader.data">[1]</a>
+        <li><a href="api_reference.html#id112">(seasenselib.readers.RbrRskAutoReader attribute)</a>, <a href="api_reference.html#seasenselib.readers.RbrRskAutoReader.data">[1]</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.RbrRskLegacyReader.data">(seasenselib.readers.RbrRskLegacyReader attribute)</a>
 </li>
@@ -212,16 +241,48 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.core.DataIOManager">DataIOManager (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#id383">dataset (seasenselib.pipeline.StageContext attribute)</a>, <a href="api_reference.html#seasenselib.pipeline.StageContext.dataset">[1]</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.default_pipeline">default_pipeline() (in module seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.DEFAULT_STAGE_NAMES">DEFAULT_STAGE_NAMES (seasenselib.pipeline.StageRegistry attribute)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.default_stage_names">default_stage_names() (seasenselib.pipeline.StageRegistry class method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.DependencyError">DependencyError (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.plotters.DepthProfilePlotter">DepthProfilePlotter (class in seasenselib.plotters)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Pipeline.describe">describe() (seasenselib.pipeline.Pipeline method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.describe">(seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#seasenselib.core.FormatDetector.detect_format">detect_format() (seasenselib.core.FormatDetector static method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.disable_stage">disable_stage() (seasenselib.pipeline.PipelineConfig method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.encoding">encoding (seasenselib.readers.SeasunTobReader attribute)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.enable_stage">enable_stage() (seasenselib.pipeline.PipelineConfig method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageConfig.enabled">enabled (seasenselib.pipeline.StageConfig attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.encoding">encoding (seasenselib.readers.SeasunTobReader attribute)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.writers.ExcelWriter">ExcelWriter (class in seasenselib.writers)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Pipeline.execute">execute() (seasenselib.pipeline.Pipeline method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -269,6 +330,8 @@
         <li><a href="api_reference.html#seasenselib.readers.SbeAsciiReader.file_extension">(seasenselib.readers.SbeAsciiReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader.file_extension">(seasenselib.readers.SbeCnvReader class method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.readers.SbeHexReader.file_extension">(seasenselib.readers.SbeHexReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.file_extension">(seasenselib.readers.SeasunTobReader class method)</a>
 </li>
@@ -330,6 +393,8 @@
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader.format_key">(seasenselib.readers.SbeCnvReader class method)</a>
 </li>
+        <li><a href="api_reference.html#seasenselib.readers.SbeHexReader.format_key">(seasenselib.readers.SbeHexReader class method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.format_key">(seasenselib.readers.SeasunTobReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.writers.base.AbstractWriter.format_key">(seasenselib.writers.base.AbstractWriter static method)</a>
@@ -363,6 +428,8 @@
         <li><a href="api_reference.html#seasenselib.readers.SbeAsciiReader.format_mappings">(seasenselib.readers.SbeAsciiReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader.format_mappings">(seasenselib.readers.SbeCnvReader class method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.readers.SbeHexReader.format_mappings">(seasenselib.readers.SbeHexReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.format_mappings">(seasenselib.readers.SeasunTobReader class method)</a>
 </li>
@@ -408,6 +475,8 @@
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader.format_name">(seasenselib.readers.SbeCnvReader class method)</a>
 </li>
+        <li><a href="api_reference.html#seasenselib.readers.SbeHexReader.format_name">(seasenselib.readers.SbeHexReader class method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.format_name">(seasenselib.readers.SeasunTobReader class method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.writers.base.AbstractWriter.format_name">(seasenselib.writers.base.AbstractWriter static method)</a>
@@ -419,6 +488,18 @@
         <li><a href="api_reference.html#seasenselib.writers.NetCdfWriter.format_name">(seasenselib.writers.NetCdfWriter static method)</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#seasenselib.core.FormatDetectionError">FormatDetectionError (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.FormatDetector">FormatDetector (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.formats">formats() (in module seasenselib)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.from_dict">from_dict() (seasenselib.pipeline.PipelineConfig class method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.from_file">from_file() (seasenselib.pipeline.PipelineConfig class method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.from_resource">from_resource() (seasenselib.pipeline.PipelineConfig class method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -427,21 +508,39 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.get_all_statistics">get_all_statistics() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
-      <li><a href="api_reference.html#id7">get_data() (seasenselib.readers.base.AbstractReader method)</a>, <a href="api_reference.html#seasenselib.readers.base.AbstractReader.get_data">[1]</a>
+      <li><a href="api_reference.html#id81">get_data() (seasenselib.readers.base.AbstractReader method)</a>, <a href="api_reference.html#seasenselib.readers.base.AbstractReader.get_data">[1]</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.get_enabled_stages">get_enabled_stages() (seasenselib.pipeline.PipelineConfig method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.readers.CsvReader.get_file_extension">get_file_extension() (seasenselib.readers.CsvReader method)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.readers.CsvReader.get_file_type">get_file_type() (seasenselib.readers.CsvReader method)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.core.WriterFactory.get_format_info">get_format_info() (seasenselib.core.WriterFactory method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.get_instance">get_instance() (seasenselib.pipeline.StageRegistry class method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.get_stage">get_stage() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.get_stage_class">get_stage_class() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Pipeline.get_stage_order">get_stage_order() (seasenselib.pipeline.Pipeline method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.processors.SubsetProcessor.get_subset">get_subset() (seasenselib.processors.SubsetProcessor method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.WriterFactory.get_supported_formats">get_supported_formats() (seasenselib.core.WriterFactory method)</a>
 </li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.has_stage">has_stage() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.readers.NortekAsciiReader.header_file_path">header_file_path (seasenselib.readers.NortekAsciiReader attribute)</a>
 </li>
@@ -454,7 +553,7 @@
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.input_file">input_file (seasenselib.readers.base.AbstractReader attribute)</a>
 
       <ul>
-        <li><a href="api_reference.html#id8">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#id82">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.CsvReader.input_file">(seasenselib.readers.CsvReader attribute)</a>
 </li>
@@ -476,13 +575,13 @@
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.input_header_file">input_header_file (seasenselib.readers.base.AbstractReader attribute)</a>
 
       <ul>
-        <li><a href="api_reference.html#id9">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#id83">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
       </ul></li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.is_loaded">is_loaded (seasenselib.readers.base.AbstractReader attribute)</a>
 
       <ul>
-        <li><a href="api_reference.html#id10">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#id84">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -494,11 +593,39 @@
       <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.key">key() (seasenselib.plotters.base.AbstractPlotter static method)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.plotters.DepthProfilePlotter.key">(seasenselib.plotters.DepthProfilePlotter static method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.key">(seasenselib.plotters.TimeSeriesPlotter static method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.plotters.TsDiagramPlotter.key">(seasenselib.plotters.TsDiagramPlotter static method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.list_all">list_all() (in module seasenselib)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.list_available_pipelines">list_available_pipelines() (in module seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.list_builtin_stages">list_builtin_stages() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.list_parameters">list_parameters() (in module seasenselib)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.list_plotters">list_plotters() (in module seasenselib)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.list_plugin_stages">list_plugin_stages() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.list_readers">list_readers() (in module seasenselib)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.list_stages">list_stages() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.list_writers">list_writers() (in module seasenselib)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -508,7 +635,7 @@
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.mapping">mapping (seasenselib.readers.base.AbstractReader attribute)</a>
 
       <ul>
-        <li><a href="api_reference.html#id11">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#id85">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.readers.CsvReader.mapping">(seasenselib.readers.CsvReader attribute)</a>
 </li>
@@ -527,24 +654,30 @@
       </ul></li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.max">max() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.mean">mean() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.median">median() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.metadata">metadata (seasenselib.readers.base.AbstractReader attribute)</a>
+      <li><a href="api_reference.html#id384">metadata (seasenselib.pipeline.StageContext attribute)</a>, <a href="api_reference.html#seasenselib.pipeline.StageContext.metadata">[1]</a>
 
       <ul>
-        <li><a href="api_reference.html#id12">(seasenselib.readers.base.AbstractReader property)</a>
+        <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.metadata">(seasenselib.readers.base.AbstractReader attribute)</a>
+</li>
+        <li><a href="api_reference.html#id86">(seasenselib.readers.base.AbstractReader property)</a>
 </li>
       </ul></li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.min">min() (seasenselib.processors.StatisticsProcessor method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.minimal_pipeline">minimal_pipeline() (in module seasenselib.pipeline)</a>
 </li>
       <li>
     module
 
       <ul>
+        <li><a href="api_reference.html#module-seasenselib.pipeline">seasenselib.pipeline</a>
+</li>
         <li><a href="api_reference.html#module-seasenselib.plotters">seasenselib.plotters</a>
 </li>
         <li><a href="api_reference.html#module-seasenselib.processors">seasenselib.processors</a>
@@ -560,18 +693,26 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.name">name() (seasenselib.plotters.base.AbstractPlotter static method)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageConfig.name">name (seasenselib.pipeline.StageConfig attribute)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Stage.name">name() (seasenselib.pipeline.Stage method)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.pipeline.TransformationStage.name">(seasenselib.pipeline.TransformationStage method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.name">(seasenselib.plotters.base.AbstractPlotter static method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.plotters.DepthProfilePlotter.name">(seasenselib.plotters.DepthProfilePlotter static method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.name">(seasenselib.plotters.TimeSeriesPlotter static method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.plotters.TsDiagramPlotter.name">(seasenselib.plotters.TsDiagramPlotter static method)</a>
 </li>
       </ul></li>
-      <li><a href="api_reference.html#seasenselib.readers.NetCdfReader">NetCdfReader (class in seasenselib.readers)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.readers.NetCdfReader">NetCdfReader (class in seasenselib.readers)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.writers.NetCdfWriter">NetCdfWriter (class in seasenselib.writers)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.readers.NortekAsciiReader">NortekAsciiReader (class in seasenselib.readers)</a>
@@ -588,6 +729,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.perform_default_postprocessing">perform_default_postprocessing (seasenselib.readers.base.AbstractReader attribute)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Pipeline">Pipeline (class in seasenselib.pipeline)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.pipeline_transformations">pipeline_transformations() (seasenselib.readers.base.AbstractReader method)</a>
 
       <ul>
@@ -598,9 +741,15 @@
         <li><a href="api_reference.html#seasenselib.readers.NortekRawReader.pipeline_transformations">(seasenselib.readers.NortekRawReader method)</a>
 </li>
       </ul></li>
-      <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.plot">plot() (seasenselib.plotters.base.AbstractPlotter method)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig">PipelineConfig (class in seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.plot">plot() (in module seasenselib)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.plotters.base.AbstractPlotter.plot">(seasenselib.plotters.base.AbstractPlotter method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.plotters.DepthProfilePlotter.plot">(seasenselib.plotters.DepthProfilePlotter method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot">(seasenselib.plotters.TimeSeriesPlotter method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.plotters.TsDiagramPlotter.plot">(seasenselib.plotters.TsDiagramPlotter method)</a>
@@ -610,15 +759,19 @@
 </li>
       <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_normalized_comparison">plot_normalized_comparison() (seasenselib.plotters.TimeSeriesPlotter method)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_single_parameter">plot_single_parameter() (seasenselib.plotters.TimeSeriesPlotter method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_single_parameter">plot_single_parameter() (seasenselib.plotters.TimeSeriesPlotter method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter.plot_with_auto_dual_axis">plot_with_auto_dual_axis() (seasenselib.plotters.TimeSeriesPlotter method)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.processors.base.AbstractProcessor.process">process() (seasenselib.processors.base.AbstractProcessor method)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.Stage.process">process() (seasenselib.pipeline.Stage method)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.pipeline.TransformationStage.process">(seasenselib.pipeline.TransformationStage method)</a>
+</li>
+        <li><a href="api_reference.html#seasenselib.processors.base.AbstractProcessor.process">(seasenselib.processors.base.AbstractProcessor method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.processors.ResampleProcessor.process">(seasenselib.processors.ResampleProcessor method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.process">(seasenselib.processors.StatisticsProcessor method)</a>
@@ -674,6 +827,10 @@
 </li>
       <li><a href="api_reference.html#seasenselib.readers.RdiRawReader">RdiRawReader (class in seasenselib.readers)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.read">read() (in module seasenselib)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.DataIOManager.read_data">read_data() (seasenselib.core.DataIOManager method)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.readers.AdcpMatlabRdadcpReader.reader_args">reader_args() (seasenselib.readers.AdcpMatlabRdadcpReader class method)</a>
 
       <ul>
@@ -693,6 +850,8 @@
 </li>
         <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader.reader_args">(seasenselib.readers.SbeCnvReader class method)</a>
 </li>
+        <li><a href="api_reference.html#seasenselib.readers.SbeHexReader.reader_args">(seasenselib.readers.SbeHexReader class method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader.reader_args">(seasenselib.readers.SeasunTobReader class method)</a>
 </li>
       </ul></li>
@@ -700,7 +859,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.reader_groups">reader_groups() (seasenselib.readers.base.AbstractReader class method)</a>
 </li>
-      <li><a href="api_reference.html#id13">reload() (seasenselib.readers.base.AbstractReader method)</a>, <a href="api_reference.html#seasenselib.readers.base.AbstractReader.reload">[1]</a>
+      <li><a href="api_reference.html#seasenselib.core.ReaderFactory">ReaderFactory (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.register">register() (seasenselib.pipeline.StageRegistry method)</a>
+</li>
+      <li><a href="api_reference.html#id87">reload() (seasenselib.readers.base.AbstractReader method)</a>, <a href="api_reference.html#seasenselib.readers.base.AbstractReader.reload">[1]</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.remove_stage">remove_stage() (seasenselib.pipeline.PipelineConfig method)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.rename_variables">rename_variables (seasenselib.readers.base.AbstractReader attribute)</a>
 </li>
@@ -722,8 +887,12 @@
 </li>
       <li><a href="api_reference.html#seasenselib.processors.ResampleProcessor">ResampleProcessor (class in seasenselib.processors)</a>
 </li>
-      <li><a href="api_reference.html#seasenselib.processors.SubsetProcessor.reset">reset() (seasenselib.processors.SubsetProcessor method)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry.reset">reset() (seasenselib.pipeline.StageRegistry class method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#seasenselib.processors.SubsetProcessor.reset">(seasenselib.processors.SubsetProcessor method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -736,6 +905,15 @@
 </li>
       <li><a href="api_reference.html#seasenselib.readers.SbeCnvReader">SbeCnvReader (class in seasenselib.readers)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.readers.SbeHexReader">SbeHexReader (class in seasenselib.readers)</a>
+</li>
+      <li>
+    seasenselib.pipeline
+
+      <ul>
+        <li><a href="api_reference.html#module-seasenselib.pipeline">module</a>
+</li>
+      </ul></li>
       <li>
     seasenselib.plotters
 
@@ -764,9 +942,13 @@
         <li><a href="api_reference.html#module-seasenselib.writers">module</a>
 </li>
       </ul></li>
+      <li><a href="api_reference.html#seasenselib.core.SeaSenseLibError">SeaSenseLibError (class in seasenselib.core)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader">SeasunTobReader (class in seasenselib.readers)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.readers.SeasunTobReader">SeasunTobReader (class in seasenselib.readers)</a>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.set_global_config">set_global_config() (seasenselib.pipeline.PipelineConfig method)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.processors.SubsetProcessor.set_parameter_name">set_parameter_name() (seasenselib.processors.SubsetProcessor method)</a>
 </li>
@@ -784,6 +966,16 @@
 </li>
       <li><a href="api_reference.html#seasenselib.readers.base.AbstractReader.sort_variables">sort_variables (seasenselib.readers.base.AbstractReader attribute)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Stage">Stage (class in seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageConfig">StageConfig (class in seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageContext">StageContext (class in seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.StageRegistry">StageRegistry (class in seasenselib.pipeline)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.pipeline.Pipeline.stages">stages (seasenselib.pipeline.Pipeline attribute)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor">StatisticsProcessor (class in seasenselib.processors)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.std">std() (seasenselib.processors.StatisticsProcessor method)</a>
@@ -798,9 +990,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.plotters.TimeSeriesPlotter">TimeSeriesPlotter (class in seasenselib.plotters)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.to_dict">to_dict() (seasenselib.pipeline.PipelineConfig method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.pipeline.TransformationStage">TransformationStage (class in seasenselib.pipeline)</a>
+</li>
       <li><a href="api_reference.html#seasenselib.plotters.TsDiagramPlotter">TsDiagramPlotter (class in seasenselib.plotters)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.pipeline.PipelineConfig.upsert_stage">upsert_stage() (seasenselib.pipeline.PipelineConfig method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -810,9 +1014,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.base.AbstractProcessor.validate_coordinate">validate_coordinate() (seasenselib.processors.base.AbstractProcessor method)</a>
 </li>
+      <li><a href="api_reference.html#seasenselib.core.FormatDetector.validate_output_format">validate_output_format() (seasenselib.core.FormatDetector static method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_reference.html#seasenselib.processors.base.AbstractProcessor.validate_parameter">validate_parameter() (seasenselib.processors.base.AbstractProcessor method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.ValidationError">ValidationError (class in seasenselib.core)</a>
 </li>
       <li><a href="api_reference.html#seasenselib.processors.StatisticsProcessor.var">var() (seasenselib.processors.StatisticsProcessor method)</a>
 </li>
@@ -822,9 +1030,11 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api_reference.html#seasenselib.writers.base.AbstractWriter.write">write() (seasenselib.writers.base.AbstractWriter method)</a>
+      <li><a href="api_reference.html#seasenselib.write">write() (in module seasenselib)</a>
 
       <ul>
+        <li><a href="api_reference.html#seasenselib.writers.base.AbstractWriter.write">(seasenselib.writers.base.AbstractWriter method)</a>
+</li>
         <li><a href="api_reference.html#seasenselib.writers.CsvWriter.write">(seasenselib.writers.CsvWriter method)</a>
 </li>
         <li><a href="api_reference.html#seasenselib.writers.ExcelWriter.write">(seasenselib.writers.ExcelWriter method)</a>
@@ -832,6 +1042,12 @@
         <li><a href="api_reference.html#seasenselib.writers.NetCdfWriter.write">(seasenselib.writers.NetCdfWriter method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#seasenselib.core.DataIOManager.write_data">write_data() (seasenselib.core.DataIOManager method)</a>
+</li>
+      <li><a href="api_reference.html#seasenselib.core.WriterFactory">WriterFactory (class in seasenselib.core)</a>
+</li>
   </ul></td>
 </tr></table>
 

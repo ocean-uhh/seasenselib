@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.pipeline.base &mdash; SeaSenseLib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SeaSenseLib
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">SeaSenseLib Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SeaSenseLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.pipeline.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.pipeline.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Base classes for the stage system.</span>
+
+<span class="sd">This module defines the core interfaces that all stages must implement.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+
+<div class="viewcode-block" id="StageContext">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.StageContext">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StageContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context object passed between stages in the pipeline.</span>
+<span class="sd">    </span>
+<span class="sd">    Contains the dataset being processed and accumulated metadata.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : xr.Dataset</span>
+<span class="sd">        The xarray Dataset being processed. Each layer may modify this.</span>
+<span class="sd">    metadata : Dict[str, Any]</span>
+<span class="sd">        Metadata accumulated during processing. Stages can add information</span>
+<span class="sd">        here that may be useful for subsequent stages or for users.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">    &gt;&gt;&gt; ds = xr.Dataset({&#39;temp&#39;: ([&#39;time&#39;], [10, 11, 12])})</span>
+<span class="sd">    &gt;&gt;&gt; context = StageContext(ds, metadata={&#39;source&#39;: &#39;test.cnv&#39;})</span>
+<span class="sd">    &gt;&gt;&gt; context.metadata[&#39;variables_mapped&#39;] = [&#39;temp&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="StageContext.copy">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.StageContext.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;StageContext&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a shallow copy of the context.</span>
+<span class="sd">        </span>
+<span class="sd">        The dataset is not copied (xarray datasets are immutable by convention).</span>
+<span class="sd">        The metadata dictionary is shallow-copied.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        StageContext</span>
+<span class="sd">            A new context with the same dataset and a copy of metadata.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">StageContext</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Stage">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.Stage">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Stage</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for all processing stages.</span>
+<span class="sd">    </span>
+<span class="sd">    Each stage performs a specific transformation or enrichment on the dataset.</span>
+<span class="sd">    Stages are executed in the order defined by the pipeline configuration.</span>
+<span class="sd">    </span>
+<span class="sd">    Subclasses must implement:</span>
+<span class="sd">    - name(): Return unique identifier for this stage</span>
+<span class="sd">    - process(): Transform the dataset and return updated context</span>
+<span class="sd">    </span>
+<span class="sd">    Subclasses may override:</span>
+<span class="sd">    - can_process(): Check if stage should run (default: always True)</span>
+<span class="sd">    - configure(): Set stage-specific configuration</span>
+<span class="sd">    - configure(): Set stage-specific configuration</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; class MyStage(Stage):</span>
+<span class="sd">    ...     def name(self) -&gt; str:</span>
+<span class="sd">    ...         return &quot;my_stage&quot;</span>
+<span class="sd">    ...     </span>
+<span class="sd">    ...     def process(self, context: StageContext) -&gt; StageContext:</span>
+<span class="sd">    ...         # Add a new variable</span>
+<span class="sd">    ...         context.dataset[&#39;new_var&#39;] = context.dataset[&#39;temp&#39;] * 2</span>
+<span class="sd">    ...         context.metadata[&#39;my_stage_applied&#39;] = True</span>
+<span class="sd">    ...         return context</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="Stage.name">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.Stage.name">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the unique identifier for this stage.</span>
+<span class="sd">        </span>
+<span class="sd">        This name is used for:</span>
+<span class="sd">        - Configuration references</span>
+<span class="sd">        - Registry lookups</span>
+<span class="sd">        - Logging and debugging</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Unique stage identifier (e.g., &#39;mapping&#39;, &#39;metadata_enrichment&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="Stage.process">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.Stage.process">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">StageContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageContext</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the dataset and return updated context.</span>
+<span class="sd">        </span>
+<span class="sd">        This is the main method where the layer&#39;s transformation logic lives.</span>
+<span class="sd">        </span>
+<span class="sd">        The stage should:</span>
+<span class="sd">        1. Read from context.dataset and context.metadata</span>
+<span class="sd">        2. Perform transformations on the dataset</span>
+<span class="sd">        3. Update context.metadata with any relevant information</span>
+<span class="sd">        4. Return the updated context</span>
+<span class="sd">        </span>
+<span class="sd">        Note: xarray Datasets are typically treated as immutable, so most</span>
+<span class="sd">        operations return a new Dataset. The layer should return a context</span>
+<span class="sd">        with the updated dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        context : StageContext</span>
+<span class="sd">            The current processing context with dataset and metadata.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        StageContext</span>
+<span class="sd">            Updated context with transformed dataset and metadata.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        Exception</span>
+<span class="sd">            If processing fails. Exceptions are propagated to the pipeline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="Stage.can_process">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.Stage.can_process">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">can_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">StageContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if this stage can process the current context.</span>
+<span class="sd">        </span>
+<span class="sd">        This method is called by the pipeline before process(). If it returns</span>
+<span class="sd">        False, the stage is skipped.</span>
+<span class="sd">        </span>
+<span class="sd">        Use this for:</span>
+<span class="sd">        - Checking if required variables are present</span>
+<span class="sd">        - Verifying prerequisites from previous stages</span>
+<span class="sd">        - Conditional stage execution based on metadata</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        context : StageContext</span>
+<span class="sd">            The current processing context.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the layer should process this context, False to skip.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; def can_process(self, context: StageContext) -&gt; bool:</span>
+<span class="sd">        ...     # Only process if temperature variable exists</span>
+<span class="sd">        ...     return &#39;temperature&#39; in context.dataset.data_vars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    
+<div class="viewcode-block" id="Stage.configure">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.pipeline.Stage.configure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configure the stage with settings from configuration.</span>
+<span class="sd">        </span>
+<span class="sd">        Called by the pipeline when building from configuration.</span>
+<span class="sd">        Override this to support layer-specific configuration.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config : Dict[str, Any]</span>
+<span class="sd">            Configuration dictionary for this stage.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; class MyStage(Stage):</span>
+<span class="sd">        ...     def __init__(self):</span>
+<span class="sd">        ...         self.option = &quot;default&quot;</span>
+<span class="sd">        ...     </span>
+<span class="sd">        ...     def configure(self, config: Dict[str, Any]) -&gt; None:</span>
+<span class="sd">        ...         if &#39;option&#39; in config:</span>
+<span class="sd">        ...             self.option = config[&#39;option&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the layer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(name=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

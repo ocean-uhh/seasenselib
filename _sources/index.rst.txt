@@ -16,6 +16,7 @@ For recommendations or bug reports, please visit https://github.com/ocean-uhh/se
    :caption: Getting started
 
    about
+   overview
    installation
 
 .. toctree::

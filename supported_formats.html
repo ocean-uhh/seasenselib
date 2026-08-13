@@ -49,6 +49,7 @@
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">SeaSenseLib Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -65,6 +66,8 @@
 <li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supported File Formats</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#format-keys-reference">Format Keys Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-formats-writers">Output Formats (Writers)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plot-types-plotters">Plot Types (Plotters)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#format-detection-summary">Format Detection Summary</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#when-to-use-format-keys">When to Use Format Keys</a></li>
@@ -227,46 +230,111 @@
 <td><p>SeaBird CNV format (CTD profiles)</p></td>
 </tr>
 <tr class="row-odd"><td><p>SeaBird</p></td>
+<td><p>SBE 911plus / 917plus</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code></p></td>
+<td><p>SeaBird raw HEX (CTD profiles); the SBE 9 family is auto-detected from the <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">Sea-Bird</span> <span class="pre">SBE</span> <span class="pre">9</span> <span class="pre">Data</span> <span class="pre">File</span></code> header</p></td>
+</tr>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>SBE16 Seacat</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (CTD data)</p></td>
 </tr>
-<tr class="row-even"><td><p>SeaBird</p></td>
+<tr class="row-odd"><td><p>SeaBird</p></td>
 <td><p>SBE56</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code></p></td>
 <td><p>SeaBird CNV format (thermistor data)</p></td>
 </tr>
-<tr class="row-odd"><td><p>SeaBird</p></td>
+<tr class="row-even"><td><p>SeaBird</p></td>
 <td><p>Various</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">.dat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sbe-ascii</span></code></p></td>
 <td><p>SeaBird ASCII format</p></td>
 </tr>
-<tr class="row-even"><td><p>Sea &amp; Sun</p></td>
+<tr class="row-odd"><td><p>Sea &amp; Sun</p></td>
 <td><p>TOB</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.tob</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">seasun-tob</span></code></p></td>
 <td><p>Seasun TOB format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne RDI</p></td>
+<tr class="row-even"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-uhhds</span></code></p></td>
 <td><p>ADCP MATLAB UHHDS format</p></td>
 </tr>
-<tr class="row-even"><td><p>Teledyne RDI</p></td>
+<tr class="row-odd"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.mat</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">adcp-matlab-rdadcp</span></code></p></td>
 <td><p>ADCP MATLAB RDADCP format</p></td>
 </tr>
-<tr class="row-odd"><td><p>Teledyne RDI</p></td>
+<tr class="row-even"><td><p>Teledyne RDI</p></td>
 <td><p>ADCP</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">.000</span></code>, <code class="docutils literal notranslate"><span class="pre">.PD0</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENR</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENS</span></code>, <code class="docutils literal notranslate"><span class="pre">.ENX</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">rdi-raw</span></code></p></td>
 <td><p>RDI raw binary ADCP files</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-formats-writers">
+<h2>Output Formats (Writers)<a class="headerlink" href="#output-formats-writers" title="Link to this heading"></a></h2>
+<p>SeaSenseLib can write an xarray <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> back out to several formats with <code class="docutils literal notranslate"><span class="pre">ssl.write(dataset,</span> <span class="pre">filename,</span> <span class="pre">file_format='key')</span></code>.</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Supported Output Formats</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 27.3%" />
+<col style="width: 36.4%" />
+<col style="width: 36.4%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>Format Key</p></th>
+<th class="head"><p>File Extension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>NetCDF</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">netcdf</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.nc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>CSV</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">csv</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.csv</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Excel</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">excel</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.xlsx</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="plot-types-plotters">
+<h2>Plot Types (Plotters)<a class="headerlink" href="#plot-types-plotters" title="Link to this heading"></a></h2>
+<p>SeaSenseLib provides several plot types via <code class="docutils literal notranslate"><span class="pre">ssl.plot(plotter_key,</span> <span class="pre">dataset,</span> <span class="pre">...)</span></code>.</p>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Supported Plot Types</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 33.3%" />
+<col style="width: 66.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Plot Type</p></th>
+<th class="head"><p>Plotter Key</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Depth profile</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">depth-profile</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Time series</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">time-series</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>T-S diagram</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ts-diagram</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -333,7 +401,7 @@ mapping choices, see <a class="reference internal" href="reader_notes.html"><spa
 <p><strong>Auto-detected formats</strong> (unique file extensions):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">.cnv</span></code> → <code class="docutils literal notranslate"><span class="pre">sbe-cnv</span></code> (SeaBird CNV files)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code> → <code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code> (SeaBird SBE37 HEX files)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.hex</span></code> → <code class="docutils literal notranslate"><span class="pre">sbe-hex</span></code> (SeaBird SBE37 and SBE 911plus/917plus HEX files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.rsk</span></code> → <code class="docutils literal notranslate"><span class="pre">rbr-rsk</span></code> (RBR RSK files - automatically selects modern/legacy reader)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.nc</span></code> → <code class="docutils literal notranslate"><span class="pre">netcdf</span></code> (NetCDF files)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.csv</span></code> → <code class="docutils literal notranslate"><span class="pre">csv</span></code> (CSV files)</p></li>

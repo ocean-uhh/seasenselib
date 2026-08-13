@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="User Guide" href="user_guide.html" />
-    <link rel="prev" title="About SeaSenseLib" href="about.html" /> 
+    <link rel="prev" title="SeaSenseLib Overview" href="overview.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,9 +49,11 @@
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">SeaSenseLib Overview</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-from-pypi">Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-conda-or-mamba">Using conda or mamba</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development-installation">Development Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#alternative-installation-methods">Alternative Installation Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#verify-installation">Verify Installation</a></li>
@@ -105,12 +107,19 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
-<p>SeaSenseLib requires Python 3.10 or later and depends on several scientific Python packages:</p>
+<p>SeaSenseLib requires Python 3.10 or later and depends on several scientific Python packages, all of which are installed automatically by <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <ul class="simple">
-<li><p><strong>Core dependencies</strong>: xarray, pandas, numpy, matplotlib</p></li>
-<li><p><strong>File format support</strong>: netcdf4, pycnv, pyrsktools</p></li>
-<li><p><strong>Scientific computing</strong>: scipy, gsw (Gibbs SeaWater library)</p></li>
+<li><p><strong>Core data handling</strong>: xarray, pandas, numpy, scipy</p></li>
+<li><p><strong>File format support</strong>: netcdf4, pycnv, pyrsktools, seabirdscientific, mhkit (with the <code class="docutils literal notranslate"><span class="pre">dolfyn</span></code> extra, for Nortek/RDI raw data)</p></li>
+<li><p><strong>Scientific computing</strong>: gsw (Gibbs SeaWater library), pint (units)</p></li>
+<li><p><strong>Plotting</strong>: matplotlib, pylablib</p></li>
 </ul>
+<p>You do not need to install these individually — they come with SeaSenseLib.</p>
+<p>If you are new to Python, first check that Python 3.10+ is available:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>--version
+</pre></div>
+</div>
+<p>If it reports a version below 3.10 (or the command is not found), install a current Python from <a class="reference external" href="https://www.python.org/downloads/">python.org</a> or via a distribution such as Miniconda (see below) before continuing.</p>
 </section>
 <section id="install-from-pypi">
 <h2>Install from PyPI<a class="headerlink" href="#install-from-pypi" title="Link to this heading"></a></h2>
@@ -119,6 +128,22 @@
 </pre></div>
 </div>
 <p>This will install SeaSenseLib and all required dependencies.</p>
+</section>
+<section id="using-conda-or-mamba">
+<h2>Using conda or mamba<a class="headerlink" href="#using-conda-or-mamba" title="Link to this heading"></a></h2>
+<p>Many oceanographers manage Python with Anaconda/Miniconda (<code class="docutils literal notranslate"><span class="pre">conda</span></code>) or its faster drop-in replacement <code class="docutils literal notranslate"><span class="pre">mamba</span></code>. SeaSenseLib is not yet published on conda-forge, so you create a conda environment and then install SeaSenseLib into it with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># with conda</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>seasenselib<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
+conda<span class="w"> </span>activate<span class="w"> </span>seasenselib
+pip<span class="w"> </span>install<span class="w"> </span>seasenselib
+
+<span class="c1"># or with mamba (same commands, faster solver)</span>
+mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>seasenselib<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
+mamba<span class="w"> </span>activate<span class="w"> </span>seasenselib
+pip<span class="w"> </span>install<span class="w"> </span>seasenselib
+</pre></div>
+</div>
+<p>Installing with <code class="docutils literal notranslate"><span class="pre">pip</span></code> inside an activated conda environment is expected and supported here. Do not run <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">seasenselib</span></code> — the package is not on any conda channel and that command will fail.</p>
 </section>
 <section id="development-installation">
 <h2>Development Installation<a class="headerlink" href="#development-installation" title="Link to this heading"></a></h2>
@@ -152,9 +177,18 @@ venv\Scripts\activate.bat
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
 </pre></div>
 </div>
-<p>This installs SeaSenseLib in “editable” mode along with development dependencies like pytest and sphinx.</p>
+<p>This installs SeaSenseLib in “editable” mode (changes to the source take effect immediately without reinstalling). The <code class="docutils literal notranslate"><span class="pre">[dev]</span></code> part is an optional dependency group that adds tools needed only for development — pytest (running tests), sphinx, nbsphinx, myst-parser and the RTD theme (building these docs), plus build and twine (packaging). A plain <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> skips those.</p>
+<p>The same editable install works inside a conda/mamba environment: activate the environment first, then run the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code> command.</p>
 </li>
 </ol>
+<p><strong>Using the conda environment file:</strong></p>
+<p>For development with conda, the repository provides an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> that creates an environment named <code class="docutils literal notranslate"><span class="pre">seasenselib</span></code> with Python (3.10–3.13), <code class="docutils literal notranslate"><span class="pre">gsw</span></code>, <code class="docutils literal notranslate"><span class="pre">pandoc</span></code>, and all runtime and development dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>seasenselib
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>The environment file installs the dependencies but not SeaSenseLib itself, so the final <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> installs the package in editable mode from the repository root.</p>
 </section>
 <section id="alternative-installation-methods">
 <h2>Alternative Installation Methods<a class="headerlink" href="#alternative-installation-methods" title="Link to this heading"></a></h2>
@@ -186,9 +220,10 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </pre></div>
 </div>
 <p><strong>Run the test suite (development installation only):</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>tests/
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/
 </pre></div>
 </div>
+<p>(<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">discover</span> <span class="pre">tests/</span></code> also works if you prefer the standard library test runner.)</p>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
@@ -228,7 +263,7 @@ python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="about.html" class="btn btn-neutral float-left" title="About SeaSenseLib" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="overview.html" class="btn btn-neutral float-left" title="SeaSenseLib Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="user_guide.html" class="btn btn-neutral float-right" title="User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

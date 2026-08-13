@@ -1,0 +1,893 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.core.autodiscovery &mdash; SeaSenseLib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SeaSenseLib
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">SeaSenseLib Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SeaSenseLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.core.autodiscovery</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.core.autodiscovery</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Autodiscovery module for readers, writers, and plotters.</span>
+
+<span class="sd">This module provides functionality to automatically discover and register</span>
+<span class="sd">reader, writer, and plotter classes without requiring manual registry maintenance.</span>
+<span class="sd">It also includes format detection utilities and plugin loading via entry points.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pkgutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormatDetectionError</span>
+
+<span class="c1"># Import entry_points with fallback for older Python versions</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">entry_points</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">importlib_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">entry_points</span>  <span class="c1"># Python &lt; 3.8</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_convert_class_name_to_module_name</span><span class="p">(</span><span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert PascalCase class name to snake_case module name.&quot;&quot;&quot;</span>
+    <span class="c1"># Handle special cases first</span>
+    <span class="n">special_cases</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;NetCdfWriter&#39;</span><span class="p">:</span> <span class="s1">&#39;netcdf_writer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;NetCdfReader&#39;</span><span class="p">:</span> <span class="s1">&#39;netcdf_reader&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">class_name</span> <span class="ow">in</span> <span class="n">special_cases</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">special_cases</span><span class="p">[</span><span class="n">class_name</span><span class="p">]</span>
+
+    <span class="c1"># Convert PascalCase to snake_case</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;(.)([A-Z][a-z]+)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1_\2&#39;</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;([a-z0-9])([A-Z])&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1_\2&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_expected_module_name</span><span class="p">(</span><span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get expected module name based on class name and type.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">base_class_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">class_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="c1"># If class name contains base class name, use conversion</span>
+        <span class="k">return</span> <span class="n">_convert_class_name_to_module_name</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Fallback for unusual naming patterns</span>
+        <span class="k">return</span> <span class="n">_convert_class_name_to_module_name</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize extension declarations to lowercase dotted suffixes.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">extensions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">raw_extensions</span> <span class="o">=</span> <span class="p">(</span><span class="n">extensions</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw_extensions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">()</span>
+
+    <span class="n">normalized</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">raw_extensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extension</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">text</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">normalized</span><span class="p">:</span>
+            <span class="n">normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseDiscovery</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for autodiscovery functionality with plugin support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">package_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ABC</span><span class="p">],</span> <span class="n">entry_point_group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the discovery system.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        package_name : str</span>
+<span class="sd">            The full package name (e.g., &#39;seasenselib.readers&#39;)</span>
+<span class="sd">        base_class : Type[ABC]</span>
+<span class="sd">            The abstract base class that all discovered classes must inherit from</span>
+<span class="sd">        entry_point_group : str, optional</span>
+<span class="sd">            Entry point group name for plugin discovery (e.g., &#39;seasenselib.readers&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">package_name</span> <span class="o">=</span> <span class="n">package_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span> <span class="o">=</span> <span class="n">base_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span> <span class="o">=</span> <span class="n">entry_point_group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_class_modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plugin_classes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_discover_builtin_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Discover built-in classes from the package.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Dict[str, Type]</span>
+<span class="sd">            Dictionary mapping class names to class objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builtin_classes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Import the package</span>
+            <span class="n">package</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">package_name</span><span class="p">)</span>
+            <span class="n">package_path</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">__path__</span>
+
+            <span class="c1"># Walk through all modules in the package</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">modname</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">iter_modules</span><span class="p">(</span><span class="n">package_path</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">ispkg</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># Skip certain modules</span>
+                <span class="k">if</span> <span class="n">modname</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="s1">&#39;base&#39;</span><span class="p">,</span> <span class="s1">&#39;registry&#39;</span><span class="p">,</span> <span class="s1">&#39;api&#39;</span><span class="p">]:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">full_module_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">package_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">modname</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Import the module</span>
+                    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">full_module_name</span><span class="p">)</span>
+
+                    <span class="c1"># Find all classes in the module that inherit from base class</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">obj</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span> <span class="ow">and</span> 
+                            <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">)</span> <span class="ow">and</span> 
+                            <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">==</span> <span class="n">full_module_name</span><span class="p">):</span>
+
+                            <span class="n">builtin_classes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_class_modules</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">modname</span>
+
+                <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># Log warning but continue discovery</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not import </span><span class="si">{</span><span class="n">full_module_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Could not import package </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">package_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">builtin_classes</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_discover_plugin_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Discover plugin classes from entry points.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Dict[str, Type]</span>
+<span class="sd">            Dictionary mapping class names to plugin class objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">plugin_classes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Load entry points for this group</span>
+            <span class="n">eps</span> <span class="o">=</span> <span class="n">entry_points</span><span class="p">()</span>
+            
+            <span class="c1"># Handle different return types (dict vs SelectableGroups)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="s1">&#39;select&#39;</span><span class="p">):</span>
+                <span class="c1"># Python 3.10+ - returns SelectableGroups</span>
+                <span class="n">group_eps</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># Python 3.9 - returns dict</span>
+                <span class="n">group_eps</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Fallback - try to get group directly</span>
+                <span class="n">group_eps</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="p">,</span> <span class="p">[])</span>
+
+            <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">group_eps</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Load the class from the entry point</span>
+                    <span class="bp">cls</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+                    <span class="c1"># Validate that it&#39;s a class</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Entry point &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; in group &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;does not point to a class, skipping&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Validate that it&#39;s a subclass of the base class</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Entry point &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;is not a subclass of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, skipping&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Validate that it has required methods (different for plotters vs readers/writers)</span>
+                    <span class="n">base_class_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="o">.</span><span class="vm">__name__</span>
+                    <span class="k">if</span> <span class="n">base_class_name</span> <span class="o">==</span> <span class="s1">&#39;AbstractPlotter&#39;</span><span class="p">:</span>
+                        <span class="c1"># Plotters use key() and name()</span>
+                        <span class="n">required_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Readers and writers use format_key() and format_name()</span>
+                        <span class="n">required_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;format_key&#39;</span><span class="p">,</span> <span class="s1">&#39;format_name&#39;</span><span class="p">]</span>
+                    
+                    <span class="n">missing_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">required_methods</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">m</span><span class="p">)]</span>
+                    <span class="k">if</span> <span class="n">missing_methods</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Plugin class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> from entry point &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;does not implement </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_methods</span><span class="p">)</span><span class="si">}</span><span class="s2">(), skipping&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Add to plugin classes</span>
+                    <span class="n">class_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+                    <span class="n">plugin_classes</span><span class="p">[</span><span class="n">class_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_class_modules</span><span class="p">[</span><span class="n">class_name</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;plugin:</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                    <span class="c1"># Only print in debug mode or when explicitly requested</span>
+                    <span class="c1"># print(f&quot;Loaded plugin: {class_name} from entry point &#39;{ep.name}&#39;&quot;)</span>
+
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not load entry point &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;in group &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Error during plugin discovery for group &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point_group</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">plugin_classes</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">discover_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Discover all classes (built-in + plugins) that inherit from the base class.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Dict[str, Type]</span>
+<span class="sd">            Dictionary mapping class names to class objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span>
+
+        <span class="c1"># Discover built-in classes</span>
+        <span class="n">builtin_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discover_builtin_classes</span><span class="p">()</span>
+
+        <span class="c1"># Discover plugin classes</span>
+        <span class="n">plugin_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discover_plugin_classes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plugin_classes</span> <span class="o">=</span> <span class="n">plugin_classes</span>
+
+        <span class="c1"># Merge: plugins can override built-ins (with warning)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">builtin_classes</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">plugin_classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Plugin class &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; overrides built-in class&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_classes</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_class_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a specific class by name.&quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">classes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_class_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of all discovered class names.&quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">classes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_class_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mapping of class names to module names.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>  <span class="c1"># Ensure discovery is complete</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_modules</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plugin_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get only the plugin classes (not built-in).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Dict[str, Type]</span>
+<span class="sd">            Dictionary of plugin class names to class objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>  <span class="c1"># Ensure discovery is complete</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plugin_classes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ReaderDiscovery</span><span class="p">(</span><span class="n">BaseDiscovery</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Autodiscovery for reader classes with plugin support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..readers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractReader</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">package_name</span><span class="o">=</span><span class="s1">&#39;seasenselib.readers&#39;</span><span class="p">,</span>
+            <span class="n">base_class</span><span class="o">=</span><span class="n">AbstractReader</span><span class="p">,</span>
+            <span class="n">entry_point_group</span><span class="o">=</span><span class="s1">&#39;seasenselib.readers&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_reader_file_extensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reader_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all auto-detect extensions declared by a reader class.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">reader_class</span><span class="p">,</span> <span class="s1">&#39;file_extensions&#39;</span><span class="p">):</span>
+            <span class="n">extensions</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">file_extensions</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">reader_class</span><span class="p">,</span> <span class="s1">&#39;file_extension&#39;</span><span class="p">):</span>
+            <span class="n">extensions</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">file_extension</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extensions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_normalize_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_reader_by_format_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get reader class by format key.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        format_key : str</span>
+<span class="sd">            The format key to search for</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Optional[Type]</span>
+<span class="sd">            The reader class if found, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check if class has format_key method and it matches</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_key&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span> <span class="o">==</span> <span class="n">format_key</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">class_obj</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement format_key properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_readers_by_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get reader classes that can handle a specific file extension.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        extension : str</span>
+<span class="sd">            The file extension to search for</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[Type]</span>
+<span class="sd">            List of reader classes that can handle the extension</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="n">matching_readers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">normalized_extension</span> <span class="o">=</span> <span class="n">_normalize_extensions</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized_extension</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matching_readers</span>
+        <span class="n">normalized_extension</span> <span class="o">=</span> <span class="n">normalized_extension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">normalized_extension</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_reader_file_extensions</span><span class="p">(</span><span class="n">class_obj</span><span class="p">):</span>
+                    <span class="n">matching_readers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_obj</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement extension methods properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="n">matching_readers</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_format_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get format information for all discovered readers using their static methods.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[Dict[str, Any]]</span>
+<span class="sd">            List of format information dictionaries with keys:</span>
+<span class="sd">            &#39;class_name&#39;, &#39;name&#39;, &#39;key&#39;, &#39;extension&#39;, &#39;extensions&#39;, &#39;is_plugin&#39;</span>
+<span class="sd">            Note: &#39;extension&#39; is the primary extension and is always present</span>
+<span class="sd">            (None if not applicable). &#39;extensions&#39; contains all advertised</span>
+<span class="sd">            auto-detect extensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="n">plugin_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plugin_classes</span><span class="p">()</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Use static methods to get format information</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_key&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_name&#39;</span><span class="p">)):</span>
+
+                    <span class="n">extensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_reader_file_extensions</span><span class="p">(</span><span class="n">class_obj</span><span class="p">)</span>
+                    <span class="n">primary_extension</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;file_extension&#39;</span><span class="p">):</span>
+                        <span class="n">primary_extensions</span> <span class="o">=</span> <span class="n">_normalize_extensions</span><span class="p">(</span><span class="n">class_obj</span><span class="o">.</span><span class="n">file_extension</span><span class="p">())</span>
+                        <span class="n">primary_extension</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">primary_extensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">primary_extensions</span>
+                            <span class="k">else</span> <span class="kc">None</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">extensions</span><span class="p">:</span>
+                        <span class="n">primary_extension</span> <span class="o">=</span> <span class="n">extensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="n">format_info</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_name</span><span class="p">(),</span>
+                        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_key</span><span class="p">(),</span>
+                        <span class="s1">&#39;is_plugin&#39;</span><span class="p">:</span> <span class="n">class_name</span> <span class="ow">in</span> <span class="n">plugin_classes</span><span class="p">,</span>
+                        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="n">primary_extension</span><span class="p">,</span>
+                        <span class="s1">&#39;extensions&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">extensions</span><span class="p">),</span>
+                    <span class="p">}</span>
+
+                    <span class="n">formats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_info</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement required methods properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="n">formats</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">WriterDiscovery</span><span class="p">(</span><span class="n">BaseDiscovery</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Autodiscovery for writer classes with plugin support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..writers.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractWriter</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">package_name</span><span class="o">=</span><span class="s1">&#39;seasenselib.writers&#39;</span><span class="p">,</span>
+            <span class="n">base_class</span><span class="o">=</span><span class="n">AbstractWriter</span><span class="p">,</span>
+            <span class="n">entry_point_group</span><span class="o">=</span><span class="s1">&#39;seasenselib.writers&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_writer_by_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get writer class by file extension.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        extension : str</span>
+<span class="sd">            The file extension to search for</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Optional[Type]</span>
+<span class="sd">            The writer class if found, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check if class has file_extension method and it matches</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;file_extension&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">file_extension</span><span class="p">()</span> <span class="o">==</span> <span class="n">extension</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">class_obj</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement file_extension properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_writer_by_format_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get writer class by format key.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        format_key : str</span>
+<span class="sd">            The format key to search for (e.g., &#39;netcdf&#39;, &#39;csv&#39;, &#39;excel&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Optional[Type]</span>
+<span class="sd">            The writer class if found, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check if class has format_key method and it matches</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_key&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span> <span class="o">==</span> <span class="n">format_key</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">class_obj</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement format_key properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_format_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get format information for all discovered writers using their static methods.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[Dict[str, str]]</span>
+<span class="sd">            List of format information dictionaries with keys:</span>
+<span class="sd">            &#39;class_name&#39;, &#39;name&#39;, &#39;key&#39;, &#39;extension&#39;, &#39;is_plugin&#39;</span>
+<span class="sd">            Note: &#39;extension&#39; is always present (None if not applicable)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="n">plugin_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plugin_classes</span><span class="p">()</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Use static methods to get format information</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_key&#39;</span><span class="p">)</span> <span class="ow">and</span> 
+                    <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;format_name&#39;</span><span class="p">)):</span>
+
+                    <span class="n">format_info</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_name</span><span class="p">(),</span>
+                        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">format_key</span><span class="p">(),</span>
+                        <span class="s1">&#39;is_plugin&#39;</span><span class="p">:</span> <span class="n">class_name</span> <span class="ow">in</span> <span class="n">plugin_classes</span><span class="p">,</span>
+                        <span class="s1">&#39;extension&#39;</span><span class="p">:</span> <span class="kc">None</span>  <span class="c1"># Default to None</span>
+                    <span class="p">}</span>
+
+                    <span class="c1"># Get file extension if available</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;file_extension&#39;</span><span class="p">):</span>
+                        <span class="n">ext</span> <span class="o">=</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">file_extension</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+                            <span class="n">format_info</span><span class="p">[</span><span class="s1">&#39;extension&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ext</span>
+
+                    <span class="n">formats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_info</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement required methods properly</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="n">formats</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_supported_extensions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all supported file extensions.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Set[str]</span>
+<span class="sd">            Set of supported file extensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="n">extensions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;file_extension&#39;</span><span class="p">):</span>
+                    <span class="n">ext</span> <span class="o">=</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">file_extension</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+                        <span class="n">extensions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement file_extension properly</span>
+                <span class="k">continue</span>
+ 
+        <span class="k">return</span> <span class="n">extensions</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlotterDiscovery</span><span class="p">(</span><span class="n">BaseDiscovery</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Autodiscovery for plotter classes with plugin support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..plotters.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractPlotter</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">package_name</span><span class="o">=</span><span class="s1">&#39;seasenselib.plotters&#39;</span><span class="p">,</span>
+            <span class="n">base_class</span><span class="o">=</span><span class="n">AbstractPlotter</span><span class="p">,</span>
+            <span class="n">entry_point_group</span><span class="o">=</span><span class="s1">&#39;seasenselib.plotters&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_format_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get plotter information for all discovered plotters.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[Dict[str, str]]</span>
+<span class="sd">            List of plotter information dictionaries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        <span class="n">plotters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">plugin_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plugin_classes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Plotters use key() and name() static methods</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">):</span>
+                    <span class="n">plotter_info</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span>
+                        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">key</span><span class="p">(),</span>
+                        <span class="s1">&#39;is_plugin&#39;</span><span class="p">:</span> <span class="n">class_name</span> <span class="ow">in</span> <span class="n">plugin_classes</span>
+                    <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Fall back to class name if methods not available</span>
+                    <span class="n">plotter_info</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;class_name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="p">,</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Plotter&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">class_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;plotter&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;is_plugin&#39;</span><span class="p">:</span> <span class="n">class_name</span> <span class="ow">in</span> <span class="n">plugin_classes</span>
+                    <span class="p">}</span>
+
+                <span class="n">plotters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plotter_info</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Skip classes that don&#39;t provide the required interface</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Skipping </span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="n">plotters</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_class_by_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get plotter class by its key.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            The plotter key (e.g., &#39;ts-diagram&#39;, &#39;histogram&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        Optional[Type]</span>
+<span class="sd">            The plotter class if found, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discover_classes</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">class_name</span><span class="p">,</span> <span class="n">class_obj</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check if class has the key() method</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">class_obj</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">class_obj</span><span class="o">.</span><span class="n">key</span><span class="p">()</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">class_obj</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="c1"># Skip classes that don&#39;t implement key() properly</span>
+                <span class="k">continue</span>
+        
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1"># Public format constants for CLI and other modules</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_input_formats</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of all supported input format keys.&quot;&quot;&quot;</span>
+    <span class="n">discovery</span> <span class="o">=</span> <span class="n">ReaderDiscovery</span><span class="p">()</span>
+    <span class="n">format_info</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">get_format_info</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">format_info</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_output_formats</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of all supported output format keys.&quot;&quot;&quot;</span>
+    <span class="n">discovery</span> <span class="o">=</span> <span class="n">WriterDiscovery</span><span class="p">()</span>
+    <span class="n">format_info</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">get_format_info</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">format_info</span><span class="p">]</span>
+
+
+<span class="c1"># Deprecated: kept for backward compatibility</span>
+<span class="n">OUTPUT_FORMATS</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Will be populated dynamically when accessed</span>
+
+
+<div class="viewcode-block" id="FormatDetector">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.FormatDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FormatDetector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;File format detection using autodiscovery.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FormatDetector.detect_format">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.FormatDetector.detect_format">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_format</span><span class="p">(</span><span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect file format without importing readers.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        input_file : str</span>
+<span class="sd">            Path to the input file</span>
+<span class="sd">        format_hint : str, optional</span>
+<span class="sd">            Explicit format hint to override detection</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The detected format key</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        FormatDetectionError</span>
+<span class="sd">            If format cannot be determined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">format_hint</span><span class="p">:</span>
+            <span class="n">input_formats</span> <span class="o">=</span> <span class="n">get_input_formats</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">format_hint</span> <span class="ow">in</span> <span class="n">input_formats</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">format_hint</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown format hint: </span><span class="si">{</span><span class="n">format_hint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if file exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input file does not exist: </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get file extension</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># Map extension to format using autodiscovery</span>
+        <span class="n">discovery</span> <span class="o">=</span> <span class="n">ReaderDiscovery</span><span class="p">()</span>
+        <span class="n">matching_readers</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">get_readers_by_extension</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_readers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matching_readers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_readers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">matching_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">reader</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span> <span class="k">for</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">matching_readers</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot determine format for file: </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Extension &#39;</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">&#39; is ambiguous. Use file_format with one of: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">matching_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># If no extension match, raise an error</span>
+        <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot determine format for file: </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Extension &#39;</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">&#39; not recognized and content detection failed.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FormatDetector.validate_output_format">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.FormatDetector.validate_output_format">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_output_format</span><span class="p">(</span><span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate and determine output format.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        output_file : str</span>
+<span class="sd">            Path to the output file</span>
+<span class="sd">        format_hint : str, optional</span>
+<span class="sd">            Explicit format hint</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        str</span>
+<span class="sd">            The validated output format key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">format_hint</span><span class="p">:</span>
+            <span class="c1"># Validate format hint against available writers</span>
+            <span class="n">available_formats</span> <span class="o">=</span> <span class="n">get_output_formats</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">format_hint</span> <span class="ow">in</span> <span class="n">available_formats</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">format_hint</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unknown output format: </span><span class="si">{</span><span class="n">format_hint</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Available formats: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">available_formats</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Detect from file extension using WriterDiscovery</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># Find writer by extension</span>
+        <span class="n">discovery</span> <span class="o">=</span> <span class="n">WriterDiscovery</span><span class="p">()</span>
+        <span class="n">writer_class</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">get_writer_by_extension</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">writer_class</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">writer_class</span><span class="p">,</span> <span class="s1">&#39;format_key&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">writer_class</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># List available extensions for better error message</span>
+            <span class="n">available_extensions</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">get_supported_extensions</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">FormatDetectionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No writer found for extension: </span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Supported extensions: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">available_extensions</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

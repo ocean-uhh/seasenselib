@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SeaSenseLib overview &mdash; SeaSenseLib v0.0.0 documentation</title>
+  <title>SeaSenseLib Overview &mdash; SeaSenseLib v0.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=20758594" />
@@ -21,7 +21,9 @@
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="About SeaSenseLib" href="about.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,8 +47,15 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SeaSenseLib Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#where-it-fits-in-a-data-workflow">Where it fits in a data workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-minimal-example">A minimal example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-processing-pipeline">The processing pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-interface">Command-line interface</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">User guide</span></p>
@@ -81,7 +90,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">SeaSenseLib overview</li>
+      <li class="breadcrumb-item active">SeaSenseLib Overview</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -92,14 +101,78 @@
            <div itemprop="articleBody">
              
   <section id="seasenselib-overview">
-<h1>SeaSenseLib overview<a class="headerlink" href="#seasenselib-overview" title="Link to this heading"></a></h1>
-<p>Some notes about how to use the SeaSenseLib package, and where it fits into a data processing pipeline.</p>
+<h1>SeaSenseLib Overview<a class="headerlink" href="#seasenselib-overview" title="Link to this heading"></a></h1>
+<p>SeaSenseLib reads oceanographic sensor data from many instrument formats, standardizes it, and lets you convert or visualize it — all through a single, consistent interface built on <a class="reference external" href="https://docs.xarray.dev/">xarray</a> Datasets.</p>
+<p>This page describes how the pieces fit together. For installation see <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>, for the full list of formats see <a class="reference internal" href="supported_formats.html"><span class="doc">Supported File Formats</span></a>, and for detailed signatures see <a class="reference internal" href="api_reference.html"><span class="doc">API Reference</span></a>.</p>
+<section id="where-it-fits-in-a-data-workflow">
+<h2>Where it fits in a data workflow<a class="headerlink" href="#where-it-fits-in-a-data-workflow" title="Link to this heading"></a></h2>
+<p>A typical SeaSenseLib workflow has three steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Read</strong> a raw instrument file into an xarray <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>. During reading, an optional processing <em>pipeline</em> normalizes variable names and units, derives parameters, and adds CF/ACDD-compliant metadata.</p></li>
+<li><p><strong>Process</strong> the Dataset further if needed — subset, resample, or compute statistics — using standard xarray operations or the built-in processors.</p></li>
+<li><p><strong>Write</strong> the Dataset to a standard format (NetCDF, CSV, Excel), or <strong>plot</strong> it (depth profile, time series, T-S diagram).</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>raw instrument file
+       │
+       ▼
+  ssl.read()  ──►  xarray.Dataset  ──►  ssl.write()  ──►  .nc / .csv / .xlsx
+     (+ pipeline)        │
+                         └──────────►  ssl.plot()   ──►  figure
+</pre></div>
+</div>
+</section>
+<section id="a-minimal-example">
+<h2>A minimal example<a class="headerlink" href="#a-minimal-example" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seasenselib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ssl</span>
+
+<span class="c1"># Read a SeaBird CNV file. Format is auto-detected from the extension.</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;station001.cnv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Inspect it — it is a standard xarray Dataset.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+<span class="c1"># Write it out as a CF-compliant NetCDF file.</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;station001.nc&quot;</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="s2">&quot;netcdf&quot;</span><span class="p">)</span>
+
+<span class="c1"># Or make a T-S diagram.</span>
+<span class="n">ssl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;ts-diagram&quot;</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;station001_ts.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When automatic format detection is not enough (ambiguous extensions such as <code class="docutils literal notranslate"><span class="pre">.mat</span></code> or <code class="docutils literal notranslate"><span class="pre">.hex</span></code>), pass an explicit <code class="docutils literal notranslate"><span class="pre">file_format</span></code> key — see <a class="reference internal" href="supported_formats.html"><span class="doc">Supported File Formats</span></a>.</p>
+</section>
+<section id="the-processing-pipeline">
+<h2>The processing pipeline<a class="headerlink" href="#the-processing-pipeline" title="Link to this heading"></a></h2>
+<p>By default, reading applies a processing pipeline that turns raw data into a standardized Level-1 dataset. You can choose how much processing to apply with the <code class="docutils literal notranslate"><span class="pre">pipeline_profile</span></code> argument:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;station001.cnv&quot;</span><span class="p">,</span> <span class="n">pipeline_profile</span><span class="o">=</span><span class="s2">&quot;minimal&quot;</span><span class="p">)</span>  <span class="c1"># mapping only</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;station001.cnv&quot;</span><span class="p">,</span> <span class="n">pipeline_profile</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>  <span class="c1"># conservative L1</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;station001.cnv&quot;</span><span class="p">,</span> <span class="n">pipeline_profile</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)</span>     <span class="c1"># all stages</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">minimal</span></code> — variable-name mapping and finalization only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">default</span></code> — conservative Level-1 processing (no unit conversion).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">full</span></code> — the complete Level-1 pipeline with all stages and handlers.</p></li>
+</ul>
+<p>For raw, unprocessed data, use the CLI <code class="docutils literal notranslate"><span class="pre">--raw-only</span></code> flag or skip the pipeline stages you do not want. The pipeline is fully configurable; its stages, profiles, and public API are described in <a class="reference internal" href="user_guide.html"><span class="doc">User Guide</span></a> and <a class="reference internal" href="api_reference.html"><span class="doc">API Reference</span></a>.</p>
+</section>
+<section id="command-line-interface">
+<h2>Command-line interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h2>
+<p>Everything above is also available from the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>seasenselib<span class="w"> </span>convert<span class="w"> </span>-i<span class="w"> </span>station001.cnv<span class="w"> </span>-o<span class="w"> </span>station001.nc
+seasenselib<span class="w"> </span>list<span class="w"> </span>readers
+</pre></div>
+</div>
+<p>Run <code class="docutils literal notranslate"><span class="pre">seasenselib</span> <span class="pre">--help</span></code> to see all commands.</p>
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="about.html" class="btn btn-neutral float-left" title="About SeaSenseLib" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

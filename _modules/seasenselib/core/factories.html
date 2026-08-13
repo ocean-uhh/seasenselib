@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>seasenselib.core.factories &mdash; SeaSenseLib v0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=20758594" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8b92e751"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SeaSenseLib
+              <img src="../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About SeaSenseLib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">SeaSenseLib Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Demo notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo-output.html">SeaSenseLib Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo_mooring-output.html">Formats Demo</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help and reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="http://github.com/ocean-uhh/seasenselib">GitHub Repo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../supported_formats.html">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reader_notes.html">Reader Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developers_guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SeaSenseLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">seasenselib.core.factories</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for seasenselib.core.factories</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Reader and Writer factories for clean instantiation.</span>
+
+<span class="sd">Modern factory pattern with Protocol-based type hints for extensibility.</span>
+<span class="sd">All format handling is now dynamic via autodiscovery - no hardcoded formats!</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.autodiscovery</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReaderDiscovery</span><span class="p">,</span> <span class="n">WriterDiscovery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReaderError</span><span class="p">,</span> <span class="n">WriterError</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AbstractReader</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for reader classes.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data from the reader.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the format key for this reader.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AbstractWriter</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for writer classes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write data to file.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the file extension for this writer.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+
+<div class="viewcode-block" id="ReaderFactory">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.ReaderFactory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReaderFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory for creating reader instances with autodiscovery.&quot;&quot;&quot;</span>
+
+    <span class="n">_COMMON_READER_KWARGS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+        <span class="s2">&quot;mapping&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;input_header_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;perform_default_postprocessing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rename_variables&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;assign_metadata&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sort_variables&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;use_steps&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pipeline_config&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_metadata&quot;</span><span class="p">,</span>
+    <span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span> <span class="o">=</span> <span class="n">ReaderDiscovery</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ReaderFactory.create_reader">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.ReaderFactory.create_reader">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_reader</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">header_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate_reader_args</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractReader</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a reader instance for the given format using signature introspection.</span>
+<span class="sd">        </span>
+<span class="sd">        This method uses Python inspect module to automatically match provided</span>
+<span class="sd">        parameters to the reader constructor signature, eliminating hardcoded</span>
+<span class="sd">        special cases and enabling plugin readers with custom parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        format_key : str</span>
+<span class="sd">            The format key (e.g., &#39;sbe-cnv&#39;, &#39;rbr-rsk&#39;)</span>
+<span class="sd">        input_file : str</span>
+<span class="sd">            Path to the input file</span>
+<span class="sd">        header_file : str, optional</span>
+<span class="sd">            Path to header file (for formats like Nortek ASCII that need it)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            All other parameters are matched against the reader constructor</span>
+<span class="sd">            signature. Common parameters:</span>
+<span class="sd">            - mapping : dict (variable name mapping, supported by all readers)</span>
+<span class="sd">            - sanitize_input : bool (for CNV readers)</span>
+<span class="sd">            - encoding : str (for TOB readers)</span>
+<span class="sd">            - Any custom parameters for plugin readers</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        AbstractReader</span>
+<span class="sd">            Reader instance ready to use</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReaderError</span>
+<span class="sd">            If reader cannot be created</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Find the reader class</span>
+        <span class="n">reader_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span><span class="o">.</span><span class="n">get_reader_by_format_key</span><span class="p">(</span><span class="n">format_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reader_class</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ReaderError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No reader found for format: </span><span class="si">{</span><span class="n">format_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Special validation: Nortek ASCII requires header file</span>
+        <span class="k">if</span> <span class="n">format_key</span> <span class="o">==</span> <span class="s2">&quot;nortek-ascii&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">header_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ReaderError</span><span class="p">(</span>
+                <span class="s2">&quot;Nortek ASCII format requires a header file. &quot;</span>
+                <span class="s2">&quot;Use --header-input to specify the header file.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Use signature introspection to match parameters</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantiate_reader</span><span class="p">(</span>
+            <span class="n">reader_class</span><span class="p">,</span>
+            <span class="n">input_file</span><span class="p">,</span>
+            <span class="n">header_file</span><span class="p">,</span>
+            <span class="n">format_key</span><span class="o">=</span><span class="n">format_key</span><span class="p">,</span>
+            <span class="n">validate_reader_args</span><span class="o">=</span><span class="n">validate_reader_args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_instantiate_reader</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reader_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+        <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">header_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate_reader_args</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractReader</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiate reader using signature introspection.</span>
+<span class="sd">        </span>
+<span class="sd">        This method inspects the reader __init__ signature and only passes</span>
+<span class="sd">        parameters that the reader actually accepts, enabling automatic support</span>
+<span class="sd">        for plugin readers with custom parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">validate_reader_args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_reader_kwargs</span><span class="p">(</span><span class="n">reader_class</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">format_key</span><span class="p">)</span>
+
+        <span class="c1"># Get the constructor signature</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">reader_class</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span>
+        
+        <span class="c1"># Build kwargs that match the reader signature</span>
+        <span class="n">matched_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">all_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;input_header_file&#39;</span><span class="p">:</span> <span class="n">header_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        
+        <span class="c1"># Check each parameter in the signature</span>
+        <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">,</span> <span class="s1">&#39;input_file&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># If this parameter exists in our kwargs, include it</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">all_kwargs</span> <span class="ow">and</span> <span class="n">all_kwargs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">matched_kwargs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_kwargs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+            <span class="c1"># If reader accepts **kwargs, pass everything through</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">:</span>
+                <span class="n">matched_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">all_kwargs</span><span class="p">)</span>
+                <span class="k">break</span>
+        
+        <span class="c1"># Special handling for Nortek ASCII which needs positional header_file_path</span>
+        <span class="k">if</span> <span class="s1">&#39;header_file_path&#39;</span> <span class="ow">in</span> <span class="n">params</span> <span class="ow">and</span> <span class="n">header_file</span><span class="p">:</span>
+            <span class="n">matched_kwargs</span><span class="p">[</span><span class="s1">&#39;header_file_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">header_file</span>
+            <span class="c1"># Remove input_header_file if present (Nortek uses header_file_path)</span>
+            <span class="n">matched_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;input_header_file&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        
+        <span class="c1"># Instantiate with matched parameters</span>
+        <span class="k">return</span> <span class="n">reader_class</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="o">**</span><span class="n">matched_kwargs</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_reader_kwargs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">reader_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate CLI-provided reader kwargs against the reader metadata contract.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">allowed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_COMMON_READER_KWARGS</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">specs</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">reader_args</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">specs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">specs</span> <span class="ow">or</span> <span class="p">[]:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">allowed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">display_format</span> <span class="o">=</span> <span class="n">format_key</span>
+        <span class="k">if</span> <span class="n">display_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">display_format</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="n">format_key</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">display_format</span> <span class="o">=</span> <span class="n">reader_class</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">rendered_unknown</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">unknown</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ReaderError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unsupported reader argument(s) for </span><span class="si">{</span><span class="n">display_format</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">rendered_unknown</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Use &#39;seasenselib list reader-args --filter </span><span class="si">{</span><span class="n">display_format</span><span class="si">}</span><span class="s2">&#39; to see supported options.&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="WriterFactory">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.WriterFactory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WriterFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory for creating writer instances with dynamic autodiscovery.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span> <span class="o">=</span> <span class="n">WriterDiscovery</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WriterFactory.create_writer">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.WriterFactory.create_writer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">format_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractWriter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a writer instance for the given format.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        format_key : str</span>
+<span class="sd">            The format key (e.g., &#39;netcdf&#39;, &#39;csv&#39;, &#39;excel&#39;)</span>
+<span class="sd">        data : Any</span>
+<span class="sd">            The data to write (typically xarray.Dataset)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        AbstractWriter</span>
+<span class="sd">            Writer instance ready to use</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">        -------</span>
+<span class="sd">        WriterError</span>
+<span class="sd">            If writer cannot be created</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Find the writer class by format key</span>
+        <span class="n">writer_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span><span class="o">.</span><span class="n">get_writer_by_format_key</span><span class="p">(</span><span class="n">format_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">writer_class</span><span class="p">:</span>
+            <span class="n">available_formats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_supported_formats</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">WriterError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No writer found for format: </span><span class="si">{</span><span class="n">format_key</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Available formats: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">available_formats</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Create writer instance with data</span>
+        <span class="k">return</span> <span class="n">writer_class</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WriterFactory.get_supported_formats">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.WriterFactory.get_supported_formats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_supported_formats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get list of supported output format keys.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[str]</span>
+<span class="sd">            List of format keys (e.g., [&#39;netcdf&#39;, &#39;csv&#39;, &#39;excel&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">format_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span><span class="o">.</span><span class="n">get_format_info</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">format_info</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="WriterFactory.get_format_info">
+<a class="viewcode-back" href="../../../api_reference.html#seasenselib.core.WriterFactory.get_format_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_format_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get detailed format information for all writers.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        List[dict]</span>
+<span class="sd">            List of format info dicts with keys: &#39;key&#39;, &#39;name&#39;, &#39;extension&#39;, &#39;class_name&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovery</span><span class="o">.</span><span class="n">get_format_info</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yves Sorge.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
