@@ -4,11 +4,22 @@ Installation
 Requirements
 ------------
 
-SeaSenseLib requires Python 3.10 or later and depends on several scientific Python packages:
+SeaSenseLib requires Python 3.10 or later and depends on several scientific Python packages, all of which are installed automatically by ``pip``:
 
-* **Core dependencies**: xarray, pandas, numpy, matplotlib
-* **File format support**: netcdf4, pycnv, pyrsktools
-* **Scientific computing**: scipy, gsw (Gibbs SeaWater library)
+* **Core data handling**: xarray, pandas, numpy, scipy
+* **File format support**: netcdf4, pycnv, pyrsktools, seabirdscientific, mhkit (with the ``dolfyn`` extra, for Nortek/RDI raw data)
+* **Scientific computing**: gsw (Gibbs SeaWater library), pint (units)
+* **Plotting**: matplotlib, pylablib
+
+You do not need to install these individually — they come with SeaSenseLib.
+
+If you are new to Python, first check that Python 3.10+ is available:
+
+.. code-block:: bash
+
+   python3 --version
+
+If it reports a version below 3.10 (or the command is not found), install a current Python from `python.org <https://www.python.org/downloads/>`_ or via a distribution such as Miniconda (see below) before continuing.
 
 Install from PyPI
 -----------------
@@ -20,6 +31,25 @@ The easiest way to install SeaSenseLib is using pip:
    pip install seasenselib
 
 This will install SeaSenseLib and all required dependencies.
+
+Using conda or mamba
+--------------------
+
+Many oceanographers manage Python with Anaconda/Miniconda (``conda``) or its faster drop-in replacement ``mamba``. SeaSenseLib is not yet published on conda-forge, so you create a conda environment and then install SeaSenseLib into it with ``pip``:
+
+.. code-block:: bash
+
+   # with conda
+   conda create -n seasenselib python=3.11
+   conda activate seasenselib
+   pip install seasenselib
+
+   # or with mamba (same commands, faster solver)
+   mamba create -n seasenselib python=3.11
+   mamba activate seasenselib
+   pip install seasenselib
+
+Installing with ``pip`` inside an activated conda environment is expected and supported here. Do not run ``conda install seasenselib`` — the package is not on any conda channel and that command will fail.
 
 Development Installation
 ------------------------
@@ -63,7 +93,21 @@ If you want to contribute to the project or modify the code, follow these steps:
       pip install --upgrade pip setuptools wheel
       pip install -e ".[dev]"
 
-   This installs SeaSenseLib in "editable" mode along with development dependencies like pytest and sphinx.
+   This installs SeaSenseLib in "editable" mode (changes to the source take effect immediately without reinstalling). The ``[dev]`` part is an optional dependency group that adds tools needed only for development — pytest (running tests), sphinx, nbsphinx, myst-parser and the RTD theme (building these docs), plus build and twine (packaging). A plain ``pip install -e .`` skips those.
+
+   The same editable install works inside a conda/mamba environment: activate the environment first, then run the ``pip install -e ".[dev]"`` command.
+
+**Using the conda environment file:**
+
+For development with conda, the repository provides an ``environment.yml`` that creates an environment named ``seasenselib`` with Python (3.10–3.13), ``gsw``, ``pandoc``, and all runtime and development dependencies:
+
+.. code-block:: bash
+
+   conda env create -f environment.yml
+   conda activate seasenselib
+   pip install -e .
+
+The environment file installs the dependencies but not SeaSenseLib itself, so the final ``pip install -e .`` installs the package in editable mode from the repository root.
 
 Alternative Installation Methods
 --------------------------------
@@ -111,7 +155,9 @@ This should display the available commands and options.
 
 .. code-block:: bash
 
-   python -m unittest discover tests/
+   python -m pytest tests/
+
+(``python -m unittest discover tests/`` also works if you prefer the standard library test runner.)
 
 Troubleshooting
 ---------------

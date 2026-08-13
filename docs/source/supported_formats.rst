@@ -103,6 +103,11 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``sbe-cnv``
      - SeaBird CNV format (CTD profiles)
    * - SeaBird
+     - SBE 911plus / 917plus
+     - ``.hex``
+     - ``sbe-hex``
+     - SeaBird raw HEX (CTD profiles); the SBE 9 family is auto-detected from the ``* Sea-Bird SBE 9 Data File`` header
+   * - SeaBird
      - SBE16 Seacat
      - ``.cnv``
      - ``sbe-cnv``
@@ -137,6 +142,46 @@ Format keys can be used with ``ssl.read(filename, file_format='key')`` when auto
      - ``.000``, ``.PD0``, ``.ENR``, ``.ENS``, ``.ENX``
      - ``rdi-raw``
      - RDI raw binary ADCP files
+
+Output Formats (Writers)
+------------------------
+
+SeaSenseLib can write an xarray ``Dataset`` back out to several formats with ``ssl.write(dataset, filename, file_format='key')``.
+
+.. list-table:: Supported Output Formats
+   :header-rows: 1
+   :widths: 15 20 20
+
+   * - Format
+     - Format Key
+     - File Extension
+   * - NetCDF
+     - ``netcdf``
+     - ``.nc``
+   * - CSV
+     - ``csv``
+     - ``.csv``
+   * - Excel
+     - ``excel``
+     - ``.xlsx``
+
+Plot Types (Plotters)
+---------------------
+
+SeaSenseLib provides several plot types via ``ssl.plot(plotter_key, dataset, ...)``.
+
+.. list-table:: Supported Plot Types
+   :header-rows: 1
+   :widths: 20 40
+
+   * - Plot Type
+     - Plotter Key
+   * - Depth profile
+     - ``depth-profile``
+   * - Time series
+     - ``time-series``
+   * - T-S diagram
+     - ``ts-diagram``
 
 Usage Examples
 --------------
@@ -209,7 +254,7 @@ Format Detection Summary
 **Auto-detected formats** (unique file extensions):
    
 - ``.cnv`` → ``sbe-cnv`` (SeaBird CNV files)
-- ``.hex`` → ``sbe-hex`` (SeaBird SBE37 HEX files)
+- ``.hex`` → ``sbe-hex`` (SeaBird SBE37 and SBE 911plus/917plus HEX files)
 - ``.rsk`` → ``rbr-rsk`` (RBR RSK files - automatically selects modern/legacy reader)
 - ``.nc`` → ``netcdf`` (NetCDF files)
 - ``.csv`` → ``csv`` (CSV files)
