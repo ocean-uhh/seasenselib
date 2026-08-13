@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an improvement or new scientific use case for SeaSenseLib
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement. For substantial changes,
+        this issue can be used to agree on scope before implementation starts.
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What scientific or technical problem would this feature solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or interface you would like.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any current workaround or alternative approach.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add references, examples, sketches, or sample metadata if useful.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched the existing issues for a similar request.
+          required: true

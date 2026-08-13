@@ -524,7 +524,12 @@ SeaSenseLib is a community-driven open source project in active development. The
 
 ### Contributing
 
-Pull requests are welcome! Please open an issue first to discuss what you would like to change.
+Pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for coding and
+testing guidance and the review process. Additional community contributors are
+recognized in [CONTRIBUTORS.md](CONTRIBUTORS.md). Participation is governed by
+our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+To cite SeaSenseLib, use the metadata in [CITATION.cff](CITATION.cff).
 
 ### License
 
