@@ -20,7 +20,7 @@ class DepthProfilePlotter(AbstractPlotter):
     
     Methods:
     --------
-    plot(output_file=None, title='Salinity and Temperature Profiles', show_grid=True, dot_size=3, show_lines_between_dots=True)
+    ``plot(output_file=None, title='Salinity and Temperature Profiles', show_grid=True, dot_size=3, show_lines_between_dots=True, *args, **kwargs)``
         Creates and displays/saves the vertical profile plot.
     """
 
