@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-SeaSenseLib requires Python 3.7 or later and depends on several scientific Python packages:
+SeaSenseLib requires Python 3.10 or later and depends on several scientific Python packages:
 
 * **Core dependencies**: xarray, pandas, numpy, matplotlib
 * **File format support**: netcdf4, pycnv, pyrsktools
@@ -126,7 +126,7 @@ Troubleshooting
 
 2. **Permission errors**: On some systems, you may need to use ``pip install --user`` to install packages in your user directory.
 
-3. **Python version**: Ensure you're using Python 3.7 or later:
+3. **Python version**: Ensure you're using Python 3.10 or later:
 
    .. code-block:: bash
 

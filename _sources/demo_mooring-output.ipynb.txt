@@ -16,10 +16,10 @@
    "id": "cell-1",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-08-13T14:08:21.487781Z",
-     "iopub.status.busy": "2026-08-13T14:08:21.487609Z",
-     "iopub.status.idle": "2026-08-13T14:08:21.837145Z",
-     "shell.execute_reply": "2026-08-13T14:08:21.836252Z"
+     "iopub.execute_input": "2026-08-13T18:01:01.372789Z",
+     "iopub.status.busy": "2026-08-13T18:01:01.372621Z",
+     "iopub.status.idle": "2026-08-13T18:01:01.700182Z",
+     "shell.execute_reply": "2026-08-13T18:01:01.699406Z"
     }
    },
    "outputs": [],
@@ -47,10 +47,10 @@
    "id": "cell-3",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-08-13T14:08:21.838965Z",
-     "iopub.status.busy": "2026-08-13T14:08:21.838741Z",
-     "iopub.status.idle": "2026-08-13T14:08:23.316998Z",
-     "shell.execute_reply": "2026-08-13T14:08:23.316108Z"
+     "iopub.execute_input": "2026-08-13T18:01:01.702004Z",
+     "iopub.status.busy": "2026-08-13T18:01:01.701737Z",
+     "iopub.status.idle": "2026-08-13T18:01:02.998805Z",
+     "shell.execute_reply": "2026-08-13T18:01:02.997952Z"
     }
    },
    "outputs": [
@@ -106,10 +106,10 @@
    "id": "cell-5",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-08-13T14:08:23.318858Z",
-     "iopub.status.busy": "2026-08-13T14:08:23.318556Z",
-     "iopub.status.idle": "2026-08-13T14:08:23.941328Z",
-     "shell.execute_reply": "2026-08-13T14:08:23.940409Z"
+     "iopub.execute_input": "2026-08-13T18:01:03.000778Z",
+     "iopub.status.busy": "2026-08-13T18:01:03.000429Z",
+     "iopub.status.idle": "2026-08-13T18:01:03.533959Z",
+     "shell.execute_reply": "2026-08-13T18:01:03.533191Z"
     }
    },
    "outputs": [
@@ -161,7 +161,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "495300d5",
+   "id": "e5f4c6a8",
    "metadata": {},
    "source": [
     "## RBR TR1050 Thermistor (MAT Format)\n",
@@ -182,10 +182,10 @@
    "id": "cell-7",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-08-13T14:08:23.943011Z",
-     "iopub.status.busy": "2026-08-13T14:08:23.942840Z",
-     "iopub.status.idle": "2026-08-13T14:08:43.822031Z",
-     "shell.execute_reply": "2026-08-13T14:08:43.821171Z"
+     "iopub.execute_input": "2026-08-13T18:01:03.536146Z",
+     "iopub.status.busy": "2026-08-13T18:01:03.535964Z",
+     "iopub.status.idle": "2026-08-13T18:01:17.659211Z",
+     "shell.execute_reply": "2026-08-13T18:01:17.658370Z"
     }
    },
    "outputs": [
@@ -262,10 +262,10 @@
    "id": "cell-9",
    "metadata": {
     "execution": {
-     "iopub.execute_input": "2026-08-13T14:08:43.823735Z",
-     "iopub.status.busy": "2026-08-13T14:08:43.823550Z",
-     "iopub.status.idle": "2026-08-13T14:08:44.459685Z",
-     "shell.execute_reply": "2026-08-13T14:08:44.458877Z"
+     "iopub.execute_input": "2026-08-13T18:01:17.661514Z",
+     "iopub.status.busy": "2026-08-13T18:01:17.661312Z",
+     "iopub.status.idle": "2026-08-13T18:01:18.240714Z",
+     "shell.execute_reply": "2026-08-13T18:01:18.239905Z"
     }
    },
    "outputs": [
@@ -397,7 +397,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.13.14"
+   "version": "3.13.15"
   }
  },
  "nbformat": 4,
