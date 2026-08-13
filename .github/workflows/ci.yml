@@ -6,36 +6,53 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.11", "3.12", "3.13"]  # Min, popular, latest stable
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
       fail-fast: false
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Micromamba
-      uses: mamba-org/setup-micromamba@v2
-      with:
-        environment-file: environment.yml
-        init-shell: bash
-        condarc: |
-          channels:
-            - conda-forge
-          channel_priority: strict
-        cache-environment: true
+      - name: Setup Micromamba
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-file: environment.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+          init-shell: bash
+          condarc: |
+            channels:
+              - conda-forge
+            channel_priority: strict
+          cache-environment: true
 
-    - name: Install package (editable)
-      shell: bash -l {0}
-      run: |
-        micromamba run -n seasenselib python -m pip install --upgrade pip
-        micromamba run -n seasenselib python -m pip install -e . --no-deps --force-reinstall
+      - name: Verify Python version
+        shell: bash -l {0}
+        env:
+          EXPECTED_PYTHON: ${{ matrix.python-version }}
+        run: |
+          micromamba run -n seasenselib python -c 'import os, sys; expected = tuple(map(int, os.environ["EXPECTED_PYTHON"].split("."))); assert sys.version_info[:2] == expected, f"expected {expected}, got {sys.version_info[:2]}"'
 
-    - name: Run unit tests from tests folder
-      shell: bash -l {0}
-      run: |
-        micromamba run -n seasenselib pytest tests/ -v -x
+      - name: Install package (editable)
+        shell: bash -l {0}
+        run: |
+          micromamba run -n seasenselib python -m pip install --upgrade pip
+          micromamba run -n seasenselib python -m pip install -e . --no-deps --force-reinstall
+
+      - name: Check dependency consistency
+        shell: bash -l {0}
+        run: |
+          micromamba run -n seasenselib python -m pip check
+
+      - name: Run unit tests from tests folder
+        shell: bash -l {0}
+        run: |
+          micromamba run -n seasenselib python -m pytest tests/ -v -x

@@ -2,8 +2,9 @@ name: seasenselib
 channels:
   - conda-forge
 dependencies:
-  - python>=3.9,<3.14
+  - python>=3.10,<3.14
   - pip
   - pandoc
+  - gsw
   - pip:
       - -r requirements-dev.txt

@@ -12,7 +12,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20044197.svg)](https://doi.org/10.5281/zenodo.20044197)
 [![Available on pypi](https://img.shields.io/pypi/v/seasenselib.svg)](https://pypi.python.org/pypi/seasenselib/)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docs](https://img.shields.io/badge/docs-sphinx-blue)](https://ocean-uhh.github.io/seasenselib/)
 [![CI - Test](https://github.com/ocean-uhh/seasenselib/actions/workflows/ci.yml/badge.svg)](https://github.com/ocean-uhh/seasenselib/actions/workflows/ci.yml)
