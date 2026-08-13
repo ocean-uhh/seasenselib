@@ -63,7 +63,7 @@ Extensibility is provided through Python entry points. External packages can reg
 
 `SeaSenseLib` therefore provides a foundation for reproducible, FAIR-oriented data products suitable for both scientific analysis and long-term archiving.
 
-Version 0.5.0 of the software, on which this article is based, has been archived and released for referencing [@SeaSenseLib:2026].
+Version 0.6.1 of the software, on which this article is based, has been archived and released for referencing [@SeaSenseLib:2026].
 
 # Development history
 
