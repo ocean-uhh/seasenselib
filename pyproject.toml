@@ -1,20 +1,20 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 
 name = "seasenselib"
-version = "0.6.0"
+version = "0.6.1"
 description = "Read, convert, and plot oceanographic sensor data."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 
 authors = [
   { name = "Yves Sorge" },
-  { name = "Eleanor Frajka-Williams" },
-  { name = "Isabelle Schmitz" },
+  { name = "Eleanor Frajka-Williams" }
 ]
 
 maintainers = [
@@ -36,8 +36,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
-  "Natural Language :: English",
-  "License :: OSI Approved :: MIT License"
+  "Natural Language :: English"
 ]
 
 keywords = [
