@@ -266,6 +266,32 @@ class AbstractPlotter(ABC):
             missing_str = ', '.join(missing_vars)
             raise ValueError(f"Required variable(s) missing from dataset: {missing_str}")
 
+    def _validate_required_variables_any(self, required_groups: list):
+        """Validates that at least one variable from each group exists.
+
+        Parameters
+        -----------
+        required_groups : list of list
+            Each inner list is a group of variable names; at least one
+            variable from each group must be present in the dataset.
+
+        Raises
+        -------
+        ValueError:
+            If for any group none of its variables are present.
+        """
+
+        missing_groups = []
+        for group in required_groups:
+            if not any(var in self.data for var in group):
+                missing_groups.append(' or '.join(group))
+
+        if missing_groups:
+            missing_str = '; '.join(missing_groups)
+            raise ValueError(
+                f"Required variable(s) missing from dataset. Need: {missing_str}"
+            )
+
     def _save_or_show_plot(self, output_file: str | None = None):
         """Helper method to either save plot to file or display it.
         
