@@ -4,7 +4,6 @@ pandas
 xarray
 numpy
 scipy
-pylablib
 matplotlib
 netcdf4
 pint
