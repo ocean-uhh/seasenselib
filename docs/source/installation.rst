@@ -9,7 +9,7 @@ SeaSenseLib requires Python 3.10 or later and depends on several scientific Pyth
 * **Core data handling**: xarray, pandas, numpy, scipy
 * **File format support**: netcdf4, pycnv, pyrsktools, seabirdscientific, mhkit (with the ``dolfyn`` extra, for Nortek/RDI raw data)
 * **Scientific computing**: gsw (Gibbs SeaWater library), pint (units)
-* **Plotting**: matplotlib, pylablib
+* **Plotting**: matplotlib
 
 You do not need to install these individually — they come with SeaSenseLib.
 
