@@ -11,12 +11,12 @@ tags:
   - acdd
   - fair
 authors:
-  - name: Eleanor Frajka-Williams
-    orcid: 0000-0001-8773-7838
-    equal-contrib: true
-    affiliation: 1
   - name: Yves Sorge
     orcid: 0009-0007-0043-9207
+    equal-contrib: true
+    affiliation: 1
+  - name: Eleanor Frajka-Williams
+    orcid: 0000-0001-8773-7838
     equal-contrib: true
     affiliation: 1
 affiliations:
@@ -72,7 +72,7 @@ Version 0.6.1 of the software, on which this article is based, has been archived
 
 # Acknowledgements
 
-We acknowledge contributions from Isabelle Schmitz during the genesis of this project.  Parts of this work were supported by the European Union’s Horizon 2020 research and innovation programme under grant agreement No. 803140 (TERIFIC -- Targeted Experiment to Reconcile Increased Freshwater with Increased Convection).
+We acknowledge contributions from Isabelle Schmitz and Jonathan Mette during the genesis of this project.  Parts of this work were supported by the European Union’s Horizon 2020 research and innovation programme under grant agreement No. 803140 (TERIFIC -- Targeted Experiment to Reconcile Increased Freshwater with Increased Convection).
 
 
 # AI usage disclosure
