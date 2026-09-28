@@ -118,7 +118,7 @@ class AbsoluteSalinityDerivation(IDerivation):
                 pres_name = press[i]
             else: 
                 warnings.append(
-                    f"Absolute salinity not derived: number of salinity {len(sals)} and pressure variables {len(press)} not matching."
+                    f"Absolute salinity not derived: number of salinity ({len(sals)}) and pressure variables ({len(press)}) not matching."
                 )
                 return outputs, warnings
 
