@@ -138,18 +138,17 @@ class ConservativeTemperatureDerivation(IDerivation):
                 warnings.append(
                     f"Conservative temperature skipped for '{temp_name}': unsupported temperature units."
                 )
-                return outputs, warnings
-
+                continue
             if not units_ok(dataset, sal_name, params.SALINITY):
                 warnings.append(
                     f"Conservative temperature not derived: salinity units not supported for '{sal_name}'."
                 )
-                return outputs, warnings
+                continue
             if not units_ok(dataset, pres_name, params.PRESSURE):
                 warnings.append(
                     f"Conservative temperature not derived: pressure units not supported for '{pres_name}'."
                 )
-                return outputs, warnings
+                continue
 
             sal = dataset[sal_name].values
             pres = dataset[pres_name].values

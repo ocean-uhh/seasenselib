@@ -121,17 +121,17 @@ class AbsoluteSalinityDerivation(IDerivation):
                     f"Absolute salinity not derived: number of salinity ({len(sals)}) and pressure variables ({len(press)}) not matching."
                 )
                 return outputs, warnings
-
+                
             if not units_ok(dataset, sal_name, params.SALINITY):
                 warnings.append(
                     f"Absolute salinity not derived: salinity units not supported for '{sal_name}'."
                 )
-                return outputs, warnings
+                continue
             if not units_ok(dataset, pres_name, params.PRESSURE):
                 warnings.append(
                     f"Absolute salinity not derived: pressure units not supported for '{pres_name}'."
                 )
-                return outputs, warnings
+                continue
 
             sal = dataset[sal_name].values
             pres = dataset[pres_name].values
