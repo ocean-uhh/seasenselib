@@ -120,7 +120,7 @@ class ConservativeTemperatureDerivation(IDerivation):
                 sal_name = sals[i]
             else: 
                 warnings.append(
-                    f"Conservative temperature not derived: number of temperature ({len(sals)}) and salinity variables ({len(press)}) not matching."
+                    f"Conservative temperature not derived: number of temperature ({len(temps)}) and salinity variables ({len(sals)}) not matching."
                 )
                 return outputs, warnings  
 
