@@ -88,31 +88,6 @@ class ConservativeTemperatureDerivation(IDerivation):
         if not temps or not sals or not press:
             return outputs, warnings
 
-        if len(sals) > 1:
-            warnings.append(
-                "Conservative temperature not derived: multiple salinity variables present."
-            )
-            return outputs, warnings
-        if len(press) > 1:
-            warnings.append(
-                "Conservative temperature not derived: multiple pressure variables present."
-            )
-            return outputs, warnings
-
-        sal_name = sals[0]
-        pres_name = press[0]
-
-        if not units_ok(dataset, sal_name, params.SALINITY):
-            warnings.append(
-                f"Conservative temperature not derived: salinity units not supported for '{sal_name}'."
-            )
-            return outputs, warnings
-        if not units_ok(dataset, pres_name, params.PRESSURE):
-            warnings.append(
-                f"Conservative temperature not derived: pressure units not supported for '{pres_name}'."
-            )
-            return outputs, warnings
-
         lat, lon, defaulted = resolve_lat_lon(
             dataset,
             default_latitude=self.default_latitude,
@@ -137,47 +112,82 @@ class ConservativeTemperatureDerivation(IDerivation):
                 f"{format_coordinate_names(list(defaulted))} missing."
             )
 
-        sal = dataset[sal_name].values
-        pres = dataset[pres_name].values
+        for i, temp_name in enumerate(temps):
+            
+            if len(sals) == 1:
+                sal_name = sals[0]
+            elif len(sals) == len(temps):
+                sal_name = sals[i]
+            else: 
+                warnings.append(
+                    f"Conservative temperature not derived: number of temperature ({len(sals)}) and salinity variables ({len(press)}) not matching."
+                )
+                return outputs, warnings  
 
-        for temp_name in temps:
+            if len(press) == 1:
+                pres_name = press[0]
+            elif len(press) == len(temps):
+                pres_name = press[i]
+            else: 
+                warnings.append(
+                    f"Conservative temperaure not derived: number of temperature ({len(temps)}) and pressure variables ({len(press)}) not matching."
+                )
+                return outputs, warnings
+
             if not units_ok(dataset, temp_name, params.TEMPERATURE):
                 warnings.append(
                     f"Conservative temperature skipped for '{temp_name}': unsupported temperature units."
                 )
-                continue
+                return outputs, warnings
 
+            if not units_ok(dataset, sal_name, params.SALINITY):
+                warnings.append(
+                    f"Conservative temperature not derived: salinity units not supported for '{sal_name}'."
+                )
+                return outputs, warnings
+            if not units_ok(dataset, pres_name, params.PRESSURE):
+                warnings.append(
+                    f"Conservative temperature not derived: pressure units not supported for '{pres_name}'."
+                )
+                return outputs, warnings
+
+            sal = dataset[sal_name].values
+            pres = dataset[pres_name].values
             temp = dataset[temp_name].values
 
-            sa = gsw.SA_from_SP(sal, pres, lon, lat)
-            ct = gsw.CT_from_t(sa, temp, pres)
+            try:
+                sa = gsw.SA_from_SP(sal, pres, lon, lat)
+                ct = gsw.CT_from_t(sa, temp, pres)
 
-            output_name = output_name_from_input(
-                params.CONSERVATIVE_TEMPERATURE,
-                temp_name,
-                params.TEMPERATURE,
-            )
-            ct_da = xr.DataArray(
-                ct,
-                dims=dataset[temp_name].dims,
-                coords=dataset[temp_name].coords,
-                attrs={
-                    **self.metadata(),
-                    "derivation": (
-                        f"gsw.CT_from_t(SA_from_SP({sal_name}, {pres_name}, lon, lat), "
-                        f"{temp_name}, {pres_name})"
-                    ),
-                },
-            )
-            if defaulted:
-                comment = ct_da.attrs.get("comment", "")
-                note = (
-                    f"{format_coordinate_names(list(defaulted), title=True)} missing; "
-                    f"explicit default {format_defaulted_coordinates(defaulted)} "
-                    "used for conservative temperature derivation"
+                output_name = output_name_from_input(
+                    params.CONSERVATIVE_TEMPERATURE,
+                    temp_name,
+                    params.TEMPERATURE,
                 )
-                ct_da.attrs["comment"] = f"{comment}; {note}".strip("; ")
-            outputs[output_name] = ct_da
+                ct_da = xr.DataArray(
+                    ct,
+                    dims=dataset[temp_name].dims,
+                    coords=dataset[temp_name].coords,
+                    attrs={
+                        **self.metadata(),
+                        "derivation": (
+                            f"gsw.CT_from_t(SA_from_SP({sal_name}, {pres_name}, lon, lat), "
+                            f"{temp_name}, {pres_name})"
+                        ),
+                    },
+                )
+                if defaulted:
+                    comment = ct_da.attrs.get("comment", "")
+                    note = (
+                        f"{format_coordinate_names(list(defaulted), title=True)} missing; "
+                        f"explicit default {format_defaulted_coordinates(defaulted)} "
+                        "used for conservative temperature derivation"
+                    )
+                    ct_da.attrs["comment"] = f"{comment}; {note}".strip("; ")
+                outputs[output_name] = ct_da
+
+            except Exception as e:
+                warnings.append(f"Conservative temperature derivation failed: {str(e)}")
 
         return outputs, warnings
 
