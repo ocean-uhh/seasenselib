@@ -8,7 +8,11 @@ from typing import List, Dict, Tuple
 import xarray as xr
 from ...interfaces import IDerivation
 import seasenselib.parameters as params
-from .utils import list_variants, output_name_from_input, units_ok
+from .utils import (
+    list_variants, 
+    output_name_from_input, 
+    units_ok,
+)
 
 _GSW = None
 
@@ -102,63 +106,74 @@ class PotentialTemperatureDerivation(IDerivation):
         if not temps or not sals or not press:
             return outputs, warnings
 
-        if len(sals) > 1:
-            warnings.append(
-                "Potential temperature not derived: multiple salinity variables present."
-            )
-            return outputs, warnings
-        if len(press) > 1:
-            warnings.append(
-                "Potential temperature not derived: multiple pressure variables present."
-            )
-            return outputs, warnings
+        for i, temp_name in enumerate(temps):
 
-        sal_name = sals[0]
-        pres_name = press[0]
+            if len(sals) == 1:
+                sal_name = sals[0]
+            elif len(sals) == len(temps):
+                sal_name = sals[i]
+            else: 
+                warnings.append(
+                    f"Potential temperature not derived: number of temperature ({len(temps)}) and salinity variables ({len(sals)}) not matching."
+                )
+                return outputs, warnings  
 
-        if not units_ok(dataset, sal_name, params.SALINITY):
-            warnings.append(
-                f"Potential temperature not derived: salinity units not supported for '{sal_name}'."
-            )
-            return outputs, warnings
-        if not units_ok(dataset, pres_name, params.PRESSURE):
-            warnings.append(
-                f"Potential temperature not derived: pressure units not supported for '{pres_name}'."
-            )
-            return outputs, warnings
-        
-        # Calculate potential temperature using GSW (TEOS-10)
-        # gsw.pt0_from_t() calculates potential temperature referenced to 0 dbar
-        for temp_name in temps:
+            if len(press) == 1:
+                pres_name = press[0]
+            elif len(press) == len(sals):
+                pres_name = press[i]
+            else: 
+                warnings.append(
+                    f"Potential temperature not derived: number of temperature ({len(temps)}) and pressure variables ({len(press)}) not matching."
+                )
+                return outputs, warnings
+
             if not units_ok(dataset, temp_name, params.TEMPERATURE):
                 warnings.append(
                     f"Potential temperature skipped for '{temp_name}': unsupported temperature units."
                 )
                 continue
+            if not units_ok(dataset, sal_name, params.SALINITY):
+                warnings.append(
+                    f"Potential temperature not derived: salinity units not supported for '{sal_name}'."
+                )
+                continue
+            if not units_ok(dataset, pres_name, params.PRESSURE):
+                warnings.append(
+                    f"Potential temperature not derived: pressure units not supported for '{pres_name}'."
+                )
+                continue
 
-            temp = dataset[temp_name].values
             sal = dataset[sal_name].values
             pres = dataset[pres_name].values
+            temp = dataset[temp_name].values
+        
+            # Calculate potential temperature using GSW (TEOS-10)
+            # gsw.pt0_from_t() calculates potential temperature referenced to 0 dbar
 
-            pot_temp = gsw.pt0_from_t(sal, temp, pres)
+            try:
+                pot_temp = gsw.pt0_from_t(sal, temp, pres)
 
-            output_name = output_name_from_input(
-                params.POTENTIAL_TEMPERATURE,
-                temp_name,
-                params.TEMPERATURE,
-            )
-            pot_temp_da = xr.DataArray(
-                pot_temp,
-                dims=dataset[temp_name].dims,
-                coords=dataset[temp_name].coords,
-                attrs={
-                    **self.metadata(),
-                    "derivation": (
-                        f"gsw.pt0_from_t({sal_name}, {temp_name}, {pres_name})"
-                    ),
-                },
-            )
-            outputs[output_name] = pot_temp_da
+                output_name = output_name_from_input(
+                    params.POTENTIAL_TEMPERATURE,
+                    temp_name,
+                    params.TEMPERATURE,
+                )
+                pot_temp_da = xr.DataArray(
+                    pot_temp,
+                    dims=dataset[temp_name].dims,
+                    coords=dataset[temp_name].coords,
+                    attrs={
+                        **self.metadata(),
+                        "derivation": (
+                            f"gsw.pt0_from_t({sal_name}, {temp_name}, {pres_name})"
+                        ),
+                    },
+                )
+                outputs[output_name] = pot_temp_da
+
+            except Exception as e:
+                warnings.append(f"Potential temperature derivation failed: {str(e)}")
 
         return outputs, warnings
     
